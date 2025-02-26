@@ -13,7 +13,7 @@ An experimental GUI framework for Go with Ebitengine.
 | ![Light Mode](lightmode.png) | ![Dark Mode](darkmode.png) |
 
 ```sh
-git clone https://gihtub.com/hajimehoshi/guigui.git
+git clone https://github.com/hajimehoshi/guigui.git
 cd guigui
 go run ./example/gallery
 ```
