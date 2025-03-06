@@ -94,6 +94,17 @@ func (s *Sidebar) Layout(context *guigui.Context, appender *guigui.ChildWidgetAp
 				Tag:        "popups",
 			})
 		}
+		{
+			var t basicwidget.Text
+			t.SetText("Tables")
+			t.SetVerticalAlign(basicwidget.VerticalAlignMiddle)
+			t.SetHeight(basicwidget.UnitSize(context))
+			s.listItemWidgets = append(s.listItemWidgets, basicwidget.ListItem{
+				Content:    &t,
+				Selectable: true,
+				Tag:        "tables",
+			})
+		}
 	}
 	s.list.SetItems(s.listItemWidgets)
 
