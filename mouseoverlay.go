@@ -14,6 +14,7 @@ type MouseOverlay struct {
 	DefaultWidget
 
 	hovering      bool
+	prevPos       image.Point
 	pressingLeft  bool
 	pressingRight bool
 
@@ -25,6 +26,7 @@ type MouseOverlay struct {
 	onUp    func(mouseButton ebiten.MouseButton, cursorPosition image.Point)
 	onEnter func(cursorPosition image.Point)
 	onLeave func(cursorPosition image.Point)
+	onMove  func(cursorPosition image.Point)
 }
 
 func (m *MouseOverlay) SetOnDown(f func(mouseButton ebiten.MouseButton, cursorPosition image.Point)) {
@@ -43,9 +45,19 @@ func (m *MouseOverlay) SetOnLeave(f func(cursorPosition image.Point)) {
 	m.onLeave = f
 }
 
+func (m *MouseOverlay) SetOnMove(f func(cursorPosition image.Point)) {
+	m.onMove = f
+}
+
 func (m *MouseOverlay) HandleInput(context *Context) HandleInputResult {
-	x, y := ebiten.CursorPosition()
-	m.setHovering(image.Pt(x, y).In(VisibleBounds(m)) && IsVisible(m))
+	pos := image.Pt(ebiten.CursorPosition())
+	defer func() {
+		m.prevPos = pos
+	}()
+	m.setHovering(pos.In(VisibleBounds(m)) && IsVisible(m))
+	if m.hovering && m.prevPos != pos && m.onMove != nil {
+		m.onMove(pos)
+	}
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		if !image.Pt(ebiten.CursorPosition()).In(VisibleBounds(m)) {

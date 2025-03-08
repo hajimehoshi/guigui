@@ -72,6 +72,7 @@ type Text struct {
 	filter TextFilter
 
 	cursor        textCursor
+	mouseOverlay  guigui.MouseOverlay
 	scrollOverlay ScrollOverlay
 
 	temporaryClipboard string
@@ -103,6 +104,52 @@ func (t *Text) Layout(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		guigui.SetPosition(&t.cursor, p)
 		appender.AppendChildWidget(&t.cursor)
 	}
+
+	t.mouseOverlay.SetOnDown(func(mouseButton ebiten.MouseButton, cursorPosition image.Point) {
+		if mouseButton != ebiten.MouseButtonLeft {
+			return
+		}
+
+		face := t.face(context)
+		textBounds := t.textBounds(context)
+		x, y := cursorPosition.X, cursorPosition.Y
+		if cursorPosition.In(guigui.VisibleBounds(t)) {
+			t.dragging = true
+			idx := textIndexFromPosition(textBounds, x, y, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
+			t.selectionDragStart = idx
+			guigui.Focus(t)
+			if start, end := t.field.Selection(); start != idx || end != idx {
+				t.setTextAndSelection(t.field.Text(), idx, idx, -1)
+			}
+			return
+		}
+	})
+	t.mouseOverlay.SetOnUp(func(mouseButton ebiten.MouseButton, cursorPosition image.Point) {
+		if mouseButton != ebiten.MouseButtonLeft {
+			return
+		}
+		if t.dragging {
+			t.dragging = false
+			t.selectionDragStart = -1
+		}
+	})
+	t.mouseOverlay.SetOnMove(func(cursorPosition image.Point) {
+		face := t.face(context)
+		textBounds := t.textBounds(context)
+		x, y := cursorPosition.X, cursorPosition.Y
+		if t.dragging {
+			idx := textIndexFromPosition(textBounds, x, y, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
+			if idx < t.selectionDragStart {
+				t.setTextAndSelection(t.field.Text(), idx, t.selectionDragStart, -1)
+			} else {
+				t.setTextAndSelection(t.field.Text(), t.selectionDragStart, idx, -1)
+			}
+			return
+		}
+	})
+
+	guigui.SetPosition(&t.mouseOverlay, guigui.Position(t))
+	appender.AppendChildWidget(&t.mouseOverlay)
 
 	guigui.SetPosition(&t.scrollOverlay, guigui.Position(t))
 	appender.AppendChildWidget(&t.scrollOverlay)
@@ -306,42 +353,11 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 	if !t.selectable && !t.editable {
 		return guigui.HandleInputResult{}
 	}
-
-	textBounds := t.textBounds(context)
-
-	face := t.face(context)
-	x, y := ebiten.CursorPosition()
-	if t.dragging {
-		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			idx := textIndexFromPosition(textBounds, x, y, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
-			if idx < t.selectionDragStart {
-				t.setTextAndSelection(t.field.Text(), idx, t.selectionDragStart, -1)
-			} else {
-				t.setTextAndSelection(t.field.Text(), t.selectionDragStart, idx, -1)
-			}
-		}
-		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-			t.dragging = false
-			t.selectionDragStart = -1
-		}
-		return guigui.HandleInputByWidget(t)
+	if !t.mouseOverlay.IsHovering() {
+		return guigui.HandleInputResult{}
 	}
 
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		if image.Pt(x, y).In(guigui.VisibleBounds(t)) {
-			t.dragging = true
-			idx := textIndexFromPosition(textBounds, x, y, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
-			t.selectionDragStart = idx
-			guigui.Focus(t)
-			if start, end := t.field.Selection(); start != idx || end != idx {
-				t.setTextAndSelection(t.field.Text(), idx, idx, -1)
-			}
-			return guigui.HandleInputByWidget(t)
-		}
-		guigui.Blur(t)
-	}
-
-	if !guigui.IsFocused(t) {
+	if !guigui.HasFocusedChildWidget(t) {
 		if t.field.IsFocused() {
 			t.field.Blur()
 			guigui.RequestRedraw(t)
@@ -354,6 +370,8 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 		return guigui.HandleInputResult{}
 	}
 
+	textBounds := t.textBounds(context)
+	face := t.face(context)
 	start, _ := t.field.Selection()
 	var processed bool
 	if x, _, bottom, ok := textPosition(textBounds, t.field.Text(), start, face, t.lineHeight(context), t.hAlign, t.vAlign); ok {
@@ -631,7 +649,7 @@ func (t *Text) selectionToDraw() (start, end int, ok bool) {
 	if !t.editable {
 		return s, e, true
 	}
-	if !guigui.IsFocused(t) {
+	if !guigui.HasFocusedChildWidget(t) {
 		return s, e, true
 	}
 	cs, ce, ok := t.field.CompositionSelection()
@@ -651,7 +669,7 @@ func (t *Text) compositionSelectionToDraw() (uStart, cStart, cEnd, uEnd int, ok 
 	if !t.editable {
 		return 0, 0, 0, 0, false
 	}
-	if !guigui.IsFocused(t) {
+	if !guigui.HasFocusedChildWidget(t) {
 		return 0, 0, 0, 0, false
 	}
 	s, _ := t.field.Selection()
@@ -672,14 +690,14 @@ func (t *Text) compositionSelectionToDraw() (uStart, cStart, cEnd, uEnd int, ok 
 func (t *Text) Update(context *guigui.Context) error {
 	guigui.Hide(&t.scrollOverlay)
 
-	if !t.prevFocused && guigui.IsFocused(t) {
+	if !t.prevFocused && guigui.HasFocusedChildWidget(t) {
 		t.field.Focus()
 		t.cursor.resetCounter()
 		start, end := t.field.Selection()
 		if start < 0 || end < 0 {
 			t.selectAll()
 		}
-	} else if t.prevFocused && !guigui.IsFocused(t) {
+	} else if t.prevFocused && !guigui.HasFocusedChildWidget(t) {
 		t.applyFilter()
 	}
 
@@ -688,7 +706,7 @@ func (t *Text) Update(context *guigui.Context) error {
 		t.toAdjustScrollOffset = false
 	}
 
-	t.prevFocused = guigui.IsFocused(t)
+	t.prevFocused = guigui.HasFocusedChildWidget(t)
 
 	return nil
 }
@@ -849,7 +867,7 @@ func (t *Text) CursorShape(context *guigui.Context) (ebiten.CursorShapeType, boo
 }
 
 func (t *Text) cursorPosition(context *guigui.Context) (x, top, bottom float64, ok bool) {
-	if !guigui.IsFocused(t) {
+	if !guigui.HasFocusedChildWidget(t) {
 		return 0, 0, 0, false
 	}
 	if !t.editable {
