@@ -11,7 +11,6 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"time"
 	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -71,9 +70,9 @@ type Text struct {
 	toAdjustScrollOffset bool
 	prevFocused          bool
 
-	lastClickTime time.Time
-	clickCount    int
-	clickTimeout  time.Duration
+	clickCount       int
+	lastClickTick    int
+	clickTickCounter int
 
 	filter TextFilter
 
@@ -101,7 +100,6 @@ func (t *Text) resetCachedSize() {
 func (t *Text) Layout(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	t.initOnce.Do(func() {
 		t.resetCachedSize()
-		t.clickTimeout = 500 * time.Millisecond
 	})
 
 	if t.selectable || t.editable {
@@ -314,6 +312,7 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 		return guigui.HandleInputResult{}
 	}
 
+	t.clickTickCounter++
 	textBounds := t.textBounds(context)
 
 	face := t.face(context)
@@ -336,13 +335,11 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if cursorPosition.In(guigui.VisibleBounds(t)) {
-			now := time.Now()
-			if now.Sub(t.lastClickTime) < t.clickTimeout {
+			if t.clickTickCounter-t.lastClickTick < ebiten.TPS()/2 {
 				t.clickCount++
 			} else {
 				t.clickCount = 1
 			}
-			t.lastClickTime = now
 
 			switch t.clickCount {
 			case 1:
@@ -380,6 +377,7 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 				t.selectAll()
 			}
 
+			t.lastClickTick = t.clickTickCounter
 			return guigui.HandleInputByWidget(t)
 		}
 		guigui.Blur(t)
