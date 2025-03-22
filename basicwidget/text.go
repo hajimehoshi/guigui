@@ -11,6 +11,8 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
+	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
@@ -69,6 +71,10 @@ type Text struct {
 	toAdjustScrollOffset bool
 	prevFocused          bool
 
+	lastClickTime time.Time
+	clickCount    int
+	clickTimeout  time.Duration
+
 	filter TextFilter
 
 	cursor        textCursor
@@ -95,6 +101,7 @@ func (t *Text) resetCachedSize() {
 func (t *Text) Layout(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	t.initOnce.Do(func() {
 		t.resetCachedSize()
+		t.clickTimeout = 500 * time.Millisecond
 	})
 
 	if t.selectable || t.editable {
@@ -329,13 +336,50 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if cursorPosition.In(guigui.VisibleBounds(t)) {
-			t.dragging = true
-			idx := textIndexFromPosition(textBounds, cursorPosition, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
-			t.selectionDragStart = idx
-			guigui.Focus(t)
-			if start, end := t.field.Selection(); start != idx || end != idx {
-				t.setTextAndSelection(t.field.Text(), idx, idx, -1)
+			now := time.Now()
+			if now.Sub(t.lastClickTime) < t.clickTimeout {
+				t.clickCount++
+			} else {
+				t.clickCount = 1
 			}
+			t.lastClickTime = now
+
+			switch t.clickCount {
+			case 1:
+				t.dragging = true
+				idx := textIndexFromPosition(textBounds, cursorPosition, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
+				t.selectionDragStart = idx
+				guigui.Focus(t)
+				if start, end := t.field.Selection(); start != idx || end != idx {
+					t.setTextAndSelection(t.field.Text(), idx, idx, -1)
+				}
+			case 2:
+				t.dragging = false
+
+				var isWordBoundary = func(r rune) bool {
+					return unicode.IsSpace(r) || unicode.IsPunct(r) || unicode.IsSymbol(r)
+				}
+
+				text := t.field.Text()
+				idx := textIndexFromPosition(textBounds, cursorPosition, text, face, t.lineHeight(context), t.hAlign, t.vAlign)
+				start := idx
+				end := idx
+
+				for start > 0 && !isWordBoundary(rune(text[start-1])) {
+					start--
+				}
+				for end < len(text) && !isWordBoundary(rune(text[end])) {
+					end++
+				}
+
+				t.selectionDragStart = start
+				guigui.Focus(t)
+				t.setTextAndSelection(text, start, end, -1)
+			case 3:
+				guigui.Focus(t)
+				t.selectAll()
+			}
+
 			return guigui.HandleInputByWidget(t)
 		}
 		guigui.Blur(t)
