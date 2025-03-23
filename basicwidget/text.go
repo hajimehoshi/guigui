@@ -11,13 +11,13 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/rivo/uniseg"
 	"golang.org/x/text/language"
 
 	"github.com/hajimehoshi/guigui"
@@ -353,21 +353,72 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 			case 2:
 				t.dragging = false
 
-				var isWordBoundary = func(r rune) bool {
-					return unicode.IsSpace(r) || unicode.IsPunct(r) || unicode.IsSymbol(r)
+				findWordBoundaries := func(text string, idx int) (start, end int) {
+					start = idx
+					end = idx
+
+					// invalid text
+					if text == "" || idx < 0 || idx >= len(text) {
+						return start, end
+					}
+
+					gr := uniseg.NewGraphemes(text)
+					pos := 0
+
+					for gr.Next() {
+						nextPos := pos + len(gr.Bytes())
+						if idx < nextPos {
+							// found it
+							break
+						}
+						pos = nextPos
+					}
+
+					// look for start of word
+					state := -1
+					tempText := text[:pos]
+					words := []string{}
+
+					// process all words before our position to find the current word start
+					for len(tempText) > 0 {
+						var word string
+						word, tempText, state = uniseg.FirstWordInString(tempText, state)
+						words = append(words, word)
+					}
+
+					// look for end of word
+					state = -1
+					tempText = text[pos:]
+					currentWord := ""
+
+					// get the first word segment from our position
+					if len(tempText) > 0 {
+						currentWord, _, state = uniseg.FirstWordInString(tempText, state)
+					}
+
+					// calculate the start and end positions
+					if len(words) > 0 {
+						// check word boundary or within word
+						lastWord := words[len(words)-1]
+						if strings.TrimSpace(lastWord) == "" {
+							// at boundary, use previous word if it exists
+							if len(words) > 1 {
+								start = len(text) - len(tempText) - len(lastWord) - len(words[len(words)-2])
+								end = start + len(words[len(words)-2])
+							}
+						} else {
+							// within a word
+							start = len(text) - len(tempText) - len(lastWord)
+							end = start + len(lastWord) + len(currentWord)
+						}
+					}
+
+					return start, end
 				}
 
 				text := t.field.Text()
 				idx := textIndexFromPosition(textBounds, cursorPosition, text, face, t.lineHeight(context), t.hAlign, t.vAlign)
-				start := idx
-				end := idx
-
-				for start > 0 && !isWordBoundary(rune(text[start-1])) {
-					start--
-				}
-				for end < len(text) && !isWordBoundary(rune(text[end])) {
-					end++
-				}
+				start, end := findWordBoundaries(text, idx)
 
 				t.selectionDragStart = start
 				guigui.Focus(t)

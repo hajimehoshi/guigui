@@ -8,6 +8,7 @@ require (
 	github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.4
 	github.com/hajimehoshi/oklab v0.0.0-20231202174141-83d68450b640
 	github.com/jeandeaual/go-locale v0.0.0-20241217141322-fcc2cadd6f08
+	github.com/rivo/uniseg v0.4.7
 	golang.org/x/text v0.23.0
 	howett.net/plist v1.0.1
 )
