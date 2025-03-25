@@ -407,25 +407,21 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 				t.dragging = true
 				idx := textIndexFromPosition(textBounds, cursorPosition, t.field.Text(), face, t.lineHeight(context), t.hAlign, t.vAlign)
 				t.selectionDragStart = idx
-				guigui.Focus(t)
 				if start, end := t.field.Selection(); start != idx || end != idx {
 					t.setTextAndSelection(t.field.Text(), idx, idx, -1)
 				}
 			case 2:
-				t.dragging = false
-
 				text := t.field.Text()
 				idx := textIndexFromPosition(textBounds, cursorPosition, text, face, t.lineHeight(context), t.hAlign, t.vAlign)
 				start, end := findWordBoundaries(text, idx)
-
+				// `selectionDragEnd` needed to emulate Chrome's behavior
 				t.selectionDragStart = start
-				guigui.Focus(t)
 				t.setTextAndSelection(text, start, end, -1)
 			case 3:
-				guigui.Focus(t)
 				t.selectAll()
 			}
 
+			guigui.Focus(t)
 			t.lastClickTick = ebiten.Tick()
 			return guigui.HandleInputByWidget(t)
 		}
