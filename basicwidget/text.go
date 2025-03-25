@@ -70,9 +70,8 @@ type Text struct {
 	toAdjustScrollOffset bool
 	prevFocused          bool
 
-	clickCount       int
-	lastClickTick    int
-	clickTickCounter int
+	clickCount    int
+	lastClickTick int64
 
 	filter TextFilter
 
@@ -312,7 +311,6 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 		return guigui.HandleInputResult{}
 	}
 
-	t.clickTickCounter++
 	textBounds := t.textBounds(context)
 
 	face := t.face(context)
@@ -335,7 +333,7 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if cursorPosition.In(guigui.VisibleBounds(t)) {
-			if t.clickTickCounter-t.lastClickTick < ebiten.TPS()/2 {
+			if ebiten.Tick()-t.lastClickTick < int64(ebiten.TPS()/2) {
 				t.clickCount++
 			} else {
 				t.clickCount = 1
@@ -428,7 +426,7 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 				t.selectAll()
 			}
 
-			t.lastClickTick = t.clickTickCounter
+			t.lastClickTick = ebiten.Tick()
 			return guigui.HandleInputByWidget(t)
 		}
 		guigui.Blur(t)
