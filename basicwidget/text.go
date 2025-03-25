@@ -414,7 +414,7 @@ func (t *Text) HandleInput(context *guigui.Context) guigui.HandleInputResult {
 				text := t.field.Text()
 				idx := textIndexFromPosition(textBounds, cursorPosition, text, face, t.lineHeight(context), t.hAlign, t.vAlign)
 				start, end := findWordBoundaries(text, idx)
-				// `selectionDragEnd` needed to emulate Chrome's behavior
+				// TODO: `selectionDragEnd` needed to emulate Chrome's behavior.
 				t.selectionDragStart = start
 				t.setTextAndSelection(text, start, end, -1)
 			case 3:
