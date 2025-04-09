@@ -37,6 +37,7 @@ type Popup struct {
 	hiding                 bool
 	backgroundBlurred      bool
 	closeByClickingOutside bool
+	closedByOutsideClick   bool
 	animateOnFading        bool
 	contentBounds          image.Rectangle
 	nextContentBounds      image.Rectangle
@@ -44,7 +45,8 @@ type Popup struct {
 
 	initOnce sync.Once
 
-	onClosed func()
+	onClosed               func()
+	onClosedByOutsideClick func()
 }
 
 func (p *Popup) SetContent(f func(context *guigui.Context, childAppender *ContainerChildWidgetAppender)) {
@@ -89,6 +91,10 @@ func (p *Popup) SetAnimationDuringFade(animateOnFading bool) {
 
 func (p *Popup) SetOnClosed(f func()) {
 	p.onClosed = f
+}
+
+func (p *Popup) SetOnClosedByOutsideClick(f func()) {
+	p.onClosedByOutsideClick = f
 }
 
 func (p *Popup) Layout(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -148,6 +154,15 @@ func (p *Popup) Close() {
 	if p.hiding {
 		return
 	}
+	if p.closeByClickingOutside {
+		if image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
+			p.closedByOutsideClick = false
+		} else {
+			p.closedByOutsideClick = true
+		}
+	} else {
+		p.closedByOutsideClick = false
+	}
 	p.showing = false
 	p.hiding = true
 	p.openAfterClose = false
@@ -176,8 +191,14 @@ func (p *Popup) Update(context *guigui.Context) error {
 		guigui.RequestRedraw(&p.background)
 		if p.opacityCount == 0 {
 			p.hiding = false
-			if p.onClosed != nil {
-				p.onClosed()
+			if p.closedByOutsideClick {
+				if p.onClosedByOutsideClick != nil {
+					p.onClosedByOutsideClick()
+				}
+			} else {
+				if p.onClosed != nil {
+					p.onClosed()
+				}
 			}
 			if p.openAfterClose {
 				if !p.nextContentBounds.Empty() {
