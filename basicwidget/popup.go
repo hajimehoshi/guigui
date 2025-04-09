@@ -154,12 +154,8 @@ func (p *Popup) Close() {
 	if p.hiding {
 		return
 	}
-	if p.closeByClickingOutside {
-		if image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
-			p.closedByOutsideClick = false
-		} else {
-			p.closedByOutsideClick = true
-		}
+	if p.closeByClickingOutside && !image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
+		p.closedByOutsideClick = true
 	} else {
 		p.closedByOutsideClick = false
 	}
