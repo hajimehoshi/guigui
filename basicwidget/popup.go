@@ -42,6 +42,7 @@ type Popup struct {
 	opacityCount           int
 	showing                bool
 	hiding                 bool
+	closedReason           PopupClosedReason
 	backgroundBlurred      bool
 	closeByClickingOutside bool
 	animateOnFading        bool
@@ -94,7 +95,7 @@ func (p *Popup) SetAnimationDuringFade(animateOnFading bool) {
 	p.animateOnFading = animateOnFading
 }
 
-func (p *Popup) SetOnClosed(f func(closedByOutsideClick PopupClosedReason)) {
+func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
 	p.onClosed = f
 }
 
@@ -126,7 +127,7 @@ func (p *Popup) HandlePointingInput(context *guigui.Context) guigui.HandleInputR
 	if image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(p)) {
 		if p.closeByClickingOutside {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-				p.Close()
+				p.close(PopupClosedReasonFuncCall)
 				// Continue handling inputs so that clicking a right button can be handled by other widgets.
 				if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 					return guigui.HandleInputResult{}
@@ -142,7 +143,7 @@ func (p *Popup) Open() {
 		return
 	}
 	if p.opacityCount > 0 {
-		p.Close()
+		p.close(PopupClosedReasonFuncCall)
 		p.openAfterClose = true
 		return
 	}
@@ -152,16 +153,15 @@ func (p *Popup) Open() {
 }
 
 func (p *Popup) Close() {
+	p.close(PopupClosedReasonFuncCall)
+}
+
+func (p *Popup) close(reason PopupClosedReason) {
 	if p.hiding {
 		return
 	}
-	if p.onClosed != nil {
-		if p.closeByClickingOutside && !image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
-			p.onClosed(PopupClosedReasonClickOutside)
-		} else {
-			p.onClosed(PopupClosedReasonFuncCall)
-		}
-	}
+
+	p.closedReason = reason
 	p.showing = false
 	p.hiding = true
 	p.openAfterClose = false
@@ -190,6 +190,9 @@ func (p *Popup) Update(context *guigui.Context) error {
 		guigui.RequestRedraw(&p.background)
 		if p.opacityCount == 0 {
 			p.hiding = false
+			if p.onClosed != nil {
+				p.onClosed(p.closedReason)
+			}
 			if p.openAfterClose {
 				if !p.nextContentBounds.Empty() {
 					p.contentBounds = p.nextContentBounds
