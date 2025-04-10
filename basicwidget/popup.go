@@ -25,6 +25,13 @@ func popupMaxOpacityCount() int {
 	return ebiten.TPS() / 10
 }
 
+type PopupClosedReason int
+
+const (
+	PopupClosedReasonFuncCall PopupClosedReason = iota
+	PopupClosedReasonClickOutside
+)
+
 type Popup struct {
 	guigui.DefaultWidget
 
@@ -44,7 +51,7 @@ type Popup struct {
 
 	initOnce sync.Once
 
-	onClosed func(closedByOutsideClick bool)
+	onClosed func(reason PopupClosedReason)
 }
 
 func (p *Popup) SetContent(f func(context *guigui.Context, childAppender *ContainerChildWidgetAppender)) {
@@ -87,7 +94,7 @@ func (p *Popup) SetAnimationDuringFade(animateOnFading bool) {
 	p.animateOnFading = animateOnFading
 }
 
-func (p *Popup) SetOnClosed(f func(closedByOutsideClick bool)) {
+func (p *Popup) SetOnClosed(f func(closedByOutsideClick PopupClosedReason)) {
 	p.onClosed = f
 }
 
@@ -178,9 +185,9 @@ func (p *Popup) Update(context *guigui.Context) error {
 			p.hiding = false
 			if p.onClosed != nil {
 				if p.closeByClickingOutside && !image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
-					p.onClosed(true)
+					p.onClosed(PopupClosedReasonClickOutside)
 				} else {
-					p.onClosed(false)
+					p.onClosed(PopupClosedReasonFuncCall)
 				}
 			}
 			if p.openAfterClose {
