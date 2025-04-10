@@ -155,6 +155,13 @@ func (p *Popup) Close() {
 	if p.hiding {
 		return
 	}
+	if p.onClosed != nil {
+		if p.closeByClickingOutside && !image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
+			p.onClosed(PopupClosedReasonClickOutside)
+		} else {
+			p.onClosed(PopupClosedReasonFuncCall)
+		}
+	}
 	p.showing = false
 	p.hiding = true
 	p.openAfterClose = false
@@ -183,13 +190,6 @@ func (p *Popup) Update(context *guigui.Context) error {
 		guigui.RequestRedraw(&p.background)
 		if p.opacityCount == 0 {
 			p.hiding = false
-			if p.onClosed != nil {
-				if p.closeByClickingOutside && !image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(&p.content)) {
-					p.onClosed(PopupClosedReasonClickOutside)
-				} else {
-					p.onClosed(PopupClosedReasonFuncCall)
-				}
-			}
 			if p.openAfterClose {
 				if !p.nextContentBounds.Empty() {
 					p.contentBounds = p.nextContentBounds
