@@ -39,7 +39,7 @@ func (p *PopupMenu) Layout(context *guigui.Context, appender *guigui.ChildWidget
 		childAppender.AppendChildWidget(&p.textList)
 	})
 	p.popup.SetCloseByClickingOutside(true)
-	p.popup.SetOnClosed(func() {
+	p.popup.SetOnClosed(func(closedByOutsideClick bool) {
 		if p.onClosed != nil {
 			p.onClosed(p.textList.SelectedItemIndex())
 		}
