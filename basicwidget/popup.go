@@ -127,7 +127,7 @@ func (p *Popup) HandlePointingInput(context *guigui.Context) guigui.HandleInputR
 	if image.Pt(ebiten.CursorPosition()).In(guigui.VisibleBounds(p)) {
 		if p.closeByClickingOutside {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-				p.close(PopupClosedReasonFuncCall)
+				p.close(PopupClosedReasonClickOutside)
 				// Continue handling inputs so that clicking a right button can be handled by other widgets.
 				if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 					return guigui.HandleInputResult{}
