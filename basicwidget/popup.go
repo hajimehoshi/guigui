@@ -30,6 +30,7 @@ type PopupClosedReason int
 const (
 	PopupClosedReasonFuncCall PopupClosedReason = iota
 	PopupClosedReasonClickOutside
+	PopupClosedReasonReopen
 )
 
 type Popup struct {
@@ -143,7 +144,7 @@ func (p *Popup) Open() {
 		return
 	}
 	if p.opacityCount > 0 {
-		p.close(PopupClosedReasonFuncCall)
+		p.close(PopupClosedReasonReopen)
 		p.openAfterClose = true
 		return
 	}
