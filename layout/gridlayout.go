@@ -89,24 +89,8 @@ func (g *GridLayout) cellBounds(count int) iter.Seq2[int, image.Rectangle] {
 			case sizeTypeFlexible:
 				widthsInPixels[i] = 0
 				denomW += width.value
-			case sizeTypeLazy:
-				if count < 0 {
-					panic("layout: LazySize is not supported with infinite count")
-				}
-				if width.lazy != nil {
-					size := width.lazy(i)
-					switch size.typ {
-					case sizeTypeFixed:
-						widthsInPixels[i] = size.value
-					case sizeTypeFlexible:
-						widthsInPixels[i] = 0
-						denomW += size.value
-					default:
-						panic("layout: only FixedSize and FlexibleSize are supported for LazySize")
-					}
-				} else {
-					widthsInPixels[i] = 0
-				}
+			default:
+				panic("layout: only FixedSize and FlexibleSize are supported for widths")
 			}
 			restW -= widthsInPixels[i]
 		}

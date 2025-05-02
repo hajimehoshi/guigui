@@ -74,16 +74,23 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			appender.AppendChildWidgetWithBounds(&r.configForm, bounds)
 			continue
 		}
+
+		for i := range r.buttons {
+			if r.buttons[i] == nil {
+				r.buttons[i] = &basicwidget.TextButton{}
+			}
+			t := r.buttons[i].(*basicwidget.TextButton)
+			t.SetText(fmt.Sprintf("Button %d", i))
+		}
+
+		var firstColumnWidth int
+		for j := range 4 {
+			firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].DefaultSize(context).X)
+		}
 		g := layout.GridLayout{
 			Bounds: bounds,
 			Widths: []layout.Size{
-				layout.LazySize(func(column int) layout.Size {
-					var width int
-					for j := range 4 {
-						width = max(width, r.buttons[4*j+column].DefaultSize(context).X)
-					}
-					return layout.FixedSize(width)
-				}),
+				layout.FixedSize(firstColumnWidth),
 				layout.FixedSize(200),
 				layout.FlexibleSize(1),
 				layout.FlexibleSize(2),
@@ -104,13 +111,6 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		if r.gap {
 			g.ColumnGap = int(u / 2)
 			g.RowGap = int(u / 2)
-		}
-		for i := range r.buttons {
-			if r.buttons[i] == nil {
-				r.buttons[i] = &basicwidget.TextButton{}
-			}
-			t := r.buttons[i].(*basicwidget.TextButton)
-			t.SetText(fmt.Sprintf("Button %d", i))
 		}
 		for i, bounds := range g.CellBounds() {
 			widget := r.buttons[i]
