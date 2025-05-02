@@ -27,7 +27,7 @@ func init() {
 		defaultColorMode = ColorModeLight
 	case "dark":
 		defaultColorMode = ColorModeDark
-	default: // "": empty or unrecognized
+	default:
 		switch theme.DetectSystemTheme() {
 		case theme.ThemeDark:
 			defaultColorMode = ColorModeDark
