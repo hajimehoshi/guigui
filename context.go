@@ -5,6 +5,7 @@ package guigui
 
 import (
 	"fmt"
+	"github.com/hajimehoshi/guigui/internal/theme"
 	"image"
 	"log/slog"
 	"os"
@@ -17,17 +18,24 @@ import (
 
 type ColorMode int
 
-var defaultColorMode ColorMode = ColorModeLight
+var defaultColorMode = ColorMode(theme.DetectSystemTheme())
 
 func init() {
 	// TODO: Consider the system color mode.
 	switch mode := os.Getenv("GUIGUI_COLOR_MODE"); mode {
-	case "light", "":
+	case "light":
 		defaultColorMode = ColorModeLight
 	case "dark":
 		defaultColorMode = ColorModeDark
-	default:
-		slog.Warn(fmt.Sprintf("invalid GUIGUI_COLOR_MODE: %s", mode))
+	default: // "": empty or unrecognized
+		switch theme.DetectSystemTheme() {
+		case theme.ThemeDark:
+			defaultColorMode = ColorModeDark
+		case theme.ThemeLight:
+			defaultColorMode = ColorModeLight
+		default:
+			defaultColorMode = ColorModeLight // fallback
+		}
 	}
 }
 
@@ -99,10 +107,9 @@ func (c *Context) ColorMode() ColorMode {
 }
 
 func (c *Context) SetColorMode(mode ColorMode) {
-	if c.hasColorMode && mode == c.colorMode {
+	if c.hasColorMode && c.colorMode == mode {
 		return
 	}
-
 	c.colorMode = mode
 	c.hasColorMode = true
 	c.app.requestRedraw(c.app.bounds())
