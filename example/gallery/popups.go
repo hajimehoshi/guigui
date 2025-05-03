@@ -163,12 +163,7 @@ func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.Chi
 				Bounds: bounds,
 				Widths: []layout.Size{
 					layout.FlexibleSize(1),
-					layout.LazySize(func(index int) layout.Size {
-						if index != 1 {
-							return layout.FixedSize(0)
-						}
-						return layout.FixedSize(s.closeButton.DefaultSize(context).X)
-					}),
+					layout.FixedSize(s.closeButton.DefaultSize(context).X),
 				},
 			}
 			for i, bounds := range gl.CellBounds() {
