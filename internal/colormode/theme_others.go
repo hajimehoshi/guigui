@@ -1,4 +1,4 @@
-//go:build !darwin && !linux && !windows
+//go:build !darwin && !windows
 
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2025 The Guigui Authors
