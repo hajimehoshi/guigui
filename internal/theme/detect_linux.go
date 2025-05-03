@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func detectSystemTheme() SystemTheme {
+func detectSystemTheme() ColorMode {
 	out, err := exec.Command("gsettings", "get", "org.gnome.desktop.interface", "gtk-theme").Output()
 	if err != nil {
 		return ThemeUnknown

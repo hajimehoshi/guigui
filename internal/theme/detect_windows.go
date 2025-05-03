@@ -7,7 +7,7 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-func detectSystemTheme() SystemTheme {
+func detectSystemTheme() ColorMode {
 	k, err := registry.OpenKey(registry.CURRENT_USER,
 		`Software\Microsoft\Windows\CurrentVersion\Themes\Personalize`,
 		registry.QUERY_VALUE)
