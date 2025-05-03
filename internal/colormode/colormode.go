@@ -12,5 +12,5 @@ const (
 )
 
 func SystemColorMode() ColorMode {
-	return systemColorMode() // implemented in per-OS files
+	return systemColorMode()
 }
