@@ -23,7 +23,7 @@ var defaultColorMode = ColorMode(colormode.SystemColorMode())
 func init() {
 	// TODO: Consider the system color mode.
 	switch mode := os.Getenv("GUIGUI_COLOR_MODE"); mode {
-	case "light", "":
+	case "light":
 		defaultColorMode = ColorModeLight
 	case "dark":
 		defaultColorMode = ColorModeDark
