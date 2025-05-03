@@ -1,22 +1,20 @@
-//go:build darwin
-// +build darwin
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
-package theme
+package colormode
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 )
 
-func detectSystemTheme() ColorMode {
+func systemColorMode() ColorMode {
 	out, err := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle").Output()
 	if err != nil {
-		return ThemeLight
+		return Light
 	}
 	if strings.Contains(strings.ToLower(string(out)), "dark") {
-		return ThemeDark
+		return Dark
 	}
-	fmt.Println(string(out))
-	return ThemeLight
+	return Light
 }

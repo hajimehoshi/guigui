@@ -5,36 +5,36 @@ package guigui
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/guigui/internal/theme"
 	"image"
 	"log/slog"
 	"os"
 	"slices"
 	"strings"
 
+	"github.com/hajimehoshi/guigui/internal/colormode"
 	"github.com/hajimehoshi/guigui/internal/locale"
 	"golang.org/x/text/language"
 )
 
 type ColorMode int
 
-var defaultColorMode = ColorMode(theme.DetectSystemTheme())
+var defaultColorMode = ColorMode(colormode.SystemColorMode())
 
 func init() {
 	// TODO: Consider the system color mode.
 	switch mode := os.Getenv("GUIGUI_COLOR_MODE"); mode {
-	case "light":
+	case "light", "":
 		defaultColorMode = ColorModeLight
 	case "dark":
 		defaultColorMode = ColorModeDark
 	default:
-		switch theme.DetectSystemTheme() {
-		case theme.ThemeDark:
+		switch colormode.SystemColorMode() {
+		case colormode.Dark:
 			defaultColorMode = ColorModeDark
-		case theme.ThemeLight:
+		case colormode.Light:
 			defaultColorMode = ColorModeLight
 		default:
-			defaultColorMode = ColorModeLight // fallback
+			slog.Warn(fmt.Sprintf("invalid GUIGUI_COLOR_MODE: %s", mode))
 		}
 	}
 }
