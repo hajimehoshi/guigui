@@ -18,7 +18,7 @@ import (
 
 type ColorMode int
 
-var defaultColorMode = ColorMode(colormode.SystemColorMode())
+var defaultColorMode ColorMode
 
 func init() {
 	// TODO: Consider the system color mode.
@@ -27,15 +27,17 @@ func init() {
 		defaultColorMode = ColorModeLight
 	case "dark":
 		defaultColorMode = ColorModeDark
-	default:
+	case "":
 		switch colormode.SystemColorMode() {
-		case colormode.Dark:
-			defaultColorMode = ColorModeDark
 		case colormode.Light:
 			defaultColorMode = ColorModeLight
+		case colormode.Dark:
+			defaultColorMode = ColorModeDark
 		default:
-			slog.Warn(fmt.Sprintf("invalid GUIGUI_COLOR_MODE: %s", mode))
+			defaultColorMode = ColorModeLight
 		}
+	default:
+		slog.Warn(fmt.Sprintf("invalid GUIGUI_COLOR_MODE: %s", mode))
 	}
 }
 
