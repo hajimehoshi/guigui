@@ -230,7 +230,7 @@ type textListItemWidget[T comparable] struct {
 
 func (t *textListItemWidget[T]) setTextListItem(textListItem TextListItem[T]) {
 	t.textListItem = textListItem
-	t.text.SetText(t.textString())
+	t.text.SetValue(t.textString())
 }
 
 func (t *textListItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -241,7 +241,7 @@ func (t *textListItemWidget[T]) Build(context *guigui.Context, appender *guigui.
 	} else {
 		context.SetSize(&t.text, context.Size(t))
 	}
-	t.text.SetText(t.textString())
+	t.text.SetValue(t.textString())
 	t.text.SetVerticalAlign(VerticalAlignMiddle)
 	appender.AppendChildWidgetWithPosition(&t.text, p)
 
@@ -274,7 +274,7 @@ func (t *textListItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image)
 
 func (t *textListItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	// Assume that every item can use a bold font.
-	t.tmpText.SetText(t.textString())
+	t.tmpText.SetValue(t.textString())
 	t.tmpText.SetBold(true)
 	w := t.tmpText.TextSize(context).X
 	if t.textListItem.Border {

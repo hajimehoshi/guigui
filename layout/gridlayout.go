@@ -5,7 +5,6 @@ package layout
 
 import (
 	"image"
-	"iter"
 )
 
 type Size struct {
@@ -55,160 +54,181 @@ type GridLayout struct {
 	Heights   []Size
 	ColumnGap int
 	RowGap    int
+
+	widthsInPixels  []int
+	heightsInPixels []int
 }
 
-func (g *GridLayout) CellBounds() iter.Seq2[int, image.Rectangle] {
-	return g.cellBounds(max(len(g.Widths), 1) * max(len(g.Heights), 1))
-}
+func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
+	if column < 0 || column >= max(len(g.Widths), 1) {
+		return image.Rectangle{}
+	}
+	if row < 0 {
+		return image.Rectangle{}
+	}
 
-func (g *GridLayout) RepeatingCellBounds() iter.Seq2[int, image.Rectangle] {
-	return g.cellBounds(-1)
-}
+	var bounds image.Rectangle
 
-func (g *GridLayout) cellBounds(count int) iter.Seq2[int, image.Rectangle] {
-	return func(yield func(index int, bounds image.Rectangle) bool) {
-		widths := g.Widths
-		if len(widths) == 0 {
-			widths = defaultWidths
+	var minX int
+	widthCount := max(len(g.Widths), 1)
+	if cap(g.widthsInPixels) < widthCount {
+		g.widthsInPixels = make([]int, widthCount)
+	}
+	g.widthsInPixels = g.widthsInPixels[:widthCount]
+	g.getWidthsInPixels(g.widthsInPixels)
+	for i := range column {
+		minX += g.widthsInPixels[i]
+		minX += g.ColumnGap
+
+	}
+	bounds.Min.X = g.Bounds.Min.X + minX
+	bounds.Max.X = g.Bounds.Min.X + minX + g.widthsInPixels[column]
+
+	var minY int
+	heightCount := max(len(g.Heights), 1)
+	if cap(g.heightsInPixels) < heightCount {
+		g.heightsInPixels = make([]int, heightCount)
+	}
+	g.heightsInPixels = g.heightsInPixels[:heightCount]
+	for loopIndex := range row / heightCount {
+		g.getHeightsInPixels(g.heightsInPixels, loopIndex)
+		for _, h := range g.heightsInPixels {
+			minY += h
+			minY += g.RowGap
 		}
+	}
+	g.getHeightsInPixels(g.heightsInPixels, row/heightCount)
+	for j := range row % heightCount {
+		minY += g.heightsInPixels[j]
+		minY += g.RowGap
+	}
 
-		widthsInPixels := make([]int, len(widths))
+	bounds.Min.Y = g.Bounds.Min.Y + minY
+	bounds.Max.Y = g.Bounds.Min.Y + minY + g.heightsInPixels[row%heightCount]
 
-		// Calculate widths in pixels.
-		restW := g.Bounds.Dx()
-		restW -= (len(widths) - 1) * g.ColumnGap
-		if restW < 0 {
-			restW = 0
+	return bounds
+}
+
+func (g *GridLayout) getWidthsInPixels(widthsInPixels []int) {
+	widths := g.Widths
+	if len(widths) == 0 {
+		widths = defaultWidths
+	}
+
+	// Calculate widths in pixels.
+	restW := g.Bounds.Dx()
+	restW -= (len(widths) - 1) * g.ColumnGap
+	if restW < 0 {
+		restW = 0
+	}
+	var denomW int
+
+	for i, width := range widths {
+		switch width.typ {
+		case sizeTypeFixed:
+			widthsInPixels[i] = width.value
+		case sizeTypeFlexible:
+			widthsInPixels[i] = 0
+			denomW += width.value
+		default:
+			panic("layout: only FixedSize and FlexibleSize are supported for widths")
 		}
-		var denomW int
+		restW -= widthsInPixels[i]
+	}
 
+	if denomW > 0 {
+		origRestW := restW
 		for i, width := range widths {
-			switch width.typ {
-			case sizeTypeFixed:
-				widthsInPixels[i] = width.value
-			case sizeTypeFlexible:
-				widthsInPixels[i] = 0
-				denomW += width.value
-			default:
-				panic("layout: only FixedSize and FlexibleSize are supported for widths")
+			if width.typ != sizeTypeFlexible {
+				continue
 			}
-			restW -= widthsInPixels[i]
+			w := int(float64(origRestW) * float64(width.value) / float64(denomW))
+			widthsInPixels[i] = w
+			restW -= w
 		}
-
-		if denomW > 0 {
-			origRestW := restW
-			for i, width := range widths {
-				if width.typ != sizeTypeFlexible {
+		// TODO: Use a better algorithm to distribute the rest.
+		for restW > 0 {
+			for i := len(widthsInPixels) - 1; i >= 0; i-- {
+				if widths[i].typ != sizeTypeFlexible {
 					continue
 				}
-				w := int(float64(origRestW) * float64(width.value) / float64(denomW))
-				widthsInPixels[i] = w
-				restW -= w
-			}
-			// TODO: Use a better algorithm to distribute the rest.
-			for restW > 0 {
-				for i := len(widthsInPixels) - 1; i >= 0; i-- {
-					if widths[i].typ != sizeTypeFlexible {
-						continue
-					}
-					widthsInPixels[i]++
-					restW--
-					if restW <= 0 {
-						break
-					}
-				}
+				widthsInPixels[i]++
+				restW--
 				if restW <= 0 {
 					break
 				}
 			}
-		}
-
-		heights := g.Heights
-		if len(heights) == 0 {
-			heights = defaultHeights
-		}
-		y := g.Bounds.Min.Y
-		heightsInPixels := make([]int, len(heights))
-		var widgetIdx int
-		for widgetBaseIdx := 0; count < 0 || widgetBaseIdx < count; widgetBaseIdx += len(widths) * len(heights) {
-			// Calculate hights in pixels.
-			// This is needed for each loop since the index starts with widgetBaseIdx for sizeTypeMaxContent.
-			restH := g.Bounds.Dy()
-			if restH < 0 {
-				restH = 0
+			if restW <= 0 {
+				break
 			}
-			restH -= (len(heights) - 1) * g.RowGap
-			var denomH int
+		}
+	}
+}
 
-			for j, height := range heights {
-				switch height.typ {
+func (g *GridLayout) getHeightsInPixels(heightsInPixels []int, loopIndex int) {
+	heights := g.Heights
+	if len(heights) == 0 {
+		heights = defaultHeights
+	}
+
+	// Calculate hights in pixels.
+	// This is needed for each loop since the index starts with widgetBaseIdx for sizeTypeMaxContent.
+	restH := g.Bounds.Dy()
+	if restH < 0 {
+		restH = 0
+	}
+	restH -= (len(heights) - 1) * g.RowGap
+	var denomH int
+
+	for j, height := range heights {
+		switch height.typ {
+		case sizeTypeFixed:
+			heightsInPixels[j] = height.value
+		case sizeTypeFlexible:
+			heightsInPixels[j] = 0
+			denomH += height.value
+		case sizeTypeLazy:
+			if height.lazy != nil {
+				size := height.lazy(loopIndex*len(heights) + j)
+				switch size.typ {
 				case sizeTypeFixed:
-					heightsInPixels[j] = height.value
+					heightsInPixels[j] = size.value
 				case sizeTypeFlexible:
 					heightsInPixels[j] = 0
-					denomH += height.value
-				case sizeTypeLazy:
-					if height.lazy != nil {
-						size := height.lazy(j)
-						switch size.typ {
-						case sizeTypeFixed:
-							heightsInPixels[j] = size.value
-						case sizeTypeFlexible:
-							heightsInPixels[j] = 0
-							denomH += size.value
-						default:
-							panic("layout: only FixedSize and FlexibleSize are supported for LazySize")
-						}
-					} else {
-						heightsInPixels[j] = 0
-					}
+					denomH += size.value
+				default:
+					panic("layout: only FixedSize and FlexibleSize are supported for LazySize")
 				}
-				restH -= heightsInPixels[j]
+			} else {
+				heightsInPixels[j] = 0
 			}
+		}
+		restH -= heightsInPixels[j]
+	}
 
-			if denomH > 0 {
-				origRestH := restH
-				for j, height := range heights {
-					if height.typ != sizeTypeFlexible {
-						continue
-					}
-					h := int(float64(origRestH) * float64(height.value) / float64(denomH))
-					heightsInPixels[j] = h
-					restH -= h
+	if denomH > 0 {
+		origRestH := restH
+		for j, height := range heights {
+			if height.typ != sizeTypeFlexible {
+				continue
+			}
+			h := int(float64(origRestH) * float64(height.value) / float64(denomH))
+			heightsInPixels[j] = h
+			restH -= h
+		}
+		for restH > 0 {
+			for j := len(heightsInPixels) - 1; j >= 0; j-- {
+				if heights[j].typ != sizeTypeFlexible {
+					continue
 				}
-				for restH > 0 {
-					for j := len(heightsInPixels) - 1; j >= 0; j-- {
-						if heights[j].typ != sizeTypeFlexible {
-							continue
-						}
-						heightsInPixels[j]++
-						restH--
-						if restH <= 0 {
-							break
-						}
-					}
-					if restH <= 0 {
-						break
-					}
+				heightsInPixels[j]++
+				restH--
+				if restH <= 0 {
+					break
 				}
 			}
-
-			for j := 0; j < len(heights); j++ {
-				x := g.Bounds.Min.X
-				for i := 0; i < len(widths); i++ {
-					bounds := image.Rect(x, y, x+widthsInPixels[i], y+heightsInPixels[j])
-					if !yield(widgetIdx, bounds) {
-						return
-					}
-					x += widthsInPixels[i]
-					x += g.ColumnGap
-					widgetIdx++
-					if count >= 0 && widgetIdx >= count {
-						return
-					}
-				}
-				y += heightsInPixels[j]
-				y += g.RowGap
+			if restH <= 0 {
+				break
 			}
 		}
 	}

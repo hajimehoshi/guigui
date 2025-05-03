@@ -36,7 +36,7 @@ func (b *TextButton) setOnRepeat(f func()) {
 }
 
 func (t *TextButton) SetText(text string) {
-	t.text.SetText(text)
+	t.text.SetValue(text)
 }
 
 func (t *TextButton) SetTextBold(bold bool) {
@@ -96,7 +96,7 @@ func (t *TextButton) Build(context *guigui.Context, appender *guigui.ChildWidget
 
 	imgP := context.Position(t)
 	imgP.X = textP.X
-	if t.text.Text() != "" {
+	if t.text.Value() != "" {
 		imgP.X += tw + textButtonTextAndImagePadding(context)
 	}
 	imgP.Y += (s.Y - imgSize) / 2
@@ -116,7 +116,7 @@ func (t *TextButton) DefaultSize(context *guigui.Context) image.Point {
 	w := t.text.TextSize(context).X
 	if t.image.HasImage() {
 		imgSize := t.defaultImageSize(context)
-		if t.text.Text() != "" {
+		if t.text.Value() != "" {
 			w += textButtonTextAndImagePadding(context)
 		}
 		w += imgSize + UnitSize(context)*3/4

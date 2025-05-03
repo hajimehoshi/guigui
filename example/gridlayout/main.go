@@ -33,12 +33,12 @@ type Root struct {
 func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
 
-	r.fillText.SetText("Fill Widgets into Grid Cells")
+	r.fillText.SetValue("Fill Widgets into Grid Cells")
 	r.fillToggle.SetValue(r.fill)
 	r.fillToggle.SetOnValueChanged(func(value bool) {
 		r.fill = value
 	})
-	r.gapText.SetText("Use Gap")
+	r.gapText.SetValue("Use Gap")
 	r.gapToggle.SetValue(r.gap)
 	r.gapToggle.SetOnValueChanged(func(value bool) {
 		r.gap = value
@@ -69,26 +69,23 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		},
 		RowGap: int(u / 2),
 	}
-	for i, bounds := range gl.CellBounds() {
-		if i == 0 {
-			appender.AppendChildWidgetWithBounds(&r.configForm, bounds)
-			continue
-		}
+	appender.AppendChildWidgetWithBounds(&r.configForm, gl.CellBounds(0, 0))
 
-		for i := range r.buttons {
-			if r.buttons[i] == nil {
-				r.buttons[i] = &basicwidget.TextButton{}
-			}
-			t := r.buttons[i].(*basicwidget.TextButton)
-			t.SetText(fmt.Sprintf("Button %d", i))
+	for i := range r.buttons {
+		if r.buttons[i] == nil {
+			r.buttons[i] = &basicwidget.TextButton{}
 		}
+		t := r.buttons[i].(*basicwidget.TextButton)
+		t.SetText(fmt.Sprintf("Button %d", i))
+	}
 
+	{
 		var firstColumnWidth int
 		for j := range 4 {
 			firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].DefaultSize(context).X)
 		}
-		g := layout.GridLayout{
-			Bounds: bounds,
+		gl := layout.GridLayout{
+			Bounds: gl.CellBounds(0, 1),
 			Widths: []layout.Size{
 				layout.FixedSize(firstColumnWidth),
 				layout.FixedSize(200),
@@ -109,22 +106,25 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			},
 		}
 		if r.gap {
-			g.ColumnGap = int(u / 2)
-			g.RowGap = int(u / 2)
+			gl.ColumnGap = int(u / 2)
+			gl.RowGap = int(u / 2)
 		}
-		for i, bounds := range g.CellBounds() {
-			widget := r.buttons[i]
-			if r.fill {
-				appender.AppendChildWidgetWithBounds(widget, bounds)
-			} else {
-				pt := bounds.Min
-				s := widget.DefaultSize(context)
-				pt.X += (bounds.Dx() - s.X) / 2
-				pt.Y += (bounds.Dy() - s.Y) / 2
-				appender.AppendChildWidgetWithBounds(widget, image.Rectangle{
-					Min: pt,
-					Max: pt.Add(s),
-				})
+		for j := range 4 {
+			for i := range 4 {
+				bounds := gl.CellBounds(i, j)
+				widget := r.buttons[4*j+i]
+				if r.fill {
+					appender.AppendChildWidgetWithBounds(widget, bounds)
+				} else {
+					pt := bounds.Min
+					s := widget.DefaultSize(context)
+					pt.X += (bounds.Dx() - s.X) / 2
+					pt.Y += (bounds.Dy() - s.Y) / 2
+					appender.AppendChildWidgetWithBounds(widget, image.Rectangle{
+						Min: pt,
+						Max: pt.Add(s),
+					})
+				}
 			}
 		}
 	}

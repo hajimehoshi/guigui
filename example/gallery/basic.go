@@ -24,12 +24,12 @@ type Basic struct {
 }
 
 func (b *Basic) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	b.textButtonText.SetText("Text Button")
+	b.textButtonText.SetValue("Text Button")
 	b.textButton.SetText("Click Me!")
-	b.toggleText.SetText("Toggle")
-	b.textInputText.SetText("Text Input")
+	b.toggleText.SetValue("Toggle")
+	b.textInputText.SetValue("Text Input")
 	b.textInput.SetHorizontalAlign(basicwidget.HorizontalAlignEnd)
-	b.textListText.SetText("Text List")
+	b.textListText.SetValue("Text List")
 	b.textList.SetItemsByStrings([]string{"Item 1", "Item 2", "Item 3"})
 
 	b.form.SetItems([]*basicwidget.FormItem{
@@ -64,12 +64,7 @@ func (b *Basic) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.RepeatingCellBounds() {
-		if i >= 1 {
-			break
-		}
-		appender.AppendChildWidgetWithBounds(&b.form, bounds)
-	}
+	appender.AppendChildWidgetWithBounds(&b.form, gl.CellBounds(0, 0))
 
 	return nil
 }

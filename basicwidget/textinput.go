@@ -37,7 +37,7 @@ func (t *TextInput) SetOnEnterPressed(f func(text string)) {
 	t.text.SetOnEnterPressed(f)
 }
 
-func (t *TextInput) SetOnValueChanged(f func(text string)) {
+func (t *TextInput) SetOnValueChanged(f func(text string, committed bool)) {
 	t.text.SetOnValueChanged(f)
 }
 
@@ -45,12 +45,16 @@ func (t *TextInput) SetTextAndSelectionChanged(f func(text string, start, end in
 	t.onTextAndSelectionChanged = f
 }
 
-func (t *TextInput) Text() string {
-	return t.text.Text()
+func (t *TextInput) Value() string {
+	return t.text.Value()
 }
 
-func (t *TextInput) SetText(text string) {
-	t.text.SetText(text)
+func (t *TextInput) SetValue(text string) {
+	t.text.SetValue(text)
+}
+
+func (t *TextInput) ForceSetValue(text string) {
+	t.text.ForceSetValue(text)
 }
 
 func (t *TextInput) SetMultiline(multiline bool) {
@@ -71,10 +75,6 @@ func (t *TextInput) SetAutoWrap(autoWrap bool) {
 
 func (t *TextInput) SelectAll() {
 	t.text.selectAll()
-}
-
-func (t *TextInput) SetFilter(filter TextFilter) {
-	t.text.SetFilter(filter)
 }
 
 func (t *TextInput) SetNumber(number bool) {

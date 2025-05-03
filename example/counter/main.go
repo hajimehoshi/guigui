@@ -33,7 +33,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	r.counterText.SetHorizontalAlign(basicwidget.HorizontalAlignCenter)
 	r.counterText.SetVerticalAlign(basicwidget.VerticalAlignMiddle)
 	r.counterText.SetScale(4)
-	r.counterText.SetText(fmt.Sprintf("%d", r.counter))
+	r.counterText.SetValue(fmt.Sprintf("%d", r.counter))
 
 	r.resetButton.SetText("Reset")
 	r.resetButton.SetOnUp(func() {
@@ -60,32 +60,21 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		},
 		RowGap: u,
 	}
-	for i, bounds := range gl.CellBounds() {
-		switch i {
-		case 0:
-			appender.AppendChildWidgetWithBounds(&r.counterText, bounds)
-		case 1:
-			gl := layout.GridLayout{
-				Bounds: bounds,
-				Widths: []layout.Size{
-					layout.FixedSize(6 * u),
-					layout.FlexibleSize(1),
-					layout.FixedSize(6 * u),
-					layout.FixedSize(6 * u),
-				},
-				ColumnGap: u / 2,
-			}
-			for i, bounds := range gl.CellBounds() {
-				switch i {
-				case 0:
-					appender.AppendChildWidgetWithBounds(&r.resetButton, bounds)
-				case 2:
-					appender.AppendChildWidgetWithBounds(&r.decButton, bounds)
-				case 3:
-					appender.AppendChildWidgetWithBounds(&r.incButton, bounds)
-				}
-			}
+	appender.AppendChildWidgetWithBounds(&r.counterText, gl.CellBounds(0, 0))
+	{
+		gl := layout.GridLayout{
+			Bounds: gl.CellBounds(0, 1),
+			Widths: []layout.Size{
+				layout.FixedSize(6 * u),
+				layout.FlexibleSize(1),
+				layout.FixedSize(6 * u),
+				layout.FixedSize(6 * u),
+			},
+			ColumnGap: u / 2,
 		}
+		appender.AppendChildWidgetWithBounds(&r.resetButton, gl.CellBounds(0, 0))
+		appender.AppendChildWidgetWithBounds(&r.decButton, gl.CellBounds(2, 0))
+		appender.AppendChildWidgetWithBounds(&r.incButton, gl.CellBounds(3, 0))
 	}
 
 	return nil

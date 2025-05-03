@@ -60,7 +60,7 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		return err
 	}
 
-	t.horizontalAlignText.SetText("Horizontal Align")
+	t.horizontalAlignText.SetValue("Horizontal Align")
 	t.horizontalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.HorizontalAlign]{
 		{
 			Image: imgAlignStart,
@@ -85,7 +85,7 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	})
 	t.horizontalAlignSegmentedControl.SelectItemByTag(t.model.Texts().HorizontalAlign())
 
-	t.verticalAlignText.SetText("Vertical Align")
+	t.verticalAlignText.SetValue("Vertical Align")
 	t.verticalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.VerticalAlign]{
 		{
 			Image: imgAlignTop,
@@ -110,25 +110,25 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	})
 	t.verticalAlignSegmentedControl.SelectItemByTag(t.model.Texts().VerticalAlign())
 
-	t.autoWrapText.SetText("Auto Wrap")
+	t.autoWrapText.SetValue("Auto Wrap")
 	t.autoWrapToggle.SetOnValueChanged(func(value bool) {
 		t.model.Texts().SetAutoWrap(value)
 	})
 	t.autoWrapToggle.SetValue(t.model.Texts().AutoWrap())
 
-	t.boldText.SetText("Bold")
+	t.boldText.SetValue("Bold")
 	t.boldToggle.SetOnValueChanged(func(value bool) {
 		t.model.Texts().SetBold(value)
 	})
 	t.boldToggle.SetValue(t.model.Texts().Bold())
 
-	t.selectableText.SetText("Selectable")
+	t.selectableText.SetValue("Selectable")
 	t.selectableToggle.SetOnValueChanged(func(checked bool) {
 		t.model.Texts().SetSelectable(checked)
 	})
 	t.selectableToggle.SetValue(t.model.Texts().Selectable())
 
-	t.editableText.SetText("Editable")
+	t.editableText.SetValue("Editable")
 	t.editableToggle.SetOnValueChanged(func(value bool) {
 		t.model.Texts().SetEditable(value)
 	})
@@ -168,11 +168,13 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	t.sampleText.SetBold(t.model.Texts().Bold())
 	t.sampleText.SetSelectable(t.model.Texts().Selectable())
 	t.sampleText.SetEditable(t.model.Texts().Editable())
-	t.sampleText.SetOnValueChanged(func(text string) {
-		t.model.Texts().SetText(text)
+	t.sampleText.SetOnValueChanged(func(text string, committed bool) {
+		if committed {
+			t.model.Texts().SetText(text)
+		}
 	})
 	if !context.HasFocusedChildWidget(&t.sampleText) {
-		t.sampleText.SetText(t.model.Texts().Text())
+		t.sampleText.SetValue(t.model.Texts().Text())
 	}
 
 	u := basicwidget.UnitSize(context)
@@ -184,14 +186,8 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.CellBounds() {
-		switch i {
-		case 0:
-			appender.AppendChildWidgetWithBounds(&t.sampleText, bounds)
-		case 1:
-			appender.AppendChildWidgetWithBounds(&t.form, bounds)
-		}
-	}
+	appender.AppendChildWidgetWithBounds(&t.sampleText, gl.CellBounds(0, 0))
+	appender.AppendChildWidgetWithBounds(&t.form, gl.CellBounds(0, 1))
 
 	return nil
 }

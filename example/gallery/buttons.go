@@ -34,11 +34,11 @@ func (b *Buttons) SetModel(model *Model) {
 }
 
 func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	b.textButtonText.SetText("Text Button")
+	b.textButtonText.SetValue("Text Button")
 	b.textButton.SetText("Button")
 	context.SetEnabled(&b.textButton, b.model.Buttons().Enabled())
 
-	b.textImageButtonText.SetText("Text w/ Image Button")
+	b.textImageButtonText.SetValue("Text w/ Image Button")
 	b.textImageButton.SetText("Button")
 	img, err := theImageCache.Get("check", context.ColorMode())
 	if err != nil {
@@ -47,7 +47,7 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 	b.textImageButton.SetImage(img)
 	context.SetEnabled(&b.textImageButton, b.model.Buttons().Enabled())
 
-	b.segmentedControlHText.SetText("Segmented Control (Horizontal)")
+	b.segmentedControlHText.SetValue("Segmented Control (Horizontal)")
 	b.segmentedControlH.SetItems([]basicwidget.SegmentedControlItem[int]{
 		{
 			Text: "One",
@@ -62,7 +62,7 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 	b.segmentedControlH.SetDirection(basicwidget.SegmentedControlDirectionHorizontal)
 	context.SetEnabled(&b.segmentedControlH, b.model.Buttons().Enabled())
 
-	b.segmentedControlVText.SetText("Segmented Control (Vertical)")
+	b.segmentedControlVText.SetValue("Segmented Control (Vertical)")
 	b.segmentedControlV.SetItems([]basicwidget.SegmentedControlItem[int]{
 		{
 			Text: "One",
@@ -96,7 +96,7 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		},
 	})
 
-	b.enabledText.SetText("Enabled")
+	b.enabledText.SetValue("Enabled")
 	b.enabledToggle.SetOnValueChanged(func(enabled bool) {
 		b.model.Buttons().SetEnabled(enabled)
 	})
@@ -119,14 +119,8 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.CellBounds() {
-		switch i {
-		case 0:
-			appender.AppendChildWidgetWithBounds(&b.buttonsForm, bounds)
-		case 2:
-			appender.AppendChildWidgetWithBounds(&b.configForm, bounds)
-		}
-	}
+	appender.AppendChildWidgetWithBounds(&b.buttonsForm, gl.CellBounds(0, 0))
+	appender.AppendChildWidgetWithBounds(&b.configForm, gl.CellBounds(0, 2))
 
 	return nil
 }

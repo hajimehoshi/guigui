@@ -26,7 +26,7 @@ type Settings struct {
 var hongKongChinese = language.MustParse("zh-HK")
 
 func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	s.colorModeText.SetText("Color Mode")
+	s.colorModeText.SetValue("Color Mode")
 	s.colorModeSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[guigui.ColorMode]{
 		{
 			Text: "Light",
@@ -47,7 +47,7 @@ func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 	})
 	s.colorModeSegmentedControl.SelectItemByTag(context.ColorMode())
 
-	s.localeText.SetText("Locale")
+	s.localeText.SetValue("Locale")
 	s.localeDropdownList.SetItems([]basicwidget.DropdownListItem[language.Tag]{
 		{
 			Text: "(Default)",
@@ -98,7 +98,7 @@ func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 		}
 	}
 
-	s.scaleText.SetText("Scale")
+	s.scaleText.SetValue("Scale")
 	s.scaleSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[float64]{
 		{
 			Text: "80%",
@@ -151,12 +151,7 @@ func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.RepeatingCellBounds() {
-		if i >= 1 {
-			break
-		}
-		appender.AppendChildWidgetWithBounds(&s.form, bounds)
-	}
+	appender.AppendChildWidgetWithBounds(&s.form, gl.CellBounds(0, 0))
 
 	return nil
 }

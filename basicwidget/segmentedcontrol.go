@@ -151,8 +151,13 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context, appender *guigui.Ch
 		}
 	}
 
-	for i, bounds := range g.CellBounds() {
-		appender.AppendChildWidgetWithBounds(&s.textButtons[i], bounds)
+	for i := range s.textButtons {
+		switch s.direction {
+		case SegmentedControlDirectionHorizontal:
+			appender.AppendChildWidgetWithBounds(&s.textButtons[i], g.CellBounds(i, 0))
+		case SegmentedControlDirectionVertical:
+			appender.AppendChildWidgetWithBounds(&s.textButtons[i], g.CellBounds(0, i))
+		}
 	}
 	return nil
 }

@@ -34,8 +34,8 @@ type Popups struct {
 }
 
 func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	p.blurBackgroundText.SetText("Blur Background")
-	p.closeByClickingOutsideText.SetText("Close by Clicking Outside")
+	p.blurBackgroundText.SetValue("Blur Background")
+	p.closeByClickingOutsideText.SetValue("Close by Clicking Outside")
 	p.showButton.SetText("Show")
 	p.showButton.SetOnUp(func() {
 		p.simplePopup.Open(context)
@@ -55,8 +55,8 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		},
 	})
 
-	p.contextMenuPopupText.SetText("Context Menu")
-	p.contextMenuPopupClickHereText.SetText("Click Here by the Right Button")
+	p.contextMenuPopupText.SetValue("Context Menu")
+	p.contextMenuPopupClickHereText.SetValue("Click Here by the Right Button")
 
 	p.forms[1].SetItems([]*basicwidget.FormItem{
 		{
@@ -78,11 +78,8 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.RepeatingCellBounds() {
-		if i >= len(p.forms) {
-			break
-		}
-		appender.AppendChildWidgetWithBounds(&p.forms[i], bounds)
+	for i := range p.forms {
+		appender.AppendChildWidgetWithBounds(&p.forms[i], gl.CellBounds(0, i))
 	}
 
 	p.simplePopupContent.popup = &p.simplePopup
@@ -134,7 +131,7 @@ type simplePopupContent struct {
 func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	u := basicwidget.UnitSize(context)
 
-	s.titleText.SetText("Hello!")
+	s.titleText.SetValue("Hello!")
 	s.titleText.SetBold(true)
 
 	s.closeButton.SetText("Close")
@@ -154,25 +151,16 @@ func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.Chi
 			}),
 		},
 	}
-	for i, bounds := range gl.CellBounds() {
-		switch i {
-		case 0:
-			appender.AppendChildWidgetWithBounds(&s.titleText, bounds)
-		case 1:
-			gl := layout.GridLayout{
-				Bounds: bounds,
-				Widths: []layout.Size{
-					layout.FlexibleSize(1),
-					layout.FixedSize(s.closeButton.DefaultSize(context).X),
-				},
-			}
-			for i, bounds := range gl.CellBounds() {
-				if i != 1 {
-					continue
-				}
-				appender.AppendChildWidgetWithBounds(&s.closeButton, bounds)
-			}
+	appender.AppendChildWidgetWithBounds(&s.titleText, gl.CellBounds(0, 0))
+	{
+		gl := layout.GridLayout{
+			Bounds: gl.CellBounds(0, 1),
+			Widths: []layout.Size{
+				layout.FlexibleSize(1),
+				layout.FixedSize(s.closeButton.DefaultSize(context).X),
+			},
 		}
+		appender.AppendChildWidgetWithBounds(&s.closeButton, gl.CellBounds(1, 0))
 	}
 
 	return nil

@@ -6,7 +6,7 @@ require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.5.0.20250421141702-15b253fd2122
 	github.com/hajimehoshi/oklab v0.1.0
-	github.com/jeandeaual/go-locale v0.0.0-20241217141322-fcc2cadd6f08
+	github.com/jeandeaual/go-locale v0.0.0-20250421151639-a9d6ed1b3d45
 	github.com/kisielk/errcheck v1.9.0
 	github.com/rivo/uniseg v0.4.7
 	golang.org/x/text v0.24.0

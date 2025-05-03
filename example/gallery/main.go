@@ -67,30 +67,25 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			layout.FlexibleSize(1),
 		},
 	}
-	for i, bounds := range gl.CellBounds() {
-		switch i {
-		case 0:
-			appender.AppendChildWidgetWithBounds(&r.sidebar, bounds)
-		case 1:
-			switch r.model.Mode() {
-			case "settings":
-				appender.AppendChildWidgetWithBounds(&r.settings, bounds)
-			case "basic":
-				appender.AppendChildWidgetWithBounds(&r.basic, bounds)
-			case "buttons":
-				appender.AppendChildWidgetWithBounds(&r.buttons, bounds)
-			case "texts":
-				appender.AppendChildWidgetWithBounds(&r.texts, bounds)
-			case "textinputs":
-				appender.AppendChildWidgetWithBounds(&r.textInputs, bounds)
-			case "numberinputs":
-				appender.AppendChildWidgetWithBounds(&r.numberInputs, bounds)
-			case "lists":
-				appender.AppendChildWidgetWithBounds(&r.lists, bounds)
-			case "popups":
-				appender.AppendChildWidgetWithBounds(&r.popups, bounds)
-			}
-		}
+	appender.AppendChildWidgetWithBounds(&r.sidebar, gl.CellBounds(0, 0))
+	bounds := gl.CellBounds(1, 0)
+	switch r.model.Mode() {
+	case "settings":
+		appender.AppendChildWidgetWithBounds(&r.settings, bounds)
+	case "basic":
+		appender.AppendChildWidgetWithBounds(&r.basic, bounds)
+	case "buttons":
+		appender.AppendChildWidgetWithBounds(&r.buttons, bounds)
+	case "texts":
+		appender.AppendChildWidgetWithBounds(&r.texts, bounds)
+	case "textinputs":
+		appender.AppendChildWidgetWithBounds(&r.textInputs, bounds)
+	case "numberinputs":
+		appender.AppendChildWidgetWithBounds(&r.numberInputs, bounds)
+	case "lists":
+		appender.AppendChildWidgetWithBounds(&r.lists, bounds)
+	case "popups":
+		appender.AppendChildWidgetWithBounds(&r.popups, bounds)
 	}
 
 	return nil

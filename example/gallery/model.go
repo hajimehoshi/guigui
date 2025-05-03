@@ -141,7 +141,7 @@ type TextInputsModel struct {
 	horizontalAlign basicwidget.HorizontalAlign
 	verticalAlign   basicwidget.VerticalAlign
 	noWrap          bool
-	readonly        bool
+	uneditable      bool
 	disabled        bool
 }
 
@@ -194,11 +194,14 @@ func (t *TextInputsModel) SetAutoWrap(autoWrap bool) {
 }
 
 func (t *TextInputsModel) Editable() bool {
-	return !t.readonly
+	return !t.uneditable
 }
 
 func (t *TextInputsModel) SetEditable(editable bool) {
-	t.readonly = !editable
+	t.uneditable = !editable
+	if editable {
+		t.disabled = false
+	}
 }
 
 func (t *TextInputsModel) Enabled() bool {
@@ -207,22 +210,29 @@ func (t *TextInputsModel) Enabled() bool {
 
 func (t *TextInputsModel) SetEnabled(enabled bool) {
 	t.disabled = !enabled
+	if !enabled {
+		t.uneditable = true
+	}
 }
 
 type NumberInputsModel struct {
-	numberFieldValue1 int64
-	numberFieldValue2 int64
+	numberInputValue1 int
+	numberInputValue2 uint64
+	numberInputValue3 int
 
-	readonly bool
-	disabled bool
+	uneditable bool
+	disabled   bool
 }
 
 func (n *NumberInputsModel) Editable() bool {
-	return !n.readonly
+	return !n.uneditable
 }
 
 func (n *NumberInputsModel) SetEditable(editable bool) {
-	n.readonly = !editable
+	n.uneditable = !editable
+	if editable {
+		n.disabled = false
+	}
 }
 
 func (n *NumberInputsModel) Enabled() bool {
@@ -231,20 +241,31 @@ func (n *NumberInputsModel) Enabled() bool {
 
 func (n *NumberInputsModel) SetEnabled(enabled bool) {
 	n.disabled = !enabled
+	if !enabled {
+		n.uneditable = true
+	}
 }
 
-func (n *NumberInputsModel) NumberFieldValue1() int64 {
-	return n.numberFieldValue1
+func (n *NumberInputsModel) NumberInputValue1() int {
+	return n.numberInputValue1
 }
 
-func (n *NumberInputsModel) SetNumberFieldValue1(value int64) {
-	n.numberFieldValue1 = value
+func (n *NumberInputsModel) SetNumberInputValue1(value int) {
+	n.numberInputValue1 = value
 }
 
-func (n *NumberInputsModel) NumberFieldValue2() int64 {
-	return n.numberFieldValue2
+func (n *NumberInputsModel) NumberInputValue2() uint64 {
+	return n.numberInputValue2
 }
 
-func (n *NumberInputsModel) SetNumberFieldValue2(value int64) {
-	n.numberFieldValue2 = value
+func (n *NumberInputsModel) SetNumberInputValue2(value uint64) {
+	n.numberInputValue2 = value
+}
+
+func (n *NumberInputsModel) NumberInputValue3() int {
+	return n.numberInputValue3
+}
+
+func (n *NumberInputsModel) SetNumberInputValue3(value int) {
+	n.numberInputValue3 = value
 }

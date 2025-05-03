@@ -21,7 +21,7 @@ type Lists struct {
 }
 
 func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	l.textListText.SetText("Text List")
+	l.textListText.SetValue("Text List")
 	var items []basicwidget.TextListItem[int]
 	for i := 0; i < 100; i++ {
 		items = append(items, basicwidget.TextListItem[int]{
@@ -51,12 +51,7 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	for i, bounds := range gl.RepeatingCellBounds() {
-		if i >= 1 {
-			break
-		}
-		appender.AppendChildWidgetWithBounds(&l.form, bounds)
-	}
+	appender.AppendChildWidgetWithBounds(&l.form, gl.CellBounds(0, 0))
 
 	return nil
 }
