@@ -13,6 +13,7 @@ import (
 
 	"github.com/hajimehoshi/guigui/internal/colormode"
 	"github.com/hajimehoshi/guigui/internal/locale"
+
 	"golang.org/x/text/language"
 )
 
