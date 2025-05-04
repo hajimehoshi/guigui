@@ -11,10 +11,10 @@ import (
 	"slices"
 	"strings"
 
+	"golang.org/x/text/language"
+
 	"github.com/hajimehoshi/guigui/internal/colormode"
 	"github.com/hajimehoshi/guigui/internal/locale"
-
-	"golang.org/x/text/language"
 )
 
 type ColorMode int
@@ -110,9 +110,10 @@ func (c *Context) ColorMode() ColorMode {
 }
 
 func (c *Context) SetColorMode(mode ColorMode) {
-	if c.hasColorMode && c.colorMode == mode {
+	if c.hasColorMode && mode == c.colorMode {
 		return
 	}
+
 	c.colorMode = mode
 	c.hasColorMode = true
 	c.app.requestRedraw(c.app.bounds())

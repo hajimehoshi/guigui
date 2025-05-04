@@ -13,7 +13,7 @@ func systemColorMode() ColorMode {
 	if err != nil {
 		return Light
 	}
-	if strings.Contains(strings.ToLower(string(out)), "dark") {
+	if strings.TrimSpace(string(out)) == "Dark" {
 		return Dark
 	}
 	return Light
