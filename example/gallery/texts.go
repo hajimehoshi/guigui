@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package main
 
@@ -173,7 +173,7 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 			t.model.Texts().SetText(text)
 		}
 	})
-	if !context.HasFocusedChildWidget(&t.sampleText) {
+	if !context.IsFocusedOrHasFocusedChild(&t.sampleText) {
 		t.sampleText.SetValue(t.model.Texts().Text())
 	}
 

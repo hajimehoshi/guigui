@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package basicwidget
 
@@ -124,7 +124,7 @@ func (t *TextList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	// To use HasFocusedChildWidget correctly, create the tree first.
 	appender.AppendChildWidgetWithPosition(&t.list, context.Position(t))
 
-	focused := context.HasFocusedChildWidget(t)
+	focused := context.IsFocusedOrHasFocusedChild(t)
 	for i := range t.textListItemWidgets {
 		item := &t.textListItemWidgets[i]
 		item.text.SetBold(item.textListItem.Header || t.list.style == ListStyleSidebar && t.SelectedItemIndex() == i)

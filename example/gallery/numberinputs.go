@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package main
 
@@ -16,13 +16,17 @@ import (
 type NumberInputs struct {
 	guigui.DefaultWidget
 
-	numberInputForm  basicwidget.Form
-	numberInput1Text basicwidget.Text
-	numberInput1     basicwidget.NumberInput
-	numberInput2Text basicwidget.Text
-	numberInput2     basicwidget.NumberInput
-	numberInput3Text basicwidget.Text
-	numberInput3     basicwidget.NumberInput
+	numberInputForm       basicwidget.Form
+	numberInput1Text      basicwidget.Text
+	numberInput1          basicwidget.NumberInput
+	numberInput2Text      basicwidget.Text
+	numberInput2          basicwidget.NumberInput
+	numberInput3Text      basicwidget.Text
+	numberInput3          basicwidget.NumberInput
+	sliderText            basicwidget.Text
+	slider                basicwidget.Slider
+	slierWithoutRangeText basicwidget.Text
+	sliderWithoutRange    basicwidget.Slider
 
 	configForm     basicwidget.Form
 	editableText   basicwidget.Text
@@ -75,6 +79,22 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	context.SetEnabled(&n.numberInput3, n.model.NumberInputs().Enabled())
 	context.SetSize(&n.numberInput3, image.Pt(width, guigui.DefaultSize))
 
+	n.sliderText.SetValue("Slider (Range: [-100, 100])")
+	n.slider.SetOnValueChangedInt64(func(value int64) {
+		n.model.NumberInputs().SetNumberInputValue3(int(value))
+	})
+	n.slider.SetMinimumValueInt64(-100)
+	n.slider.SetMaximumValueInt64(100)
+	n.slider.SetValueInt64(int64(n.model.NumberInputs().NumberInputValue3()))
+	context.SetEnabled(&n.slider, n.model.NumberInputs().Enabled())
+	context.SetSize(&n.slider, image.Pt(width, guigui.DefaultSize))
+
+	n.slierWithoutRangeText.SetValue("Slider w/o Range")
+	n.sliderWithoutRange.SetOnValueChangedInt64(func(value int64) {
+	})
+	context.SetEnabled(&n.sliderWithoutRange, n.model.NumberInputs().Enabled())
+	context.SetSize(&n.sliderWithoutRange, image.Pt(width, guigui.DefaultSize))
+
 	n.numberInputForm.SetItems([]*basicwidget.FormItem{
 		{
 			PrimaryWidget:   &n.numberInput1Text,
@@ -88,10 +108,18 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 			PrimaryWidget:   &n.numberInput3Text,
 			SecondaryWidget: &n.numberInput3,
 		},
+		{
+			PrimaryWidget:   &n.sliderText,
+			SecondaryWidget: &n.slider,
+		},
+		{
+			PrimaryWidget:   &n.slierWithoutRangeText,
+			SecondaryWidget: &n.sliderWithoutRange,
+		},
 	})
 
 	// Configurations
-	n.editableText.SetValue("Editable")
+	n.editableText.SetValue("Editable (for Number Inputs)")
 	n.editableToggle.SetOnValueChanged(func(value bool) {
 		n.model.NumberInputs().SetEditable(value)
 	})

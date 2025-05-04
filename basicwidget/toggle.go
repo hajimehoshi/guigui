@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package basicwidget
 
@@ -56,8 +56,7 @@ func toggleMaxCount() int {
 }
 
 func (t *Toggle) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	hovered := t.isHovered(context)
-	if t.prevHovered != hovered {
+	if hovered := t.isHovered(context); t.prevHovered != hovered {
 		t.prevHovered = hovered
 		guigui.RequestRedraw(t)
 	}
@@ -66,6 +65,7 @@ func (t *Toggle) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 
 func (t *Toggle) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
 	if context.IsEnabled(t) && t.isHovered(context) && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		context.SetFocused(t, true)
 		t.pressed = true
 		t.SetValue(!t.value)
 		return guigui.HandleInputByWidget(t)

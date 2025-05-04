@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package basicwidget
 
@@ -164,7 +164,7 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		t.resetAutoWrapCachedTextSize()
 	}
 
-	if context.IsFocused(t) {
+	if context.IsFocusedOrHasFocusedChild(t) {
 		if !t.prevFocused {
 			t.field.Focus()
 			t.cursor.resetCounter()
@@ -181,7 +181,7 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		}
 	}
 
-	t.prevFocused = context.IsFocused(t)
+	t.prevFocused = context.IsFocusedOrHasFocusedChild(t)
 
 	if t.selectable || t.editable {
 		t.cursor.text = t
@@ -211,10 +211,18 @@ func (t *Text) Value() string {
 }
 
 func (t *Text) SetValue(text string) {
+	if t.nextTextSet && t.nextText == text {
+		return
+	}
+	if !t.nextTextSet && t.field.Text() == text {
+		return
+	}
+
 	// When a user is editing, the text should not be changed.
 	// Update the actual value later.
 	t.nextText = text
 	t.nextTextSet = true
+	t.resetCachedTextSize()
 }
 
 func (t *Text) ForceSetValue(text string) {
@@ -504,7 +512,7 @@ func (t *Text) HandlePointingInput(context *guigui.Context) guigui.HandleInputRe
 		context.SetFocused(t, false)
 	}
 
-	if !context.IsFocused(t) {
+	if !context.IsFocusedOrHasFocusedChild(t) {
 		if t.field.IsFocused() {
 			t.field.Blur()
 			guigui.RequestRedraw(t)
@@ -521,7 +529,7 @@ func (t *Text) HandlePointingInput(context *guigui.Context) guigui.HandleInputRe
 }
 
 func (t *Text) textToDraw(context *guigui.Context, showComposition bool) string {
-	if !context.IsFocused(t) && t.nextTextSet {
+	if !context.IsFocusedOrHasFocusedChild(t) && t.nextTextSet {
 		return t.nextText
 	}
 	if showComposition {
@@ -535,7 +543,7 @@ func (t *Text) selectionToDraw(context *guigui.Context) (start, end int, ok bool
 	if !t.editable {
 		return s, e, true
 	}
-	if !context.IsFocused(t) {
+	if !context.IsFocusedOrHasFocusedChild(t) {
 		return s, e, true
 	}
 	cs, ce, ok := t.field.CompositionSelection()
@@ -555,7 +563,7 @@ func (t *Text) compositionSelectionToDraw(context *guigui.Context) (uStart, cSta
 	if !t.editable {
 		return 0, 0, 0, 0, false
 	}
-	if !context.IsFocused(t) {
+	if !context.IsFocusedOrHasFocusedChild(t) {
 		return 0, 0, 0, 0, false
 	}
 	s, _ := t.field.Selection()
@@ -878,7 +886,7 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 		TextColor: textColor,
 	}
 	if start, end, ok := t.selectionToDraw(context); ok {
-		if context.IsFocused(t) {
+		if context.IsFocusedOrHasFocusedChild(t) {
 			op.DrawSelection = true
 			op.SelectionStart = start
 			op.SelectionEnd = end
@@ -953,7 +961,7 @@ func (t *Text) CursorShape(context *guigui.Context) (ebiten.CursorShapeType, boo
 }
 
 func (t *Text) cursorPosition(context *guigui.Context) (position textutil.TextPosition, ok bool) {
-	if !context.IsFocused(t) {
+	if !context.IsFocusedOrHasFocusedChild(t) {
 		return textutil.TextPosition{}, false
 	}
 	if !t.editable {

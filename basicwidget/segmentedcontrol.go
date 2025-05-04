@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package basicwidget
 
@@ -38,8 +38,6 @@ type SegmentedControl[T comparable] struct {
 	textButtons  []TextButton
 
 	direction SegmentedControlDirection
-
-	tmpTextButton TextButton
 }
 
 func (s *SegmentedControl[T]) SetDirection(direction SegmentedControlDirection) {
@@ -159,18 +157,16 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context, appender *guigui.Ch
 			appender.AppendChildWidgetWithBounds(&s.textButtons[i], g.CellBounds(0, i))
 		}
 	}
+
 	return nil
 }
 
 func (s *SegmentedControl[T]) DefaultSize(context *guigui.Context) image.Point {
 	var w, h int
-	for i := range s.abstractList.ItemCount() {
-		item, _ := s.abstractList.ItemByIndex(i)
-		s.tmpTextButton.SetText(item.Text)
-		s.tmpTextButton.SetImage(item.Image)
-		s.tmpTextButton.SetTextBold(true)
-		w = max(w, s.tmpTextButton.DefaultSize(context).X)
-		h = max(h, s.tmpTextButton.DefaultSize(context).Y)
+	for i := range s.textButtons {
+		size := s.textButtons[i].defaultSize(context, true)
+		w = max(w, size.X)
+		h = max(h, size.Y)
 	}
 	switch s.direction {
 	case SegmentedControlDirectionHorizontal:

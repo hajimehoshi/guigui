@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package basicwidget
 
@@ -31,56 +31,56 @@ func (a *abstractList[Tag, Item]) ItemCount() int {
 	return len(a.items)
 }
 
-func (c *abstractList[Tag, Item]) ItemByIndex(index int) (Item, bool) {
-	if index < 0 || index >= len(c.items) {
+func (a *abstractList[Tag, Item]) ItemByIndex(index int) (Item, bool) {
+	if index < 0 || index >= len(a.items) {
 		var item Item
 		return item, false
 	}
-	return c.items[index], true
+	return a.items[index], true
 }
 
-func (c *abstractList[Tag, Item]) SelectItemByIndex(index int) bool {
-	if index < 0 || index >= len(c.items) {
-		if len(c.selectedIndices) == 0 {
+func (a *abstractList[Tag, Item]) SelectItemByIndex(index int) bool {
+	if index < 0 || index >= len(a.items) {
+		if len(a.selectedIndices) == 0 {
 			return false
 		}
-		c.selectedIndices = c.selectedIndices[:0]
+		a.selectedIndices = a.selectedIndices[:0]
 		return true
 	}
 
-	if len(c.selectedIndices) == 1 && c.selectedIndices[0] == index {
+	if len(a.selectedIndices) == 1 && a.selectedIndices[0] == index {
 		return false
 	}
 
-	selected := slices.Contains(c.selectedIndices, index)
-	c.selectedIndices = adjustSliceSize(c.selectedIndices, 1)
-	c.selectedIndices[0] = index
+	selected := slices.Contains(a.selectedIndices, index)
+	a.selectedIndices = adjustSliceSize(a.selectedIndices, 1)
+	a.selectedIndices[0] = index
 	if !selected {
-		if c.onItemSelected != nil {
-			c.onItemSelected(index)
+		if a.onItemSelected != nil {
+			a.onItemSelected(index)
 		}
 	}
 	return true
 }
 
-func (c *abstractList[Tag, Item]) SelectItemByTag(tag Tag) bool {
-	idx := slices.IndexFunc(c.items, func(item Item) bool {
+func (a *abstractList[Tag, Item]) SelectItemByTag(tag Tag) bool {
+	idx := slices.IndexFunc(a.items, func(item Item) bool {
 		return item.tag() == tag
 	})
-	return c.SelectItemByIndex(idx)
+	return a.SelectItemByIndex(idx)
 }
 
-func (c *abstractList[Tag, Item]) SelectedItem() (Item, bool) {
-	if len(c.selectedIndices) == 0 {
+func (a *abstractList[Tag, Item]) SelectedItem() (Item, bool) {
+	if len(a.selectedIndices) == 0 {
 		var item Item
 		return item, false
 	}
-	return c.items[c.selectedIndices[0]], true
+	return a.items[a.selectedIndices[0]], true
 }
 
-func (c *abstractList[Tag, Item]) SelectedItemIndex() int {
-	if len(c.selectedIndices) == 0 {
+func (a *abstractList[Tag, Item]) SelectedItemIndex() int {
+	if len(a.selectedIndices) == 0 {
 		return -1
 	}
-	return c.selectedIndices[0]
+	return a.selectedIndices[0]
 }

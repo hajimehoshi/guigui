@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package basicwidget
 
@@ -57,6 +57,7 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 func (b *Button) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
 	if context.IsEnabled(b) && b.isHovered(context) && !b.keepPressed {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			context.SetFocused(b, true)
 			b.pressed = true
 			if b.onDown != nil {
 				b.onDown()

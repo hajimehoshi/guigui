@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Hajime Hoshi
+// SPDX-FileCopyrightText: 2025 The Guigui Authors
 
 package basicwidget
 
@@ -112,8 +112,17 @@ func (t *TextButton) Build(context *guigui.Context, appender *guigui.ChildWidget
 }
 
 func (t *TextButton) DefaultSize(context *guigui.Context) image.Point {
+	return t.defaultSize(context, false)
+}
+
+func (t *TextButton) defaultSize(context *guigui.Context, forceBold bool) image.Point {
 	dh := defaultButtonSize(context).Y
-	w := t.text.TextSize(context).X
+	var w int
+	if forceBold {
+		w = t.text.boldTextSize(context).X
+	} else {
+		w = t.text.TextSize(context).X
+	}
 	if t.image.HasImage() {
 		imgSize := t.defaultImageSize(context)
 		if t.text.Value() != "" {

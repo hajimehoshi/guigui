@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package guigui
 
@@ -387,7 +387,7 @@ func (a *app) doHandleInputWidget(typ handleInputType, widget Widget, zToHandle 
 		return HandleInputResult{}
 	}
 
-	if typ == handleInputTypeButton && !a.context.HasFocusedChildWidget(widget) {
+	if typ == handleInputTypeButton && !a.context.IsFocusedOrHasFocusedChild(widget) {
 		return HandleInputResult{}
 	}
 

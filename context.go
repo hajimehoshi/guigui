@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package guigui
 
@@ -311,7 +311,7 @@ func (c *Context) blur(widget Widget) {
 	RequestRedraw(widget)
 }
 
-func (c *Context) IsFocused(widget Widget) bool {
+func (c *Context) isFocused(widget Widget) bool {
 	// Check this first to avoid unnecessary evaluation.
 	if c.app.focusedWidget != widget {
 		return false
@@ -320,14 +320,14 @@ func (c *Context) IsFocused(widget Widget) bool {
 	return widgetState.isInTree() && widgetState.isVisible()
 }
 
-func (c *Context) HasFocusedChildWidget(widget Widget) bool {
-	if c.IsFocused(widget) {
+func (c *Context) IsFocusedOrHasFocusedChild(widget Widget) bool {
+	if c.isFocused(widget) {
 		return true
 	}
 
 	widgetState := widget.widgetState()
 	for _, child := range widgetState.children {
-		if c.HasFocusedChildWidget(child) {
+		if c.IsFocusedOrHasFocusedChild(child) {
 			return true
 		}
 	}

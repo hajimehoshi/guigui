@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 Hajime Hoshi
+// SPDX-FileCopyrightText: 2024 The Guigui Authors
 
 package basicwidget
 
@@ -122,11 +122,11 @@ func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 }
 
 func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	if t.prevFocused != context.HasFocusedChildWidget(t) {
-		t.prevFocused = context.HasFocusedChildWidget(t)
+	if t.prevFocused != context.IsFocusedOrHasFocusedChild(t) {
+		t.prevFocused = context.IsFocusedOrHasFocusedChild(t)
 		guigui.RequestRedraw(t)
 	}
-	if context.IsFocused(t) {
+	if context.IsFocusedOrHasFocusedChild(t) && !context.IsFocusedOrHasFocusedChild(&t.text) {
 		context.SetFocused(&t.text, true)
 		guigui.RequestRedraw(t)
 	}
@@ -165,7 +165,7 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	context.SetVisible(&t.scrollOverlay, t.text.IsMultiline())
 	appender.AppendChildWidgetWithBounds(&t.scrollOverlay, context.Bounds(t))
 
-	if context.HasFocusedChildWidget(t) {
+	if context.IsFocusedOrHasFocusedChild(t) {
 		t.focus.textInput = t
 		w := textInputFocusBorderWidth(context)
 		p := context.Position(t).Add(image.Pt(-w, -w))
