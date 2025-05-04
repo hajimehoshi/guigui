@@ -3,7 +3,11 @@
 
 package main
 
-import "github.com/hajimehoshi/guigui/basicwidget"
+import (
+	"math/big"
+
+	"github.com/hajimehoshi/guigui/basicwidget"
+)
 
 type Model struct {
 	mode string
@@ -216,7 +220,7 @@ func (t *TextInputsModel) SetEnabled(enabled bool) {
 }
 
 type NumberInputsModel struct {
-	numberInputValue1 int
+	numberInputValue1 big.Int
 	numberInputValue2 uint64
 	numberInputValue3 int
 
@@ -246,12 +250,14 @@ func (n *NumberInputsModel) SetEnabled(enabled bool) {
 	}
 }
 
-func (n *NumberInputsModel) NumberInputValue1() int {
-	return n.numberInputValue1
+func (n *NumberInputsModel) NumberInputValue1() *big.Int {
+	var v big.Int
+	v.Set(&n.numberInputValue1)
+	return &v
 }
 
-func (n *NumberInputsModel) SetNumberInputValue1(value int) {
-	n.numberInputValue1 = value
+func (n *NumberInputsModel) SetNumberInputValue1(value *big.Int) {
+	n.numberInputValue1.Set(value)
 }
 
 func (n *NumberInputsModel) NumberInputValue2() uint64 {

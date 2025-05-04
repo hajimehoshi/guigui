@@ -5,10 +5,9 @@ package basicwidget
 
 import (
 	"image"
+	"math"
 	"math/big"
-	"strconv"
 	"strings"
-	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -16,104 +15,213 @@ import (
 	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
 )
 
-type Integer interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
+var (
+	minInt64  big.Int
+	maxInt64  big.Int
+	maxUint64 big.Int
+)
+
+func init() {
+	minInt64.SetInt64(math.MinInt64)
+	maxInt64.SetInt64(math.MaxInt64)
+	maxUint64.SetUint64(math.MaxUint64)
 }
 
-type NumberInput[T Integer] struct {
+type NumberInput struct {
 	guigui.DefaultWidget
 
 	textInput  TextInput
 	upButton   TextButton
 	downButton TextButton
 
-	value   T
-	min     T
+	value   big.Int
+	min     big.Int
 	minSet  bool
-	max     T
+	max     big.Int
 	maxSet  bool
-	step    T
+	step    big.Int
 	stepSet bool
 
-	onValueChanged func(value T)
+	onValueChangedBigInt func(value *big.Int)
+	onValueChangedInt64  func(value int64)
+	onValueChangedUint64 func(value uint64)
 }
 
-func (n *NumberInput[T]) IsEditable() bool {
+func (n *NumberInput) IsEditable() bool {
 	return n.textInput.IsEditable()
 }
 
-func (n *NumberInput[T]) SetEditable(editable bool) {
+func (n *NumberInput) SetEditable(editable bool) {
 	n.textInput.SetEditable(editable)
 }
 
-func (n *NumberInput[T]) SetOnValueChanged(f func(value T)) {
-	n.onValueChanged = f
+func (n *NumberInput) SetOnValueChangedBigInt(f func(value *big.Int)) {
+	n.onValueChangedBigInt = f
 }
 
-func (n *NumberInput[T]) Value() T {
-	return n.value
+func (n *NumberInput) SetOnValueChangedInt64(f func(value int64)) {
+	n.onValueChangedInt64 = f
 }
 
-func (n *NumberInput[T]) SetValue(value T) {
+func (n *NumberInput) SetOnValueChangedUint64(f func(value uint64)) {
+	n.onValueChangedUint64 = f
+}
+
+func (n *NumberInput) ValueBigInt() *big.Int {
+	var v big.Int
+	v.Set(&n.value)
+	return &v
+}
+
+func (n *NumberInput) ValueInt64() int64 {
+	if n.value.IsInt64() {
+		return n.value.Int64()
+	} else if n.value.Cmp(&maxInt64) > 0 {
+		return math.MaxInt64
+	} else if n.value.Cmp(&minInt64) < 0 {
+		return math.MinInt64
+	}
+	return 0
+}
+
+func (n *NumberInput) ValueUint64() uint64 {
+	if n.value.IsUint64() {
+		return n.value.Uint64()
+	} else if n.value.Cmp(&maxUint64) > 0 {
+		return math.MaxUint64
+	} else if n.value.Cmp(big.NewInt(0)) < 0 {
+		return 0
+	}
+	return 0
+}
+
+func (n *NumberInput) SetValueBigInt(value *big.Int) {
 	n.setValue(value, false)
 }
 
-func (n *NumberInput[T]) setValue(value T, force bool) {
-	value = min(max(value, n.MinimumValue()), n.MaximumValue())
-	if n.value == value {
+func (n *NumberInput) SetValueInt64(value int64) {
+	var v big.Int
+	v.SetInt64(value)
+	n.setValue(&v, false)
+}
+
+func (n *NumberInput) SetValueUint64(value uint64) {
+	var v big.Int
+	v.SetUint64(value)
+	n.setValue(&v, false)
+}
+
+func (n *NumberInput) setValue(value *big.Int, force bool) {
+	n.clamp(value)
+	if n.value.Cmp(value) == 0 {
 		return
 	}
-	n.value = value
-	if isSigned[T]() {
-		if force {
-			n.textInput.ForceSetValue(strconv.FormatInt(int64(n.value), 10))
-		} else {
-			n.textInput.SetValue(strconv.FormatInt(int64(n.value), 10))
-		}
+	n.value.Set(value)
+	if force {
+		n.textInput.ForceSetValue(n.value.String())
 	} else {
-		if force {
-			n.textInput.ForceSetValue(strconv.FormatUint(uint64(n.value), 10))
-		} else {
-			n.textInput.SetValue(strconv.FormatUint(uint64(n.value), 10))
-		}
+		n.textInput.SetValue(n.value.String())
 	}
-	if n.onValueChanged != nil {
-		n.onValueChanged(value)
-	}
+	n.fireValueChangeEvents()
 }
 
-func (n *NumberInput[T]) MinimumValue() T {
-	if n.minSet {
-		return n.min
+func (n *NumberInput) MinimumValueBigInt() *big.Int {
+	if !n.minSet {
+		return nil
 	}
-	return minInteger[T]()
+	var v big.Int
+	v.Set(&n.min)
+	return &v
 }
 
-func (n *NumberInput[T]) SetMinimumValue(minimum T) {
-	n.min = minimum
+func (n *NumberInput) SetMinimumValueBigInt(minimum *big.Int) {
+	if minimum == nil {
+		n.min = big.Int{}
+		n.minSet = false
+		return
+	}
+	n.min.Set(minimum)
 	n.minSet = true
-	n.SetValue(n.value)
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
 }
 
-func (n *NumberInput[T]) MaximumValue() T {
-	if n.maxSet {
-		return n.max
+func (n *NumberInput) SetMinimumValueInt64(minimum int64) {
+	n.min.SetInt64(minimum)
+	n.minSet = true
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
+}
+
+func (n *NumberInput) SetMinimumValueUint64(minimum uint64) {
+	n.min.SetUint64(minimum)
+	n.minSet = true
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
+}
+
+func (n *NumberInput) MaximumValueBigInt() *big.Int {
+	if !n.maxSet {
+		return nil
 	}
-	return maxInteger[T]()
+	var v big.Int
+	v.Set(&n.max)
+	return &v
 }
 
-func (n *NumberInput[T]) SetMaximumValue(maximum T) {
-	n.max = maximum
+func (n *NumberInput) SetMaximumValueBigInt(maximum *big.Int) {
+	if maximum == nil {
+		n.max = big.Int{}
+		n.maxSet = false
+		return
+	}
+	n.max.Set(maximum)
 	n.maxSet = true
-	n.SetValue(n.value)
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
 }
 
-func (n *NumberInput[T]) SetStep(step T) {
-	n.step = step
+func (n *NumberInput) SetMaximumValueInt64(maximum int64) {
+	n.max.SetInt64(maximum)
+	n.maxSet = true
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
+}
+
+func (n *NumberInput) SetMaximumValueUint64(maximum uint64) {
+	n.max.SetUint64(maximum)
+	n.maxSet = true
+	var v big.Int
+	v.Set(&n.value)
+	n.SetValueBigInt(&v)
+}
+
+func (n *NumberInput) SetStepBigInt(step *big.Int) {
+	if step == nil {
+		n.step = big.Int{}
+		n.stepSet = false
+		return
+	}
+	n.step.Set(step)
 	n.stepSet = true
 }
 
-func (n *NumberInput[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (n *NumberInput) SetStepInt64(step int64) {
+	n.step.SetInt64(step)
+	n.stepSet = true
+}
+
+func (n *NumberInput) SetStepUint64(step uint64) {
+	n.step.SetUint64(step)
+	n.stepSet = true
+}
+
+func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	n.textInput.SetHorizontalAlign(HorizontalAlignEnd)
 	n.textInput.SetNumber(true)
 	n.textInput.setPaddingRight(UnitSize(context) / 2)
@@ -126,11 +234,7 @@ func (n *NumberInput[T]) Build(context *guigui.Context, appender *guigui.ChildWi
 	appender.AppendChildWidgetWithBounds(&n.textInput, context.Bounds(n))
 	// HasFocusedChildWidget works after appending the child widget.
 	if !context.HasFocusedChildWidget(n) {
-		if isSigned[T]() {
-			n.textInput.SetValue(strconv.FormatInt(int64(n.value), 10))
-		} else {
-			n.textInput.SetValue(strconv.FormatUint(uint64(n.value), 10))
-		}
+		n.textInput.SetValue(n.value.String())
 	}
 
 	imgUp, err := theResourceImages.Get("keyboard_arrow_up", context.ColorMode())
@@ -151,7 +255,7 @@ func (n *NumberInput[T]) Build(context *guigui.Context, appender *guigui.ChildWi
 	n.upButton.setOnRepeat(func() {
 		n.increment()
 	})
-	context.SetEnabled(&n.upButton, n.IsEditable() && n.value < n.MaximumValue())
+	context.SetEnabled(&n.upButton, n.IsEditable() && (!n.maxSet || n.value.Cmp(&n.max) < 0))
 
 	b := context.Bounds(n)
 	appender.AppendChildWidgetWithBounds(&n.upButton, image.Rectangle{
@@ -174,7 +278,7 @@ func (n *NumberInput[T]) Build(context *guigui.Context, appender *guigui.ChildWi
 	n.downButton.setOnRepeat(func() {
 		n.decrement()
 	})
-	context.SetEnabled(&n.downButton, n.IsEditable() && n.value > n.MinimumValue())
+	context.SetEnabled(&n.downButton, n.IsEditable() && (!n.minSet || n.value.Cmp(&n.min) > 0))
 
 	appender.AppendChildWidgetWithBounds(&n.downButton, image.Rectangle{
 		Min: image.Point{
@@ -205,47 +309,31 @@ var numberTextReplacer = strings.NewReplacer(
 	"\uff19", "9",
 )
 
-func (n *NumberInput[T]) commit(text string) {
+func (n *NumberInput) commit(text string) {
 	text = strings.TrimSpace(text)
 	text = numberTextReplacer.Replace(text)
 
-	var i big.Int
-	if _, ok := i.SetString(text, 10); !ok {
+	var v big.Int
+	if _, ok := v.SetString(text, 10); !ok {
 		return
 	}
-	var v T
-	if isSigned[T]() {
-		var min big.Int
-		min.SetInt64(int64(n.MinimumValue()))
-		var max big.Int
-		max.SetInt64(int64(n.MaximumValue()))
-		if i.Cmp(&min) < 0 {
-			v = T(n.MinimumValue())
-		} else if i.Cmp(&max) > 0 {
-			v = T(n.MaximumValue())
-		} else {
-			v = T(i.Int64())
-		}
-	} else {
-		var min big.Int
-		min.SetUint64(uint64(n.MinimumValue()))
-		var max big.Int
-		max.SetUint64(uint64(n.MaximumValue()))
-		if i.Cmp(&min) < 0 {
-			v = T(n.MinimumValue())
-		} else if i.Cmp(&max) > 0 {
-			v = T(n.MaximumValue())
-		} else {
-			v = T(i.Uint64())
-		}
+	n.SetValueBigInt(&v)
+	n.fireValueChangeEvents()
+}
+
+func (n *NumberInput) fireValueChangeEvents() {
+	if n.onValueChangedBigInt != nil {
+		n.onValueChangedBigInt(n.ValueBigInt())
 	}
-	n.SetValue(v)
-	if n.onValueChanged != nil {
-		n.onValueChanged(v)
+	if n.onValueChangedInt64 != nil {
+		n.onValueChangedInt64(n.ValueInt64())
+	}
+	if n.onValueChangedUint64 != nil {
+		n.onValueChangedUint64(n.ValueUint64())
 	}
 }
 
-func (n *NumberInput[T]) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {
+func (n *NumberInput) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {
 	if isKeyRepeating(ebiten.KeyUp) {
 		n.increment()
 		return guigui.HandleInputByWidget(n)
@@ -257,66 +345,49 @@ func (n *NumberInput[T]) HandleButtonInput(context *guigui.Context) guigui.Handl
 	return guigui.HandleInputResult{}
 }
 
-func (n *NumberInput[T]) increment() {
+func (n *NumberInput) increment() {
 	if !n.IsEditable() {
 		return
 	}
 	n.commit(n.textInput.Value())
-	var step T = 1
+	var step big.Int
 	if n.stepSet {
-		step = n.step
+		step.Set(&n.step)
+	} else {
+		step.SetInt64(1)
 	}
-	n.setValue(min(increment(n.value, step), n.MaximumValue()), true)
+	var newValue big.Int
+	newValue.Add(&n.value, &step)
+	n.setValue(&newValue, true)
 }
 
-func (n *NumberInput[T]) decrement() {
+func (n *NumberInput) decrement() {
 	if !n.IsEditable() {
 		return
 	}
 	n.commit(n.textInput.Value())
-	var step T = 1
+	var step big.Int
 	if n.stepSet {
-		step = n.step
+		step.Set(&n.step)
+	} else {
+		step.SetInt64(1)
 	}
-	n.setValue(max(decrement(n.value, step), n.MinimumValue()), true)
+	var newValue big.Int
+	newValue.Sub(&n.value, &step)
+	n.setValue(&newValue, true)
 }
 
-func (n *NumberInput[T]) DefaultSize(context *guigui.Context) image.Point {
+func (n *NumberInput) DefaultSize(context *guigui.Context) image.Point {
 	return n.textInput.DefaultSize(context)
 }
 
-func isSigned[T Integer]() bool {
-	var zero T
-	zero--
-	return zero < 0
-}
-
-func maxInteger[T Integer]() T {
-	if isSigned[T]() {
-		var zero T
-		return 1<<(unsafe.Sizeof(zero)*8-1) - 1
+func (n *NumberInput) clamp(value *big.Int) {
+	if n.minSet && value.Cmp(&n.min) < 0 {
+		value.Set(&n.min)
+		return
 	}
-	return ^T(0)
-}
-
-func minInteger[T Integer]() T {
-	if isSigned[T]() {
-		var zero T
-		return 1 << (unsafe.Sizeof(zero)*8 - 1)
+	if n.maxSet && value.Cmp(&n.max) > 0 {
+		value.Set(&n.max)
+		return
 	}
-	return 0
-}
-
-func increment[T Integer](value T, step T) T {
-	if value+step < value {
-		return maxInteger[T]()
-	}
-	return value + step
-}
-
-func decrement[T Integer](value T, step T) T {
-	if value-step > value {
-		return minInteger[T]()
-	}
-	return value - step
 }

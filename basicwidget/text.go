@@ -117,16 +117,20 @@ type Text struct {
 
 	tmpClipboard string
 
-	cachedTextSizePlus1         image.Point
-	cachedAutoWrapTextSizePlus1 image.Point
-	lastFace                    text.Face
-	lastAppScale                float64
-	lastWidth                   int
+	cachedTextSize map[textSizeCacheKey]image.Point
+	lastFace       text.Face
+	lastScale      float64
+	lastWidth      int
 
 	onValueChanged func(text string, committed bool)
 	onEnterPressed func(text string)
 
 	tmpLocales []language.Tag
+}
+
+type textSizeCacheKey struct {
+	autoWrap bool
+	bold     bool
 }
 
 func (t *Text) SetOnValueChanged(f func(text string, committed bool)) {
@@ -138,21 +142,21 @@ func (t *Text) SetOnEnterPressed(f func(text string)) {
 }
 
 func (t *Text) resetCachedTextSize() {
-	t.cachedTextSizePlus1 = image.Point{}
-	t.cachedAutoWrapTextSizePlus1 = image.Point{}
+	clear(t.cachedTextSize)
 }
 
 func (t *Text) resetAutoWrapCachedTextSize() {
-	t.cachedAutoWrapTextSizePlus1 = image.Point{}
+	delete(t.cachedTextSize, textSizeCacheKey{autoWrap: true, bold: false})
+	delete(t.cachedTextSize, textSizeCacheKey{autoWrap: true, bold: true})
 }
 
 func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	if f := t.face(context); t.lastFace != f {
+	if f := t.face(context, false); t.lastFace != f {
 		t.lastFace = f
 		t.resetCachedTextSize()
 	}
-	if t.lastAppScale != context.AppScale() {
-		t.lastAppScale = context.AppScale()
+	if t.lastScale != context.Scale() {
+		t.lastScale = context.Scale()
 		t.resetCachedTextSize()
 	}
 	if t.autoWrap && t.lastWidth != context.Size(t).X {
@@ -393,10 +397,10 @@ func (t *Text) textBounds(context *guigui.Context) image.Rectangle {
 	return b
 }
 
-func (t *Text) face(context *guigui.Context) text.Face {
+func (t *Text) face(context *guigui.Context, forceBold bool) text.Face {
 	size := FontSize(context) * (t.scaleMinus1 + 1)
 	weight := text.WeightMedium
-	if t.bold {
+	if t.bold || forceBold {
 		weight = text.WeightBold
 	}
 
@@ -862,7 +866,7 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 	if t.transparent > 0 {
 		textColor = draw.ScaleAlpha(textColor, 1-t.transparent)
 	}
-	face := t.face(context)
+	face := t.face(context, false)
 	op := &textutil.DrawOptions{
 		Options: textutil.Options{
 			AutoWrap:        t.autoWrap,
@@ -897,43 +901,47 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (t *Text) DefaultSize(context *guigui.Context) image.Point {
-	return t.textSize(context, true)
+	return t.textSize(context, true, false)
 }
 
 func (t *Text) TextSize(context *guigui.Context) image.Point {
-	return t.textSize(context, false)
+	return t.textSize(context, false, false)
 }
 
-func (t *Text) textSize(context *guigui.Context, forceUnwrap bool) image.Point {
+func (t *Text) boldTextSize(context *guigui.Context) image.Point {
+	return t.textSize(context, false, true)
+}
+
+func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold bool) image.Point {
 	useAutoWrap := t.autoWrap && !forceUnwrap
-	if useAutoWrap {
-		if t.cachedAutoWrapTextSizePlus1.X > 0 && t.cachedAutoWrapTextSizePlus1.Y > 0 {
-			return t.cachedAutoWrapTextSizePlus1.Add(image.Pt(-1, -1))
-		}
-	} else {
-		if t.cachedTextSizePlus1.X > 0 && t.cachedTextSizePlus1.Y > 0 {
-			return t.cachedTextSizePlus1.Add(image.Pt(-1, -1))
-		}
+
+	key := textSizeCacheKey{
+		autoWrap: useAutoWrap,
+		bold:     t.bold || forceBold,
+	}
+	if size, ok := t.cachedTextSize[key]; ok {
+		return size
 	}
 
 	txt := t.textToDraw(context, true)
 	var w, h float64
 	if useAutoWrap {
 		cw := context.Size(t).X
-		w, h = textutil.Measure(cw, txt, true, t.face(context), t.lineHeight(context))
+		w, h = textutil.Measure(cw, txt, true, t.face(context, forceBold), t.lineHeight(context))
 	} else {
 		// context.Size is not available as this causes infinite recursion, and is not needed. Give 0 as a width.
-		w, h = textutil.Measure(0, txt, false, t.face(context), t.lineHeight(context))
+		w, h = textutil.Measure(0, txt, false, t.face(context, forceBold), t.lineHeight(context))
 	}
 	w *= t.scaleMinus1 + 1
 	// If width is 0, the text's bounds and visible bounds are empty, and nothing including its cursor is rendered.
 	// Force to set a positive number as the width.
 	w = max(w, 1)
-	if useAutoWrap {
-		t.cachedAutoWrapTextSizePlus1 = image.Pt(int(w)+1, int(h)+1)
-	} else {
-		t.cachedTextSizePlus1 = image.Pt(int(w)+1, int(h)+1)
+
+	if t.cachedTextSize == nil {
+		t.cachedTextSize = map[textSizeCacheKey]image.Point{}
 	}
+	t.cachedTextSize[key] = image.Pt(int(w), int(h))
+
 	return image.Pt(int(w), int(h))
 }
 
@@ -978,7 +986,7 @@ func (t *Text) textIndexFromPosition(context *guigui.Context, position image.Poi
 	}
 	op := &textutil.Options{
 		AutoWrap:        t.autoWrap,
-		Face:            t.face(context),
+		Face:            t.face(context, false),
 		LineHeight:      t.lineHeight(context),
 		HorizontalAlign: textutil.HorizontalAlign(t.hAlign),
 		VerticalAlign:   textutil.VerticalAlign(t.vAlign),
@@ -1001,7 +1009,7 @@ func (t *Text) textPosition(context *guigui.Context, index int, showComposition 
 	txt := t.textToDraw(context, showComposition)
 	op := &textutil.Options{
 		AutoWrap:        t.autoWrap,
-		Face:            t.face(context),
+		Face:            t.face(context, false),
 		LineHeight:      t.lineHeight(context),
 		HorizontalAlign: textutil.HorizontalAlign(t.hAlign),
 		VerticalAlign:   textutil.VerticalAlign(t.vAlign),
