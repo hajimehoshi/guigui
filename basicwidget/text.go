@@ -686,6 +686,10 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 				slog.Error(err.Error())
 				return guigui.AbortHandlingInputByWidget(t)
 			}
+			if !t.multiline { // Ensure single-line constraint
+				ct = strings.ReplaceAll(ct, "\n", "")
+				ct = strings.ReplaceAll(ct, "\r", "")
+			}
 			text := t.field.Text()[:start] + ct + t.field.Text()[end:]
 			t.setTextAndSelection(text, start+len(ct), start+len(ct), -1)
 			return guigui.HandleInputByWidget(t)
