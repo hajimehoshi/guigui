@@ -60,6 +60,7 @@ type app struct {
 	visitedZs  map[int]struct{}
 	zs         []int
 	hitWidgets []Widget
+	buildCount int64
 
 	invalidatedRegions image.Rectangle
 
@@ -323,6 +324,8 @@ func (a *app) requestRedrawIfDifferentParentZ(widget Widget) {
 }
 
 func (a *app) build() error {
+	a.buildCount++
+
 	clear(a.visitedZs)
 	if a.visitedZs == nil {
 		a.visitedZs = map[int]struct{}{}
@@ -332,6 +335,7 @@ func (a *app) build() error {
 	if err := traverseWidget(a.root, func(widget Widget) error {
 		widgetState := widget.widgetState()
 
+		widgetState.buildAt = a.buildCount
 		if parent := widgetState.parent; parent != nil {
 			widgetState.z = parent.widgetState().z + widget.ZDelta()
 		} else {
@@ -582,7 +586,7 @@ func (a *app) drawDebugIfNeeded(screen *ebiten.Image) {
 }
 
 func (a *app) isWidgetHitAt(widget Widget) bool {
-	if !widget.widgetState().isInTree() {
+	if !widget.widgetState().isInTree(a.buildCount) {
 		return false
 	}
 	// hitWidgets are ordered by descending z values.

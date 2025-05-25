@@ -81,7 +81,8 @@ func (w *widgetsAndVisibleBounds) redrawIfDifferentParentZ(app *app) {
 type CustomDrawFunc func(dst, widgetImage *ebiten.Image, op *ebiten.DrawImageOptions)
 
 type widgetState struct {
-	root bool
+	root    bool
+	buildAt int64
 
 	position    image.Point
 	widthPlus1  int
@@ -107,11 +108,8 @@ type widgetState struct {
 	_ noCopy
 }
 
-func (w *widgetState) isInTree() bool {
-	p := w
-	for ; p.parent != nil; p = p.parent.widgetState() {
-	}
-	return p.root
+func (w *widgetState) isInTree(now int64) bool {
+	return w.buildAt == now
 }
 
 func (w *widgetState) isVisible() bool {

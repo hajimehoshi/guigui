@@ -335,7 +335,7 @@ func (c *Context) focus(widget Widget) {
 		return
 	}
 
-	if !ws.isInTree() {
+	if !ws.isInTree(c.app.buildCount) {
 		return
 	}
 	if c.app.focusedWidgetState == widget.widgetState() {
@@ -351,7 +351,7 @@ func (c *Context) focus(widget Widget) {
 
 func (c *Context) blur(widget Widget) {
 	widgetState := widget.widgetState()
-	if !widgetState.isInTree() {
+	if !widgetState.isInTree(c.app.buildCount) {
 		return
 	}
 	var unfocused bool
@@ -390,7 +390,7 @@ func (c *Context) IsFocusedOrHasFocusedChild(widget Widget) bool {
 	for {
 		widgetState := widget.widgetState()
 		if w == widgetState {
-			return widgetState.isInTree() && widgetState.isVisible()
+			return widgetState.isInTree(c.app.buildCount) && widgetState.isVisible()
 		}
 		if w.parent == nil {
 			break
