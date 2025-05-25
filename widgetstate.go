@@ -108,10 +108,7 @@ type widgetState struct {
 }
 
 func (w *widgetState) isInTree() bool {
-	p := w
-	for ; p.parent != nil; p = p.parent.widgetState() {
-	}
-	return p.root
+	return w.root || w.parent != nil
 }
 
 func (w *widgetState) isVisible() bool {
