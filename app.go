@@ -332,11 +332,6 @@ func (a *app) build() error {
 	if err := traverseWidget(a.root, func(widget Widget) error {
 		widgetState := widget.widgetState()
 
-		// Reset the current children before building.
-		for _, child := range widgetState.children {
-			child.widgetState().parent = nil
-		}
-
 		if parent := widgetState.parent; parent != nil {
 			widgetState.z = parent.widgetState().z + widget.ZDelta()
 		} else {
