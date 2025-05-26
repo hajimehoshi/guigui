@@ -87,22 +87,25 @@ func (b *Button) setKeepPressed(keep bool) {
 func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	appender.AppendChildWidgetWithBounds(&b.button, context.Bounds(b))
 
+	s := context.Size(b)
+	ds := b.defaultSize(context, false)
+
 	if b.content != nil {
-		r := b.button.radius(context)
-		contentP := context.Position(b).Add(image.Pt(r, r))
-		contentSize := b.contentSize(context)
+		contentP := context.Position(b)
+		contentP.X += (s.X - ds.X) / 2
+		contentP.Y += (s.Y - ds.Y) / 2
+
+		cs := context.Size(b.content)
+		contentP.X += buttonEdgeAndTextPadding(context) // TODO: Is this correct?
+		contentP.Y += (s.Y - cs.Y) / 2
 		if b.button.isPressed(context) {
 			contentP.Y += int(0.5 * context.Scale())
 		} else {
 			contentP.Y -= int(0.5 * context.Scale())
 		}
-		appender.AppendChildWidgetWithBounds(b.content, image.Rectangle{
-			Min: contentP,
-			Max: contentP.Add(contentSize),
-		})
+		appender.AppendChildWidgetWithPosition(b.content, contentP)
 	}
 
-	s := context.Size(b)
 	imgSize := b.iconSize(context)
 
 	tw := b.text.TextSize(context).X
@@ -114,14 +117,13 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	b.text.SetHorizontalAlign(HorizontalAlignCenter)
 	b.text.SetVerticalAlign(VerticalAlignMiddle)
 
-	ds := b.defaultSize(context, false)
 	textP := context.Position(b)
 	if b.icon.HasImage() {
 		textP.X += (s.X - ds.X) / 2
 		switch b.iconAlign {
 		case IconAlignStart:
 			textP.X += buttonEdgeAndImagePadding(context)
-			textP.X += imgSize.X + buttonTextAndImagePadding(context)
+			textP.X += imgSize.X + buttonContentAndImagePadding(context)
 		case IconAlignEnd:
 			textP.X += buttonEdgeAndTextPadding(context)
 		}
@@ -139,14 +141,19 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	})
 
 	imgP := context.Position(b)
-	if b.text.Value() != "" {
+	if b.text.Value() != "" || b.content != nil {
 		imgP.X += (s.X - ds.X) / 2
 		switch b.iconAlign {
 		case IconAlignStart:
 			imgP.X += buttonEdgeAndImagePadding(context)
 		case IconAlignEnd:
-			imgP.X += buttonEdgeAndTextPadding(context)
-			imgP.X += tw + buttonTextAndImagePadding(context)
+			if b.content != nil {
+				s := context.Size(b)
+				imgP.X += s.X - buttonEdgeAndImagePadding(context) - imgSize.X
+			} else {
+				imgP.X += buttonEdgeAndTextPadding(context)
+				imgP.X += tw + buttonContentAndImagePadding(context)
+			}
 		}
 	} else {
 		imgP.X += (s.X - imgSize.X) / 2
@@ -170,30 +177,34 @@ func (b *Button) DefaultSize(context *guigui.Context) image.Point {
 }
 
 func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Point {
-	dh := defaultButtonSize(context).Y
-	var w int
-	if forceBold {
-		w = b.text.boldTextSize(context).X
-	} else {
-		w = b.text.TextSize(context).X
+	h := defaultButtonSize(context).Y
+	var contentW, textW int
+	if b.content != nil {
+		contentW = b.content.DefaultSize(context).X
 	}
+	if forceBold {
+		textW = b.text.boldTextSize(context).X
+	} else {
+		textW = b.text.TextSize(context).X
+	}
+	w := max(contentW, textW)
 	if b.icon.HasImage() {
 		w += defaultIconSize(context)
-		if b.text.Value() != "" {
-			w += buttonTextAndImagePadding(context)
+		if b.text.Value() != "" || b.content != nil {
+			w += buttonContentAndImagePadding(context)
 		}
 		w += buttonEdgeAndTextPadding(context)
 		w += buttonEdgeAndImagePadding(context)
-		return image.Pt(w, dh)
+		return image.Pt(w, h)
 	}
-	return image.Pt(w+UnitSize(context), dh)
+	return image.Pt(w+UnitSize(context), h)
 }
 
 func (b *Button) setSharpenCorners(sharpenCorners draw.SharpenCorners) {
 	b.button.setSharpenCorners(sharpenCorners)
 }
 
-func buttonTextAndImagePadding(context *guigui.Context) int {
+func buttonContentAndImagePadding(context *guigui.Context) int {
 	return UnitSize(context) / 4
 }
 
@@ -207,21 +218,13 @@ func buttonEdgeAndImagePadding(context *guigui.Context) int {
 
 func (b *Button) iconSize(context *guigui.Context) image.Point {
 	s := context.Size(b)
-	if b.text.Value() != "" {
+	if b.text.Value() != "" || b.content != nil {
 		s := min(defaultIconSize(context), s.X, s.Y)
 		return image.Pt(s, s)
 	}
 	r := b.button.radius(context)
 	w := max(0, s.X-2*r)
 	h := max(defaultIconSize(context), s.Y-2*r)
-	return image.Pt(w, h)
-}
-
-func (b *Button) contentSize(context *guigui.Context) image.Point {
-	s := context.Size(b)
-	r := b.button.radius(context)
-	w := max(0, s.X-2*r)
-	h := max(0, s.Y-2*r)
 	return image.Pt(w, h)
 }
 

@@ -78,8 +78,10 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 
 func (d *DropdownList[T]) updateText() {
 	if item, ok := d.popupMenu.SelectedItem(); ok {
+		d.button.SetContent(item.Content)
 		d.button.SetText(item.Text)
 	} else {
+		d.button.SetContent(nil)
 		d.button.SetText("")
 	}
 }
@@ -131,7 +133,11 @@ func (d *DropdownList[T]) SelectItemByID(id T) {
 func (d *DropdownList[T]) DefaultSize(context *guigui.Context) image.Point {
 	// The button image affects the size.
 	d.updateButtonImage(context)
-	return context.Size(&d.button)
+	return d.button.DefaultSize(context)
+}
+
+func (d *DropdownList[T]) ItemTextColor(context *guigui.Context, index int) color.Color {
+	return d.popupMenu.ItemTextColor(context, index)
 }
 
 func (d *DropdownList[T]) IsPopupOpen() bool {
