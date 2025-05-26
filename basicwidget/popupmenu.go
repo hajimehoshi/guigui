@@ -14,6 +14,7 @@ type PopupMenuItem[T comparable] struct {
 	Text      string
 	TextColor color.Color
 	Header    bool
+	Content   guigui.Widget
 	Disabled  bool
 	Border    bool
 	ID        T
@@ -109,6 +110,7 @@ func (p *PopupMenu[T]) SetItems(items []PopupMenuItem[T]) {
 			Text:      item.Text,
 			TextColor: item.TextColor,
 			Header:    item.Header,
+			Content:   item.Content,
 			Disabled:  item.Disabled,
 			Border:    item.Border,
 			ID:        item.ID,
@@ -130,6 +132,7 @@ func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
 		Text:      listItem.Text,
 		TextColor: listItem.TextColor,
 		Header:    listItem.Header,
+		Content:   listItem.Content,
 		Disabled:  listItem.Disabled,
 		Border:    listItem.Border,
 		ID:        listItem.ID,
@@ -145,6 +148,7 @@ func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
 		Text:      listItem.Text,
 		TextColor: listItem.TextColor,
 		Header:    listItem.Header,
+		Content:   listItem.Content,
 		Disabled:  listItem.Disabled,
 		Border:    listItem.Border,
 		ID:        listItem.ID,

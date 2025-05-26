@@ -15,6 +15,7 @@ type DropdownListItem[T comparable] struct {
 	Text      string
 	TextColor color.Color
 	Header    bool
+	Content   guigui.Widget
 	Disabled  bool
 	Border    bool
 	ID        T
