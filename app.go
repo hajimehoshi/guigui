@@ -331,11 +331,12 @@ func (a *app) build() error {
 		a.visitedZs = map[int]struct{}{}
 	}
 
+	a.root.widgetState().builtAt = a.buildCount
+
 	var appender ChildWidgetAppender
 	if err := traverseWidget(a.root, func(widget Widget) error {
 		widgetState := widget.widgetState()
 
-		widgetState.buildAt = a.buildCount
 		if parent := widgetState.parent; parent != nil {
 			widgetState.z = parent.widgetState().z + widget.ZDelta()
 		} else {

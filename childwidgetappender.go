@@ -28,6 +28,7 @@ func (c *ChildWidgetAppender) AppendChildWidgetWithBounds(widget Widget, bounds 
 func (c *ChildWidgetAppender) appendChildWidget(widget Widget) {
 	widgetState := widget.widgetState()
 	widgetState.parent = c.widget
+	widgetState.builtAt = c.app.buildCount
 	cWidgetState := c.widget.widgetState()
 	cWidgetState.children = append(cWidgetState.children, widget)
 }

@@ -371,7 +371,8 @@ func (c *Context) blur(widget Widget) {
 }
 
 func (c *Context) IsFocused(widget Widget) bool {
-	return c.app.focusedWidgetState == widget.widgetState()
+	widgetState := widget.widgetState()
+	return widgetState.isInTree(c.app.buildCount) && widgetState.isVisible() && c.app.focusedWidgetState == widget.widgetState()
 }
 
 func (c *Context) IsFocusedOrHasFocusedChild(widget Widget) bool {

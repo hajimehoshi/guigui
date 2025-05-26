@@ -82,7 +82,7 @@ type CustomDrawFunc func(dst, widgetImage *ebiten.Image, op *ebiten.DrawImageOpt
 
 type widgetState struct {
 	root    bool
-	buildAt int64
+	builtAt int64
 
 	position    image.Point
 	widthPlus1  int
@@ -109,7 +109,7 @@ type widgetState struct {
 }
 
 func (w *widgetState) isInTree(now int64) bool {
-	return w.buildAt == now
+	return w.builtAt == now
 }
 
 func (w *widgetState) isVisible() bool {

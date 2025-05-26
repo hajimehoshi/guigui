@@ -161,10 +161,6 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))
 		guigui.RequestRedraw(t)
 	}
-	if context.IsFocused(t) {
-		context.SetFocused(&t.text, true)
-		guigui.RequestRedraw(t)
-	}
 
 	paddingStart, paddingTop, paddingEnd, paddingBottom := t.textInputPaddingInScrollableContent(context)
 
@@ -206,6 +202,10 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 		})
 	} else {
 		context.SetCustomDraw(&t.text, nil)
+	}
+	// Focusing the text widget works only after appending it.
+	if context.IsFocused(t) {
+		context.SetFocused(&t.text, true)
 	}
 
 	if t.icon.HasImage() {
