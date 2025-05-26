@@ -222,6 +222,9 @@ func (t *Text) SetSelectable(selectable bool) {
 }
 
 func (t *Text) Value() string {
+	if t.nextTextSet {
+		return t.nextText
+	}
 	return t.field.Text()
 }
 
