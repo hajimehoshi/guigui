@@ -174,6 +174,12 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		t.resetAutoWrapCachedTextSize()
 	}
 
+	if !t.prevFocused {
+		if t.nextTextSet {
+			t.setText(t.nextText)
+		}
+	}
+
 	focused := context.IsFocused(t)
 	if focused {
 		if !t.prevFocused {
@@ -187,10 +193,6 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	} else {
 		if t.prevFocused {
 			t.commit()
-		} else {
-			if t.nextTextSet {
-				t.setText(t.nextText)
-			}
 		}
 	}
 
