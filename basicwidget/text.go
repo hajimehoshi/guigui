@@ -544,7 +544,9 @@ func (t *Text) handleClick(context *guigui.Context, cursorPosition image.Point) 
 }
 
 func (t *Text) textToDraw(context *guigui.Context, showComposition bool) string {
-	if !context.IsFocused(t) && t.nextTextSet {
+	// context.IsFocused is not available, as this Text might not belong to a tree.
+	// TODO: This is a little tricky. Refactor this.
+	if !t.prevFocused && t.nextTextSet {
 		return t.nextText
 	}
 	if showComposition {
