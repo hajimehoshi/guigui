@@ -6,7 +6,6 @@ package basicwidget
 import (
 	"image"
 	"image/color"
-	"log/slog"
 
 	"github.com/hajimehoshi/guigui"
 )
@@ -34,18 +33,19 @@ func (d *DropdownList[T]) SetOnItemSelected(f func(index int)) {
 	d.onItemSelected = f
 }
 
-func (d *DropdownList[T]) updateButtonImage(context *guigui.Context) {
+func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	if item, ok := d.popupMenu.SelectedItem(); ok {
+		d.button.SetContent(item.Content)
+		d.button.SetText(item.Text)
+	} else {
+		d.button.SetContent(nil)
+		d.button.SetText("")
+	}
 	img, err := theResourceImages.Get("unfold_more", context.ColorMode())
 	if err != nil {
-		slog.Error(err.Error())
-		return
+		return err
 	}
 	d.button.SetIcon(img)
-}
-
-func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	d.updateButtonImage(context)
-	d.updateText()
 
 	d.button.SetOnDown(func() {
 		d.popupMenu.Open(context)
@@ -76,28 +76,16 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 	return nil
 }
 
-func (d *DropdownList[T]) updateText() {
-	if item, ok := d.popupMenu.SelectedItem(); ok {
-		d.button.SetContent(item.Content)
-		d.button.SetText(item.Text)
-	} else {
-		d.button.SetContent(nil)
-		d.button.SetText("")
-	}
-}
-
 func (d *DropdownList[T]) SetItems(items []DropdownListItem[T]) {
 	var popupMenuItems []PopupMenuItem[T]
 	for _, item := range items {
 		popupMenuItems = append(popupMenuItems, PopupMenuItem[T](item))
 	}
 	d.popupMenu.SetItems(popupMenuItems)
-	d.updateText()
 }
 
 func (d *DropdownList[T]) SetItemsByStrings(items []string) {
 	d.popupMenu.SetItemsByStrings(items)
-	d.updateText()
 }
 
 func (d *DropdownList[T]) SelectedItem() (DropdownListItem[T], bool) {
@@ -122,17 +110,13 @@ func (d *DropdownList[T]) SelectedItemIndex() int {
 
 func (d *DropdownList[T]) SelectItemByIndex(index int) {
 	d.popupMenu.SelectItemByIndex(index)
-	d.updateText()
 }
 
 func (d *DropdownList[T]) SelectItemByID(id T) {
 	d.popupMenu.SelectItemByID(id)
-	d.updateText()
 }
 
 func (d *DropdownList[T]) DefaultSize(context *guigui.Context) image.Point {
-	// The button image affects the size.
-	d.updateButtonImage(context)
 	return d.button.DefaultSize(context)
 }
 
