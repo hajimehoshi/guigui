@@ -88,12 +88,9 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	appender.AppendChildWidgetWithBounds(&b.button, context.Bounds(b))
 
 	s := context.Size(b)
-	ds := b.defaultSize(context, false)
 
 	if b.content != nil {
 		contentP := context.Position(b)
-		contentP.X += (s.X - ds.X) / 2
-		contentP.Y += (s.Y - ds.Y) / 2
 
 		if b.button.isPressed(context) {
 			contentP.Y += int(0.5 * context.Scale())
@@ -116,6 +113,8 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	}
 	b.text.SetHorizontalAlign(HorizontalAlignCenter)
 	b.text.SetVerticalAlign(VerticalAlignMiddle)
+
+	ds := b.defaultSize(context, false)
 
 	textP := context.Position(b)
 	if b.icon.HasImage() {
