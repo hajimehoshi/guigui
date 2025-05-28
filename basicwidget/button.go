@@ -175,12 +175,12 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 	h := defaultButtonSize(context).Y
 	var textAndImageW int
 	if b.text.Value() != "" {
-		if forceBold {
-			textAndImageW = b.text.boldTextSize(context).X
-		} else {
-			textAndImageW = b.text.TextSize(context).X
-		}
 		textAndImageW += buttonEdgeAndTextPadding(context)
+		if forceBold {
+			textAndImageW += b.text.boldTextSize(context).X
+		} else {
+			textAndImageW += b.text.TextSize(context).X
+		}
 	}
 	if b.icon.HasImage() {
 		if textAndImageW == 0 {
@@ -191,6 +191,8 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 			textAndImageW += buttonTextAndImagePadding(context)
 		}
 		textAndImageW += buttonEdgeAndImagePadding(context)
+	} else {
+		textAndImageW += buttonEdgeAndTextPadding(context)
 	}
 
 	var contentW int
