@@ -341,12 +341,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 			b.pressStartX = x
 			b.pressStartY = y
-			if right {
-				/*if l.callback != nil && l.callback.OnContextMenu != nil {
-					x, y := ebiten.CursorPosition()
-					l.callback.OnContextMenu(index, x, y)
-				}*/
-			}
 			b.startPressingIndexPlus1 = index + 1
 			b.startPressingLeft = left
 
@@ -357,11 +351,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 
 		case inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft):
-			if b.SelectedItemIndex() == index && b.startPressingLeft && time.Since(b.lastSelectingItemTime) > 400*time.Millisecond {
-				/*if l.callback != nil && l.callback.OnItemEditStarted != nil {
-					l.callback.OnItemEditStarted(index)
-				}*/
-			}
 			b.pressStartX = 0
 			b.pressStartY = 0
 			b.startPressingIndexPlus1 = 0
