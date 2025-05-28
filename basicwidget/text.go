@@ -127,10 +127,10 @@ type Text struct {
 
 	tmpClipboard string
 
-	cachedTextSize map[textSizeCacheKey]image.Point
-	lastFace       text.Face
-	lastScale      float64
-	lastWidth      int
+	cachedTextSizePlus1 [4]image.Point
+	lastFace            text.Face
+	lastScale           float64
+	lastWidth           int
 
 	onValueChanged func(text string, committed bool)
 	onEnterPressed func(text string)
@@ -138,9 +138,17 @@ type Text struct {
 	tmpLocales []language.Tag
 }
 
-type textSizeCacheKey struct {
-	autoWrap bool
-	bold     bool
+type textSizeCacheKey int
+
+func newTextSizeCacheKey(autoWrap, bold bool) textSizeCacheKey {
+	var key textSizeCacheKey
+	if autoWrap {
+		key |= 1 << 0
+	}
+	if bold {
+		key |= 1 << 1
+	}
+	return key
 }
 
 func (t *Text) SetOnValueChanged(f func(text string, committed bool)) {
@@ -152,12 +160,14 @@ func (t *Text) SetOnEnterPressed(f func(text string)) {
 }
 
 func (t *Text) resetCachedTextSize() {
-	clear(t.cachedTextSize)
+	for i := range t.cachedTextSizePlus1 {
+		t.cachedTextSizePlus1[i] = image.Point{}
+	}
 }
 
 func (t *Text) resetAutoWrapCachedTextSize() {
-	delete(t.cachedTextSize, textSizeCacheKey{autoWrap: true, bold: false})
-	delete(t.cachedTextSize, textSizeCacheKey{autoWrap: true, bold: true})
+	t.cachedTextSizePlus1[newTextSizeCacheKey(true, false)] = image.Point{}
+	t.cachedTextSizePlus1[newTextSizeCacheKey(true, true)] = image.Point{}
 }
 
 func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -944,12 +954,9 @@ func (t *Text) boldTextSize(context *guigui.Context) image.Point {
 func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold bool) image.Point {
 	useAutoWrap := t.autoWrap && !forceUnwrap
 
-	key := textSizeCacheKey{
-		autoWrap: useAutoWrap,
-		bold:     t.bold || forceBold,
-	}
-	if size, ok := t.cachedTextSize[key]; ok {
-		return size
+	key := newTextSizeCacheKey(useAutoWrap, t.bold || forceBold)
+	if size := t.cachedTextSizePlus1[key]; size != (image.Point{}) {
+		return size.Sub(image.Pt(1, 1))
 	}
 
 	txt := t.textToDraw(context, true)
@@ -965,12 +972,8 @@ func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold boo
 	// Force to set a positive number as the width.
 	w = max(w, 1)
 
-	if t.cachedTextSize == nil {
-		t.cachedTextSize = map[textSizeCacheKey]image.Point{}
-	}
-
 	s := image.Pt(int(math.Ceil(w)), int(math.Ceil(h)))
-	t.cachedTextSize[key] = s
+	t.cachedTextSizePlus1[key] = s.Add(image.Pt(1, 1))
 
 	return s
 }
