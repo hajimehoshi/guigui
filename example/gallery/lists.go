@@ -22,6 +22,8 @@ type Lists struct {
 	configForm       basicwidget.Form
 	showStripeText   basicwidget.Text
 	showStripeToggle basicwidget.Toggle
+	showFooterText   basicwidget.Text
+	showFooterToggle basicwidget.Toggle
 	movableText      basicwidget.Text
 	movableToggle    basicwidget.Toggle
 	enabledText      basicwidget.Text
@@ -36,10 +38,17 @@ func (l *Lists) SetModel(model *Model) {
 }
 
 func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	u := basicwidget.UnitSize(context)
+
 	// Lists
 	l.listText.SetValue("Text list")
 
 	l.list.SetItemBorderVisible(l.model.Lists().IsStripeVisible())
+	if l.model.Lists().IsFooterVisible() {
+		l.list.SetFooterHeight(u)
+	} else {
+		l.list.SetFooterHeight(0)
+	}
 	l.list.SetOnItemsMoved(func(from, count, to int) {
 		idx := l.model.Lists().MoveListItems(from, count, to)
 		l.list.SelectItemByIndex(idx)
@@ -64,6 +73,10 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		l.model.Lists().SetStripeVisible(value)
 	})
 	l.showStripeToggle.SetValue(l.model.Lists().IsStripeVisible())
+	l.showFooterText.SetValue("Show footer")
+	l.showFooterToggle.SetOnValueChanged(func(value bool) {
+		l.model.Lists().SetFooterVisible(value)
+	})
 	l.movableText.SetValue("Enable to move items")
 	l.movableToggle.SetValue(l.model.Lists().Movable())
 	l.movableToggle.SetOnValueChanged(func(value bool) {
@@ -81,6 +94,10 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 			SecondaryWidget: &l.showStripeToggle,
 		},
 		{
+			PrimaryWidget:   &l.showFooterText,
+			SecondaryWidget: &l.showFooterToggle,
+		},
+		{
 			PrimaryWidget:   &l.movableText,
 			SecondaryWidget: &l.movableToggle,
 		},
@@ -90,7 +107,6 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 	})
 
-	u := basicwidget.UnitSize(context)
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(l).Inset(u / 2),
 		Heights: []layout.Size{

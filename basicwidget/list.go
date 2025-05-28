@@ -64,6 +64,10 @@ func (l *List[T]) SetCheckmarkIndex(index int) {
 	l.list.SetCheckmarkIndex(index)
 }
 
+func (l *List[T]) SetFooterHeight(height int) {
+	l.list.SetFooterHeight(height)
+}
+
 func (l *List[T]) updateListItems() {
 	l.listItemWidgets = adjustSliceSize(l.listItemWidgets, len(l.listItems))
 	l.baseListItems = adjustSliceSize(l.baseListItems, len(l.listItems))

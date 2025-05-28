@@ -65,6 +65,7 @@ type baseList[T comparable] struct {
 	pressStartY             int
 	startPressingIndexPlus1 int
 	startPressingLeft       bool
+	footerHeight            int
 
 	cachedDefaultWidth  int
 	cachedDefaultHeight int
@@ -95,20 +96,30 @@ func (b *baseList[T]) SetCheckmarkIndex(index int) {
 	guigui.RequestRedraw(b)
 }
 
+func (b *baseList[T]) SetFooterHeight(height int) {
+	if b.footerHeight == height {
+		return
+	}
+	b.footerHeight = height
+	guigui.RequestRedraw(b)
+}
+
 func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
-	return image.Pt(context.Size(b).X, b.defaultHeight(context))
+	return image.Pt(context.Size(b).X, b.defaultHeight(context)-b.footerHeight)
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
-		y := b.itemYFromIndex(context, idx) - RoundedCornerRadius(context)
+		y := b.itemYFromIndex(context, idx) - RoundedCornerRadius(context) - b.footerHeight
 		b.scrollOverlay.SetOffset(context, b.contentSize(context), 0, float64(-y))
 		b.indexToJumpPlus1 = 0
 	}
 
-	appender.AppendChildWidgetWithBounds(&b.scrollOverlay, context.Bounds(b))
+	bounds := context.Bounds(b)
+	bounds.Max.Y -= b.footerHeight
+	appender.AppendChildWidgetWithBounds(&b.scrollOverlay, bounds)
 
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
@@ -278,7 +289,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			_, y := ebiten.CursorPosition()
 			p := context.Position(b)
-			h := context.Size(b).Y
+			h := context.Size(b).Y - b.footerHeight
 			var dy float64
 			if upperY := p.Y + UnitSize(context); y < upperY {
 				dy = float64(upperY-y) / 4
@@ -569,7 +580,7 @@ func (b *baseList[T]) defaultWidth(context *guigui.Context) int {
 
 func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
 	if b.cachedDefaultHeight > 0 {
-		return b.cachedDefaultHeight
+		return b.cachedDefaultHeight + b.footerHeight
 	}
 
 	var h int
@@ -580,6 +591,7 @@ func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
 	}
 	h += RoundedCornerRadius(context)
 	b.cachedDefaultHeight = h
+	h += b.footerHeight
 	return h
 }
 
@@ -598,12 +610,47 @@ type listFrame[T comparable] struct {
 	list *baseList[T]
 }
 
+func (l *listFrame[T]) footerBounds(context *guigui.Context) image.Rectangle {
+	bounds := context.Bounds(l)
+	bounds.Min.Y = bounds.Max.Y - l.list.footerHeight
+	return bounds
+}
+
+func (l *listFrame[T]) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
+	if context.IsWidgetHitAtCursor(l) {
+		if image.Pt(ebiten.CursorPosition()).In(l.footerBounds(context)) {
+			return guigui.HandleInputByWidget(l)
+		}
+	}
+	return guigui.HandleInputResult{}
+}
+
 func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
+
+	// Draw a footer border.
+	if l.list.footerHeight > 0 {
+		bounds := l.footerBounds(context)
+		bounds.Min.Y = bounds.Max.Y - l.list.footerHeight
+		draw.DrawRoundedRectWithSharpenCorners(context, dst, bounds, draw.ControlColor(context.ColorMode(), context.IsEnabled(l)), RoundedCornerRadius(context), draw.SharpenCorners{
+			UpperStart: true,
+			UpperEnd:   true,
+			LowerStart: false,
+			LowerEnd:   false,
+		})
+
+		x0 := float32(bounds.Min.X)
+		x1 := float32(bounds.Max.X)
+		y0 := float32(bounds.Min.Y)
+		y1 := float32(bounds.Min.Y)
+		clr := draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.9, 0.4)
+		vector.StrokeLine(dst, x0, y0, x1, y1, float32(context.Scale()), clr, false)
+	}
+
+	bounds := context.Bounds(l)
 	border := draw.RoundedRectBorderTypeInset
 	if l.list.style != ListStyleNormal {
 		border = draw.RoundedRectBorderTypeOutset
 	}
-	bounds := context.Bounds(l)
 	clr1, clr2 := draw.BorderColors(context.ColorMode(), border, false)
 	borderWidth := float32(1 * context.Scale())
 	draw.DrawRoundedRectBorder(context, dst, bounds, clr1, clr2, RoundedCornerRadius(context), borderWidth, border)
