@@ -25,14 +25,6 @@ type List[T comparable] struct {
 	listItemHeightPlus1 int
 }
 
-/*type ListCallback struct {
-	OnItemSelected    func(index int)
-	OnItemEditStarted func(index int, str string) (from int)
-	OnItemEditEnded   func(index int, str string)
-	OnItemDropped     func(from, to int)
-	OnContextMenu     func(index int, x, y int)
-}*/
-
 type ListItem[T comparable] struct {
 	Text      string
 	TextColor color.Color
@@ -47,47 +39,6 @@ type ListItem[T comparable] struct {
 func (t *ListItem[T]) selectable() bool {
 	return !t.Header && !t.Disabled && !t.Border
 }
-
-/*func NewTextList(settings *model.Settings, callback *TextListCallback) *TextList {
-	t := &TextList{
-		settings: settings,
-		callback: callback,
-	}
-	t.list = NewList(settings, &ListCallback{
-		OnItemSelected: func(index int) {
-			if callback != nil && callback.OnItemSelected != nil {
-				callback.OnItemSelected(index)
-			}
-		},
-		OnItemEditStarted: func(index int) {
-			if index < 0 || index >= len(t.textListItems) {
-				return
-			}
-			if !t.textListItems[index].selectable() {
-				return
-			}
-			item, ok := t.textListItems[index].listItem.WidgetWithHeight.(*textListTextItem)
-			if !ok {
-				return
-			}
-			if callback != nil && callback.OnItemEditStarted != nil {
-				item.edit(callback.OnItemEditStarted(index, item.textListItem.Text))
-			}
-		},
-		OnItemDropped: func(from int, to int) {
-			if callback != nil && callback.OnItemDropped != nil {
-				callback.OnItemDropped(from, to)
-			}
-		},
-		OnContextMenu: func(index int, x, y int) {
-			if callback != nil && callback.OnContextMenu != nil {
-				callback.OnContextMenu(index, x, y)
-			}
-		},
-	})
-	t.AddChild(t.list, &view.IdentityLayouter{})
-	return t
-}*/
 
 func (l *List[T]) SetItemBorderVisible(visible bool) {
 	l.list.SetStripeVisible(visible)
@@ -291,15 +242,6 @@ func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	return image.Pt(w, h)
 }
 
-/*func (t *textListItemWidget[T]) index() int {
-	for i, tt := range t.textList.textListItemWidgets {
-		if tt == t {
-			return i
-		}
-	}
-	return -1
-}*/
-
 func (l *listItemWidget[T]) selectable() bool {
 	return l.item.selectable() && !l.item.Border
 }
@@ -312,45 +254,3 @@ func (l *listItemWidget[T]) listItem() baseListItem[T] {
 		ID:         l.item.ID,
 	}
 }
-
-/*func (t *textListTextItem) edit(from int) {
-	t.label.Hide()
-	t0 := t.textListItem.Text[:from]
-	var l0 *Label
-	if t0 != "" {
-		l0 = NewLabel(t.settings)
-		l0.SetText(t0)
-		t.AddChild(l0, &view.IdentityLayouter{})
-	}
-	var tf *TextInput
-	tf = NewTextInput(t.settings, &TextInputCallback{
-		OnTextUpdated: func(value string) {
-			t.textListItem.Text = t0 + value
-		},
-		OnTextConfirmed: func(value string) {
-			t.textListItem.Text = t0 + value
-
-			t.label.SetText(t.labelText())
-			if l0 != nil {
-				l0.RemoveSelf()
-			}
-			tf.RemoveSelf()
-			t.label.Show()
-
-			if t.textList.callback != nil && t.textList.callback.OnItemEditEnded != nil {
-				t.textList.callback.OnItemEditEnded(t.index(), t0+value)
-			}
-		},
-	})
-	tf.SetText(t.textListItem.Text[from:])
-	tf.SetHorizontalAlign(HorizontalAlignStart)
-	t.AddChild(tf, view.LayoutFunc(func(args view.WidgetArgs) image.Rectangle {
-		bounds := args.Bounds
-		if l0 != nil {
-			bounds.Min.X += l0.Width(args.Scale)
-		}
-		return bounds
-	}))
-	tf.SelectAll()
-	tf.Focus()
-}*/
