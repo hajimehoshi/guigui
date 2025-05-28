@@ -95,15 +95,15 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		contentP.X += (s.X - ds.X) / 2
 		contentP.Y += (s.Y - ds.Y) / 2
 
-		cs := context.Size(b.content)
-		contentP.X += buttonEdgeAndImagePadding(context)
-		contentP.Y += (s.Y - cs.Y) / 2
 		if b.button.isPressed(context) {
 			contentP.Y += int(0.5 * context.Scale())
 		} else {
 			contentP.Y -= int(0.5 * context.Scale())
 		}
-		appender.AppendChildWidgetWithPosition(b.content, contentP)
+		appender.AppendChildWidgetWithBounds(b.content, image.Rectangle{
+			Min: contentP,
+			Max: contentP.Add(s),
+		})
 	}
 
 	imgSize := b.iconSize(context)
@@ -186,10 +186,10 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 		if textAndImageW == 0 {
 			textAndImageW += buttonEdgeAndImagePadding(context)
 		}
-		textAndImageW += defaultIconSize(context)
 		if b.text.Value() != "" {
 			textAndImageW += buttonTextAndImagePadding(context)
 		}
+		textAndImageW += defaultIconSize(context)
 		textAndImageW += buttonEdgeAndImagePadding(context)
 	} else {
 		textAndImageW += buttonEdgeAndTextPadding(context)
@@ -198,7 +198,6 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 	var contentW int
 	if b.content != nil {
 		contentW = b.content.DefaultSize(context).X
-		contentW += 2 * buttonEdgeAndImagePadding(context)
 	}
 
 	return image.Pt(max(textAndImageW, contentW), h)

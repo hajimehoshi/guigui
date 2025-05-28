@@ -138,7 +138,7 @@ type dropdownListButtonContent struct {
 }
 
 func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	paddingStartX := buttonEdgeAndTextPadding(context) - buttonEdgeAndImagePadding(context)
+	paddingStartX := buttonEdgeAndTextPadding(context)
 
 	bounds := context.Bounds(d)
 
@@ -166,7 +166,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *gui
 
 	iconSize := defaultIconSize(context)
 	imgP := image.Point{
-		X: bounds.Max.X - iconSize,
+		X: bounds.Max.X - buttonEdgeAndImagePadding(context) - iconSize,
 		Y: bounds.Min.Y + (bounds.Dy()-iconSize)/2,
 	}
 	imgBounds := image.Rectangle{
@@ -179,7 +179,8 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *gui
 }
 
 func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.Point {
-	paddingStartX := buttonEdgeAndTextPadding(context) - buttonEdgeAndImagePadding(context)
+	paddingStartX := buttonEdgeAndTextPadding(context)
+	paddingEndX := buttonEdgeAndImagePadding(context)
 
 	var contentSize image.Point
 	if d.content != nil {
@@ -188,7 +189,7 @@ func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.P
 	textSize := d.text.DefaultSize(context)
 	iconSize := defaultIconSize(context)
 	return image.Point{
-		X: paddingStartX + max(contentSize.X, textSize.X) + buttonTextAndImagePadding(context) + iconSize,
+		X: paddingStartX + max(contentSize.X, textSize.X) + buttonTextAndImagePadding(context) + iconSize + paddingEndX,
 		Y: max(contentSize.Y, textSize.Y, iconSize),
 	}
 }
