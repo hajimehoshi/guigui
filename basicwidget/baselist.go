@@ -20,6 +20,7 @@ type ListStyle int
 
 const (
 	ListStyleNormal ListStyle = iota
+	ListStyleEditor
 	ListStyleSidebar
 	ListStyleMenu
 )
@@ -59,8 +60,7 @@ type baseList[T comparable] struct {
 	indexToJumpPlus1        int
 	dragSrcIndexPlus1       int
 	dragDstIndexPlus1       int
-	pressStartX             int
-	pressStartY             int
+	pressStartPlus1         image.Point
 	startPressingIndexPlus1 int
 	startPressingLeft       bool
 	footerHeight            int
@@ -107,6 +107,12 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	if b.style == ListStyleEditor && !context.IsFocused(b) {
+		if b.abstractList.SelectItemByIndex(-1, false) {
+			guigui.RequestRedraw(b)
+		}
+	}
+
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
@@ -315,10 +321,10 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	}
 
 	index := b.hoveredItemIndex(context)
+	left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+	right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
 	if index >= 0 && index < b.abstractList.ItemCount() {
-		x, y := ebiten.CursorPosition()
-		left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-		right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
+		c := image.Pt(ebiten.CursorPosition())
 
 		switch {
 		case left || right:
@@ -328,7 +334,9 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 
 			wasFocused := context.IsFocusedOrHasFocusedChild(b)
-			if item, ok := b.abstractList.ItemByIndex(index); ok {
+			if b.style == ListStyleEditor {
+				context.SetFocused(b, true)
+			} else if item, ok := b.abstractList.ItemByIndex(index); ok {
 				context.SetFocused(item.Content, true)
 			} else {
 				context.SetFocused(b, true)
@@ -336,30 +344,31 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			if b.SelectedItemIndex() != index || !wasFocused || b.style == ListStyleMenu {
 				b.selectItemByIndex(index, true)
 			}
-			b.pressStartX = x
-			b.pressStartY = y
+			b.pressStartPlus1 = c.Add(image.Pt(1, 1))
 			b.startPressingIndexPlus1 = index + 1
 			b.startPressingLeft = left
 
 		case ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft):
 			item, _ := b.abstractList.ItemByIndex(index)
-			if item.Movable && b.SelectedItemIndex() == index && b.startPressingIndexPlus1-1 == index && (b.pressStartX != x || b.pressStartY != y) {
+			if item.Movable && b.SelectedItemIndex() == index && b.startPressingIndexPlus1-1 == index && (b.pressStartPlus1 != c.Add(image.Pt(1, 1))) {
 				b.dragSrcIndexPlus1 = index + 1
 			}
 
 		case inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft):
-			b.pressStartX = 0
-			b.pressStartY = 0
+			b.pressStartPlus1 = image.Point{}
 			b.startPressingIndexPlus1 = 0
 			b.startPressingLeft = false
 		}
 
 		return guigui.HandleInputByWidget(b)
+	} else if b.style == ListStyleEditor && (left || right) {
+		if b.abstractList.SelectItemByIndex(-1, false) {
+			guigui.RequestRedraw(b)
+		}
 	}
 
 	b.dragSrcIndexPlus1 = 0
-	b.pressStartX = 0
-	b.pressStartY = 0
+	b.pressStartPlus1 = image.Point{}
 
 	return guigui.HandleInputResult{}
 }
@@ -380,7 +389,7 @@ func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
 func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 	// Adjust the bounds based on the list style (inset or outset).
 	switch b.style {
-	case ListStyleNormal:
+	case ListStyleNormal, ListStyleEditor:
 		y += int(0.5 * context.Scale())
 	case ListStyleMenu:
 		y += int(-0.5 * context.Scale())
@@ -419,7 +428,7 @@ func (b *baseList[T]) selectedItemColor(context *guigui.Context) color.Color {
 
 func (b *baseList[T]) drawStripe(context *guigui.Context, dst *ebiten.Image, bounds image.Rectangle) {
 	r := RoundedCornerRadius(context)
-	if b.style != ListStyleNormal {
+	if b.style != ListStyleNormal && b.style != ListStyleEditor {
 		r = 0
 	}
 	clr := draw.SecondaryControlColor(context.ColorMode(), context.IsEnabled(b))
@@ -434,7 +443,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	var clr color.Color
 	switch b.style {
 	case ListStyleSidebar:
-	case ListStyleNormal:
+	case ListStyleNormal, ListStyleEditor:
 		clr = draw.ControlColor(context.ColorMode(), context.IsEnabled(b))
 	case ListStyleMenu:
 		clr = draw.SecondaryControlColor(context.ColorMode(), context.IsEnabled(b))
@@ -491,12 +500,20 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 				if !draw.OverlapsWithRoundedCorner(context.Bounds(b), r, bounds) {
 					dst.SubImage(bounds).(*ebiten.Image).Fill(clr)
 				} else {
-					draw.FillInRoundedCornerRect(context, dst, context.Bounds(b), r, bounds, clr)
+					if b.style != ListStyleEditor {
+						draw.FillInRoundedCornerRect(context, dst, context.Bounds(b), r, bounds, clr)
+					} else {
+						// TODO: Implement this.
+					}
 				}
 			} else {
 				bounds.Min.X -= RoundedCornerRadius(context)
 				bounds.Max.X += RoundedCornerRadius(context)
-				draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
+				if b.style != ListStyleEditor {
+					draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
+				} else {
+					draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
+				}
 			}
 		}
 	}
@@ -512,7 +529,11 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			if b.style == ListStyleMenu {
 				clr = draw.Color(context.ColorMode(), draw.ColorTypeAccent, 0.5)
 			}
-			draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
+			if b.style != ListStyleEditor {
+				draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
+			} else {
+				draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
+			}
 		}
 	}
 
@@ -634,7 +655,7 @@ func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	bounds := context.Bounds(l)
 	border := draw.RoundedRectBorderTypeInset
-	if l.list.style != ListStyleNormal {
+	if l.list.style != ListStyleNormal && l.list.style != ListStyleEditor {
 		border = draw.RoundedRectBorderTypeOutset
 	}
 	clr1, clr2 := draw.BorderColors(context.ColorMode(), border, false)
