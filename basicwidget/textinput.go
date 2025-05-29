@@ -67,6 +67,10 @@ func (t *TextInput) ForceSetValue(text string) {
 	t.text.ForceSetValue(text)
 }
 
+func (t *TextInput) CommitWithCurrentInputValue() {
+	t.text.CommitWithCurrentInputValue()
+}
+
 func (t *TextInput) SetMultiline(multiline bool) {
 	t.text.SetMultiline(multiline)
 }

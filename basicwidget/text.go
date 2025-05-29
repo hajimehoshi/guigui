@@ -257,13 +257,25 @@ func (t *Text) ForceSetValue(text string) {
 	t.setText(text)
 }
 
-func (t *Text) setText(text string) {
+func (t *Text) CommitWithCurrentInputValue() {
+	changed := t.setText(t.field.Text())
+	if changed {
+		return
+	}
+	// Fire the event even if the text is not changed.
+	if t.onValueChanged != nil {
+		t.onValueChanged(t.field.Text(), true)
+	}
+}
+
+func (t *Text) setText(text string) bool {
 	start, end := t.field.Selection()
 	start = min(start, len(text))
 	end = min(end, len(text))
-	t.setTextAndSelection(text, start, end, -1)
+	changed := t.setTextAndSelection(text, start, end, -1)
 	t.nextText = ""
 	t.nextTextSet = false
+	return changed
 }
 
 func (t *Text) selectAll() {
@@ -274,7 +286,7 @@ func (t *Text) setSelection(start, end int) {
 	t.setTextAndSelection(t.field.Text(), start, end, -1)
 }
 
-func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) {
+func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) bool {
 	if !t.multiline {
 		text, start, end, shiftIndex = replaceNewLinesWithSpace(text, start, end, shiftIndex)
 	}
@@ -286,7 +298,7 @@ func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) 
 
 	textChanged := t.field.Text() != text
 	if s, e := t.field.Selection(); t.field.Text() == text && s == start && e == end {
-		return
+		return false
 	}
 	t.field.SetTextAndSelection(text, start, end)
 	guigui.RequestRedraw(t)
@@ -296,6 +308,7 @@ func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) 
 			t.onValueChanged(t.field.Text(), false)
 		}
 	}
+	return true
 }
 
 func (t *Text) SetLocales(locales []language.Tag) {
