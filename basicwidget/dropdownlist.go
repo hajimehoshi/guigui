@@ -34,7 +34,7 @@ func (d *DropdownList[T]) SetOnItemSelected(f func(index int)) {
 	d.onItemSelected = f
 }
 
-func (d *DropdownList[T]) updateButttonContent() {
+func (d *DropdownList[T]) updateButtonContent() {
 	if item, ok := d.popupMenu.SelectedItem(); ok {
 		if item.Content != nil {
 			d.buttonContent.content = item.Content
@@ -50,7 +50,7 @@ func (d *DropdownList[T]) updateButttonContent() {
 }
 
 func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	d.updateButttonContent()
+	d.updateButtonContent()
 
 	d.button.SetOnDown(func() {
 		d.popupMenu.Open(context)
@@ -123,7 +123,7 @@ func (d *DropdownList[T]) SelectItemByID(id T) {
 
 func (d *DropdownList[T]) DefaultSize(context *guigui.Context) image.Point {
 	// Update the button content to reflect the current selected item.
-	d.updateButttonContent()
+	d.updateButtonContent()
 	return d.button.DefaultSize(context)
 }
 
