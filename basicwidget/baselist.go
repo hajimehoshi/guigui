@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -56,7 +55,6 @@ type baseList[T comparable] struct {
 	style                      ListStyle
 	checkmarkIndexPlus1        int
 	lastHoverredItemIndexPlus1 int
-	lastSelectingItemTime      time.Time // TODO: Use ebiten.Tick.
 
 	indexToJumpPlus1        int
 	dragSrcIndexPlus1       int
@@ -337,7 +335,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 			if b.SelectedItemIndex() != index || !wasFocused || b.style == ListStyleMenu {
 				b.selectItemByIndex(index, true)
-				b.lastSelectingItemTime = time.Now()
 			}
 			b.pressStartX = x
 			b.pressStartY = y
