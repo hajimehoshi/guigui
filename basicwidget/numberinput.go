@@ -96,6 +96,18 @@ func (n *NumberInput) SetValueUint64(value uint64) {
 	n.SetValueBigInt((&big.Int{}).SetUint64(value))
 }
 
+func (n *NumberInput) ForceSetValueBigInt(value *big.Int) {
+	n.abstractNumberInput.ForceSetValueBigInt(value, true)
+}
+
+func (n *NumberInput) ForceSetValueInt64(value int64) {
+	n.abstractNumberInput.ForceSetValueInt64(value, true)
+}
+
+func (n *NumberInput) ForceSetValueUint64(value uint64) {
+	n.abstractNumberInput.ForceSetValueUint64(value, true)
+}
+
 func (n *NumberInput) MinimumValueBigInt() *big.Int {
 	return n.abstractNumberInput.MinimumValueBigInt()
 }
@@ -140,6 +152,10 @@ func (n *NumberInput) SetStepUint64(step uint64) {
 	n.abstractNumberInput.SetStepUint64(step)
 }
 
+func (n *NumberInput) CommitWithCurrentInputValue() {
+	n.textInput.CommitWithCurrentInputValue()
+}
+
 func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
 		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)
@@ -160,7 +176,7 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 	n.textInput.SetTabular(true)
 	n.textInput.setPaddingEnd(UnitSize(context) / 2)
 	n.textInput.SetOnValueChanged(func(text string, committed bool) {
-		n.abstractNumberInput.SetString(text, committed)
+		n.abstractNumberInput.SetString(text, false, committed)
 		if committed {
 			n.nextValue = nil
 		}
@@ -241,7 +257,7 @@ func (n *NumberInput) increment() {
 	if !n.IsEditable() {
 		return
 	}
-	n.textInput.CommitWithCurrentInputValue()
+	n.CommitWithCurrentInputValue()
 	n.abstractNumberInput.Increment()
 }
 
@@ -249,6 +265,6 @@ func (n *NumberInput) decrement() {
 	if !n.IsEditable() {
 		return
 	}
-	n.textInput.CommitWithCurrentInputValue()
+	n.CommitWithCurrentInputValue()
 	n.abstractNumberInput.Decrement()
 }

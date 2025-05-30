@@ -101,6 +101,18 @@ func (a *abstractNumberInput) SetValueUint64(value uint64, committed bool) {
 	a.setValue((&big.Int{}).SetUint64(value), false, committed)
 }
 
+func (a *abstractNumberInput) ForceSetValueBigInt(value *big.Int, committed bool) {
+	a.setValue(value, true, committed)
+}
+
+func (a *abstractNumberInput) ForceSetValueInt64(value int64, committed bool) {
+	a.setValue((&big.Int{}).SetInt64(value), true, committed)
+}
+
+func (a *abstractNumberInput) ForceSetValueUint64(value uint64, committed bool) {
+	a.setValue((&big.Int{}).SetUint64(value), true, committed)
+}
+
 func (a *abstractNumberInput) setValue(value *big.Int, force bool, committed bool) {
 	a.clamp(value)
 	if a.value.Cmp(value) == 0 {
@@ -237,7 +249,7 @@ var numberTextReplacer = strings.NewReplacer(
 	"\uff19", "9",
 )
 
-func (a *abstractNumberInput) SetString(text string, committed bool) {
+func (a *abstractNumberInput) SetString(text string, force bool, committed bool) {
 	text = strings.TrimSpace(text)
 	text = numberTextReplacer.Replace(text)
 
@@ -245,7 +257,7 @@ func (a *abstractNumberInput) SetString(text string, committed bool) {
 	if _, ok := v.SetString(text, 10); !ok {
 		return
 	}
-	a.setValue(&v, false, committed)
+	a.setValue(&v, force, committed)
 }
 
 func (n *abstractNumberInput) Increment() {
