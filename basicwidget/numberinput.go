@@ -58,14 +58,23 @@ func (n *NumberInput) SetOnValueChangedUint64(f func(value uint64, committed boo
 }
 
 func (n *NumberInput) ValueBigInt() *big.Int {
+	if n.nextValue != nil {
+		return n.nextValue
+	}
 	return n.abstractNumberInput.ValueBigInt()
 }
 
 func (n *NumberInput) ValueInt64() int64 {
+	if n.nextValue != nil {
+		return n.nextValue.Int64()
+	}
 	return n.abstractNumberInput.ValueInt64()
 }
 
 func (n *NumberInput) ValueUint64() uint64 {
+	if n.nextValue != nil {
+		return n.nextValue.Uint64()
+	}
 	return n.abstractNumberInput.ValueUint64()
 }
 
@@ -132,12 +141,18 @@ func (n *NumberInput) SetStepUint64(step uint64) {
 }
 
 func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
+		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)
+		n.nextValue = nil
+	}
+
 	n.abstractNumberInput.SetOnValueChangedString(func(text string, force bool) {
 		if force {
 			n.textInput.ForceSetValue(text)
 		} else {
 			n.textInput.SetValue(text)
 		}
+		n.nextValue = nil
 	})
 
 	n.textInput.SetValue(n.abstractNumberInput.ValueString())
@@ -146,6 +161,9 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 	n.textInput.setPaddingEnd(UnitSize(context) / 2)
 	n.textInput.SetOnValueChanged(func(text string, committed bool) {
 		n.abstractNumberInput.SetString(text, committed)
+		if committed {
+			n.nextValue = nil
+		}
 	})
 	appender.AppendChildWidgetWithBounds(&n.textInput, context.Bounds(n))
 
@@ -203,14 +221,6 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 	return nil
 }
 
-func (n *NumberInput) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
-	if n.nextValue != nil && !context.IsFocusedOrHasFocusedChild(n) {
-		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)
-		n.nextValue = nil
-	}
-	return guigui.HandleInputResult{}
-}
-
 func (n *NumberInput) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {
 	if isKeyRepeating(ebiten.KeyUp) {
 		n.increment()
@@ -231,14 +241,18 @@ func (n *NumberInput) increment() {
 	if !n.IsEditable() {
 		return
 	}
+	n.textInput.CommitWithCurrentInputValue()
 	n.abstractNumberInput.SetString(n.textInput.Value(), true)
 	n.abstractNumberInput.Increment()
+	n.nextValue = nil
 }
 
 func (n *NumberInput) decrement() {
 	if !n.IsEditable() {
 		return
 	}
+	n.textInput.CommitWithCurrentInputValue()
 	n.abstractNumberInput.SetString(n.textInput.Value(), true)
 	n.abstractNumberInput.Decrement()
+	n.nextValue = nil
 }

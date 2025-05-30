@@ -160,6 +160,10 @@ func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 	return t.text.TextSize(context).Add(image.Pt(start+end, top+bottom))
 }
 
+func (t *TextInput) isFocused(context *guigui.Context) bool {
+	return context.IsFocused(t) || context.IsFocused(&t.text)
+}
+
 func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if t.prevFocused != (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))
