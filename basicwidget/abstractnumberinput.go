@@ -245,8 +245,7 @@ func (a *abstractNumberInput) SetString(text string, committed bool) {
 	if _, ok := v.SetString(text, 10); !ok {
 		return
 	}
-	a.SetValueBigInt(&v, committed)
-	a.fireValueChangeEvents(false, committed)
+	a.setValue(&v, false, committed)
 }
 
 func (n *abstractNumberInput) Increment() {
