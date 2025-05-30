@@ -242,9 +242,7 @@ func (n *NumberInput) increment() {
 		return
 	}
 	n.textInput.CommitWithCurrentInputValue()
-	n.abstractNumberInput.SetString(n.textInput.Value(), true)
 	n.abstractNumberInput.Increment()
-	n.nextValue = nil
 }
 
 func (n *NumberInput) decrement() {
@@ -252,7 +250,5 @@ func (n *NumberInput) decrement() {
 		return
 	}
 	n.textInput.CommitWithCurrentInputValue()
-	n.abstractNumberInput.SetString(n.textInput.Value(), true)
 	n.abstractNumberInput.Decrement()
-	n.nextValue = nil
 }
