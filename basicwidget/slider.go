@@ -34,11 +34,23 @@ func (s *Slider) SetOnValueChangedBigInt(f func(value *big.Int)) {
 }
 
 func (s *Slider) SetOnValueChangedInt64(f func(value int64)) {
-	s.abstractNumberInput.SetOnValueChangedInt64(f)
+	if f == nil {
+		s.abstractNumberInput.SetOnValueChangedInt64(nil)
+		return
+	}
+	s.abstractNumberInput.SetOnValueChangedInt64(func(value int64, committed bool) {
+		f(value)
+	})
 }
 
 func (s *Slider) SetOnValueChangedUint64(f func(value uint64)) {
-	s.abstractNumberInput.SetOnValueChangedUint64(f)
+	if f == nil {
+		s.abstractNumberInput.SetOnValueChangedUint64(nil)
+		return
+	}
+	s.abstractNumberInput.SetOnValueChangedUint64(func(value uint64, committed bool) {
+		f(value)
+	})
 }
 
 func (s *Slider) ValueBigInt() *big.Int {
@@ -54,15 +66,15 @@ func (s *Slider) ValueUint64() uint64 {
 }
 
 func (s *Slider) SetValueBigInt(value *big.Int) {
-	s.abstractNumberInput.SetValueBigInt(value)
+	s.abstractNumberInput.SetValueBigInt(value, true)
 }
 
 func (s *Slider) SetValueInt64(value int64) {
-	s.abstractNumberInput.SetValueInt64(value)
+	s.abstractNumberInput.SetValueInt64(value, true)
 }
 
 func (s *Slider) SetValueUint64(value uint64) {
-	s.abstractNumberInput.SetValueUint64(value)
+	s.abstractNumberInput.SetValueUint64(value, true)
 }
 
 func (s *Slider) MinimumValueBigInt() *big.Int {
@@ -106,7 +118,7 @@ func (s *Slider) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 }
 
 func (s *Slider) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
-	s.abstractNumberInput.SetOnValueChangedBigInt(func(value *big.Int) {
+	s.abstractNumberInput.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
 		if s.onValueChangedBigInt != nil {
 			s.onValueChangedBigInt(value)
 		}
@@ -178,7 +190,7 @@ func (s *Slider) setValue(context *guigui.Context, originValue *big.Int, originX
 	v.Mul(&v, (&big.Int{}).SetInt64(int64(c.X-originX)))
 	v.Div(&v, (&big.Int{}).SetInt64(int64(s.barWidth(context))))
 	v.Add(&v, originValue)
-	s.abstractNumberInput.SetValueBigInt(&v)
+	s.abstractNumberInput.SetValueBigInt(&v, true)
 }
 
 func (s *Slider) barWidth(context *guigui.Context) int {

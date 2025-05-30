@@ -48,7 +48,10 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	width := 12 * u
 
 	n.numberInput1Text.SetValue("Number input")
-	n.numberInput1.SetOnValueChangedBigInt(func(value *big.Int) {
+	n.numberInput1.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
+		if !committed {
+			return
+		}
 		n.model.NumberInputs().SetNumberInputValue1(value)
 	})
 	n.numberInput1.SetValueBigInt(n.model.NumberInputs().NumberInputValue1())
@@ -57,7 +60,10 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	context.SetSize(&n.numberInput1, image.Pt(width, guigui.DefaultSize))
 
 	n.numberInput2Text.SetValue("Number input (uint64)")
-	n.numberInput2.SetOnValueChangedUint64(func(value uint64) {
+	n.numberInput2.SetOnValueChangedUint64(func(value uint64, committed bool) {
+		if !committed {
+			return
+		}
 		n.model.NumberInputs().SetNumberInputValue2(value)
 	})
 	n.numberInput2.SetMinimumValueUint64(0)
@@ -68,7 +74,10 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	context.SetSize(&n.numberInput2, image.Pt(width, guigui.DefaultSize))
 
 	n.numberInput3Text.SetValue("Number input (Range: [-100, 100], Step: 5)")
-	n.numberInput3.SetOnValueChangedInt64(func(value int64) {
+	n.numberInput3.SetOnValueChangedInt64(func(value int64, committed bool) {
+		if !committed {
+			return
+		}
 		n.model.NumberInputs().SetNumberInputValue3(int(value))
 	})
 	n.numberInput3.SetMinimumValueInt64(-100)

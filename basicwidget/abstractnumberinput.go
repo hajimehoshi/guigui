@@ -19,39 +19,39 @@ type abstractNumberInput struct {
 	stepSet bool
 
 	onValueChangedString func(value string, force bool)
-	onValueChangedBigInt func(value *big.Int)
-	onValueChangedInt64  func(value int64)
-	onValueChangedUint64 func(value uint64)
+	onValueChangedBigInt func(value *big.Int, committed bool)
+	onValueChangedInt64  func(value int64, committed bool)
+	onValueChangedUint64 func(value uint64, committed bool)
 }
 
 func (a *abstractNumberInput) SetOnValueChangedString(f func(value string, force bool)) {
 	a.onValueChangedString = f
 }
 
-func (a *abstractNumberInput) SetOnValueChangedBigInt(f func(value *big.Int)) {
+func (a *abstractNumberInput) SetOnValueChangedBigInt(f func(value *big.Int, committed bool)) {
 	a.onValueChangedBigInt = f
 }
 
-func (a *abstractNumberInput) SetOnValueChangedInt64(f func(value int64)) {
+func (a *abstractNumberInput) SetOnValueChangedInt64(f func(value int64, committed bool)) {
 	a.onValueChangedInt64 = f
 }
 
-func (a *abstractNumberInput) SetOnValueChangedUint64(f func(value uint64)) {
+func (a *abstractNumberInput) SetOnValueChangedUint64(f func(value uint64, committed bool)) {
 	a.onValueChangedUint64 = f
 }
 
-func (a *abstractNumberInput) fireValueChangeEvents(force bool) {
+func (a *abstractNumberInput) fireValueChangeEvents(force bool, committed bool) {
 	if a.onValueChangedString != nil {
 		a.onValueChangedString(a.value.String(), force)
 	}
 	if a.onValueChangedBigInt != nil {
-		a.onValueChangedBigInt(a.ValueBigInt())
+		a.onValueChangedBigInt(a.ValueBigInt(), committed)
 	}
 	if a.onValueChangedInt64 != nil {
-		a.onValueChangedInt64(a.ValueInt64())
+		a.onValueChangedInt64(a.ValueInt64(), committed)
 	}
 	if a.onValueChangedUint64 != nil {
-		a.onValueChangedUint64(a.ValueUint64())
+		a.onValueChangedUint64(a.ValueUint64(), committed)
 	}
 }
 
@@ -89,25 +89,25 @@ func (a *abstractNumberInput) ValueUint64() uint64 {
 	return 0
 }
 
-func (a *abstractNumberInput) SetValueBigInt(value *big.Int) {
-	a.setValue(value, false)
+func (a *abstractNumberInput) SetValueBigInt(value *big.Int, committed bool) {
+	a.setValue(value, false, committed)
 }
 
-func (a *abstractNumberInput) SetValueInt64(value int64) {
-	a.setValue((&big.Int{}).SetInt64(value), false)
+func (a *abstractNumberInput) SetValueInt64(value int64, committed bool) {
+	a.setValue((&big.Int{}).SetInt64(value), false, committed)
 }
 
-func (a *abstractNumberInput) SetValueUint64(value uint64) {
-	a.setValue((&big.Int{}).SetUint64(value), false)
+func (a *abstractNumberInput) SetValueUint64(value uint64, committed bool) {
+	a.setValue((&big.Int{}).SetUint64(value), false, committed)
 }
 
-func (a *abstractNumberInput) setValue(value *big.Int, force bool) {
+func (a *abstractNumberInput) setValue(value *big.Int, force bool, committed bool) {
 	a.clamp(value)
 	if a.value.Cmp(value) == 0 {
 		return
 	}
 	a.value.Set(value)
-	a.fireValueChangeEvents(force)
+	a.fireValueChangeEvents(force, committed)
 }
 
 func (a *abstractNumberInput) MinimumValueBigInt() *big.Int {
@@ -125,19 +125,19 @@ func (a *abstractNumberInput) SetMinimumValueBigInt(minimum *big.Int) {
 	}
 	a.min.Set(minimum)
 	a.minSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetMinimumValueInt64(minimum int64) {
 	a.min.SetInt64(minimum)
 	a.minSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetMinimumValueUint64(minimum uint64) {
 	a.min.SetUint64(minimum)
 	a.minSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) MaximumValueBigInt() *big.Int {
@@ -155,19 +155,19 @@ func (a *abstractNumberInput) SetMaximumValueBigInt(maximum *big.Int) {
 	}
 	a.max.Set(maximum)
 	a.maxSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetMaximumValueInt64(maximum int64) {
 	a.max.SetInt64(maximum)
 	a.maxSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetMaximumValueUint64(maximum uint64) {
 	a.max.SetUint64(maximum)
 	a.maxSet = true
-	a.SetValueBigInt((&big.Int{}).Set(&a.value))
+	a.SetValueBigInt((&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetStepBigInt(step *big.Int) {
@@ -237,7 +237,7 @@ var numberTextReplacer = strings.NewReplacer(
 	"\uff19", "9",
 )
 
-func (a *abstractNumberInput) CommitString(text string) {
+func (a *abstractNumberInput) SetString(text string, committed bool) {
 	text = strings.TrimSpace(text)
 	text = numberTextReplacer.Replace(text)
 
@@ -245,8 +245,8 @@ func (a *abstractNumberInput) CommitString(text string) {
 	if _, ok := v.SetString(text, 10); !ok {
 		return
 	}
-	a.SetValueBigInt(&v)
-	a.fireValueChangeEvents(false)
+	a.SetValueBigInt(&v, committed)
+	a.fireValueChangeEvents(false, committed)
 }
 
 func (n *abstractNumberInput) Increment() {
@@ -256,7 +256,7 @@ func (n *abstractNumberInput) Increment() {
 	} else {
 		step.SetInt64(1)
 	}
-	n.setValue((&big.Int{}).Add(&n.value, &step), true)
+	n.setValue((&big.Int{}).Add(&n.value, &step), true, true)
 }
 
 func (n *abstractNumberInput) Decrement() {
@@ -266,7 +266,7 @@ func (n *abstractNumberInput) Decrement() {
 	} else {
 		step.SetInt64(1)
 	}
-	n.setValue((&big.Int{}).Sub(&n.value, &step), true)
+	n.setValue((&big.Int{}).Sub(&n.value, &step), true, true)
 }
 
 func (n *abstractNumberInput) CanIncrement() bool {
