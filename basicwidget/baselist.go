@@ -637,7 +637,6 @@ func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	// Draw a footer border.
 	if l.list.footerHeight > 0 {
 		bounds := l.footerBounds(context)
-		bounds.Min.Y = bounds.Max.Y - l.list.footerHeight
 		draw.DrawRoundedRectWithSharpenCorners(context, dst, bounds, draw.ControlColor(context.ColorMode(), context.IsEnabled(l)), RoundedCornerRadius(context), draw.SharpenCorners{
 			UpperStart: true,
 			UpperEnd:   true,
