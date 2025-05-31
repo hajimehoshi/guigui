@@ -72,7 +72,7 @@ type baseList[T comparable] struct {
 }
 
 func listItemPadding(context *guigui.Context) int {
-	return UnitSize(context) / 4
+	return RoundedCornerRadius(context) + UnitSize(context)/4
 }
 
 func (b *baseList[T]) SetOnItemSelected(f func(index int)) {
@@ -129,7 +129,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	p := context.Position(b)
 	_, offsetY := b.scrollOverlay.Offset()
-	p.X += RoundedCornerRadius(context) + listItemPadding(context)
+	p.X += listItemPadding(context)
 	p.Y += RoundedCornerRadius(context) + int(offsetY)
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
@@ -401,9 +401,8 @@ func (b *baseList[T]) itemBounds(context *guigui.Context, index int, fullWidth b
 	_, offsetY := b.scrollOverlay.Offset()
 	bounds := context.Bounds(b)
 	if !fullWidth {
-		padding := listItemPadding(context)
-		bounds.Min.X += RoundedCornerRadius(context) + padding
-		bounds.Max.X -= RoundedCornerRadius(context) + padding
+		bounds.Min.X += listItemPadding(context)
+		bounds.Max.X -= listItemPadding(context)
 	}
 	bounds.Min.Y += b.itemYFromIndex(context, index)
 	bounds.Min.Y += int(offsetY)
@@ -560,8 +559,8 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		x0 := float32(p.X)
 		x1 := float32(p.X + context.Size(b).X)
 		if !b.stripeVisible {
-			x0 += float32(listItemPadding(context))
-			x1 -= float32(listItemPadding(context))
+			x0 += float32(RoundedCornerRadius(context))
+			x1 -= float32(RoundedCornerRadius(context))
 		}
 		y := float32(p.Y)
 		y += float32(b.itemYFromIndex(context, b.dragDstIndexPlus1-1))
@@ -580,7 +579,7 @@ func (b *baseList[T]) defaultWidth(context *guigui.Context) int {
 		item, _ := b.abstractList.ItemByIndex(i)
 		w = max(w, context.Size(item.Content).X)
 	}
-	w += 2*RoundedCornerRadius(context) + 2*listItemPadding(context)
+	w += 2 * listItemPadding(context)
 	b.cachedDefaultWidth = w
 	return w
 }
