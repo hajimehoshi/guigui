@@ -5,7 +5,9 @@ package main
 
 import (
 	"fmt"
+	"iter"
 	"math/big"
+	"slices"
 
 	"github.com/hajimehoshi/guigui/basicwidget"
 )
@@ -18,6 +20,7 @@ type Model struct {
 	textInputs   TextInputsModel
 	numberInputs NumberInputsModel
 	lists        ListsModel
+	tables       TablesModel
 }
 
 func (m *Model) Mode() string {
@@ -49,6 +52,10 @@ func (m *Model) NumberInputs() *NumberInputsModel {
 
 func (m *Model) Lists() *ListsModel {
 	return &m.lists
+}
+
+func (m *Model) Tables() *TablesModel {
+	return &m.tables
 }
 
 type ButtonsModel struct {
@@ -348,4 +355,76 @@ func (l *ListsModel) Enabled() bool {
 
 func (l *ListsModel) SetEnabled(enabled bool) {
 	l.disabled = !enabled
+}
+
+type TableItem struct {
+	ID     int
+	Name   string
+	Amount int
+	Cost   int
+}
+
+type TablesModel struct {
+	tableItems []TableItem
+
+	footerVisible bool
+	unmovable     bool
+	disabled      bool
+}
+
+func (t *TablesModel) ensureTableItems() {
+	if t.tableItems != nil {
+		return
+	}
+	t.tableItems = []TableItem{
+		{ID: 1, Name: "Apple", Amount: 3, Cost: 120},
+		{ID: 2, Name: "Banana", Amount: 6, Cost: 50},
+		{ID: 3, Name: "Cherry", Amount: 15, Cost: 200},
+		{ID: 4, Name: "Grape", Amount: 10, Cost: 175},
+		{ID: 5, Name: "Mango", Amount: 2, Cost: 250},
+		{ID: 6, Name: "Orange", Amount: 4, Cost: 110},
+		{ID: 7, Name: "Kiwi", Amount: 5, Cost: 160},
+		{ID: 8, Name: "Peach", Amount: 3, Cost: 180},
+		{ID: 9, Name: "Lemon", Amount: 7, Cost: 90},
+		{ID: 10, Name: "Pineapple", Amount: 1, Cost: 300},
+	}
+}
+
+func (t *TablesModel) TableItemCount() int {
+	t.ensureTableItems()
+	return len(t.tableItems)
+}
+
+func (t *TablesModel) TableItems() iter.Seq2[int, TableItem] {
+	t.ensureTableItems()
+	return slices.All(t.tableItems)
+}
+
+func (t *TablesModel) MoveTableItems(from int, count int, to int) int {
+	t.ensureTableItems()
+	return basicwidget.MoveItemsInSlice(t.tableItems, from, count, to)
+}
+
+func (t *TablesModel) IsFooterVisible() bool {
+	return t.footerVisible
+}
+
+func (t *TablesModel) SetFooterVisible(hasFooter bool) {
+	t.footerVisible = hasFooter
+}
+
+func (t *TablesModel) Movable() bool {
+	return !t.unmovable
+}
+
+func (t *TablesModel) SetMovable(movable bool) {
+	t.unmovable = !movable
+}
+
+func (t *TablesModel) Enabled() bool {
+	return !t.disabled
+}
+
+func (t *TablesModel) SetEnabled(enabled bool) {
+	t.disabled = !enabled
 }

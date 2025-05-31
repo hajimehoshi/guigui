@@ -77,6 +77,10 @@ func (s *sidebarContent) Build(context *guigui.Context, appender *guigui.ChildWi
 			ID:   "lists",
 		},
 		{
+			Text: "Tables",
+			ID:   "tables",
+		},
+		{
 			Text: "Popups",
 			ID:   "popups",
 		},

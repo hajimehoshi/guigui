@@ -30,6 +30,7 @@ type Root struct {
 	textInputs   TextInputs
 	numberInputs NumberInputs
 	lists        Lists
+	tables       Tables
 	popups       Popups
 
 	model Model
@@ -58,6 +59,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	r.textInputs.SetModel(&r.model)
 	r.numberInputs.SetModel(&r.model)
 	r.lists.SetModel(&r.model)
+	r.tables.SetModel(&r.model)
 
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),
@@ -83,6 +85,8 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		appender.AppendChildWidgetWithBounds(&r.numberInputs, bounds)
 	case "lists":
 		appender.AppendChildWidgetWithBounds(&r.lists, bounds)
+	case "tables":
+		appender.AppendChildWidgetWithBounds(&r.tables, bounds)
 	case "popups":
 		appender.AppendChildWidgetWithBounds(&r.popups, bounds)
 	}
