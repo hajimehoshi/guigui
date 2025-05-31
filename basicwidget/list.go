@@ -36,8 +36,8 @@ type ListItem[T comparable] struct {
 	ID        T
 }
 
-func (t *ListItem[T]) selectable() bool {
-	return !t.Header && !t.Disabled && !t.Border
+func (l *ListItem[T]) selectable() bool {
+	return !l.Header && !l.Disabled && !l.Border
 }
 
 func (l *List[T]) SetItemBorderVisible(visible bool) {
