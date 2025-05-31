@@ -5,48 +5,23 @@ package layout
 
 import (
 	"image"
+
+	"github.com/hajimehoshi/guigui/internal/layoututil"
 )
 
-type Size struct {
-	typ   sizeType
-	value int
-	lazy  func(rowOrColumn int) Size
-}
-
-type sizeType int
-
-const (
-	sizeTypeFixed sizeType = iota
-	sizeTypeFlexible
-	sizeTypeLazy
-)
+type Size = layoututil.Size
 
 func FixedSize(value int) Size {
-	return Size{
-		typ:   sizeTypeFixed,
-		value: value,
-	}
+	return layoututil.FixedSize(value)
 }
 
 func FlexibleSize(value int) Size {
-	return Size{
-		typ:   sizeTypeFlexible,
-		value: value,
-	}
+	return layoututil.FlexibleSize(value)
 }
 
 func LazySize(f func(rowOrColumn int) Size) Size {
-	return Size{
-		typ:   sizeTypeLazy,
-		value: 0,
-		lazy:  f,
-	}
+	return layoututil.LazySize(f)
 }
-
-var (
-	defaultWidths  = []Size{FlexibleSize(1)}
-	defaultHeights = []Size{FlexibleSize(1)}
-)
 
 type GridLayout struct {
 	Bounds    image.Rectangle
@@ -75,7 +50,7 @@ func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 		g.widthsInPixels = make([]int, widthCount)
 	}
 	g.widthsInPixels = g.widthsInPixels[:widthCount]
-	g.getWidthsInPixels(g.widthsInPixels)
+	layoututil.WidthsInPixels(g.widthsInPixels, g.Widths, g.Bounds.Dx(), g.ColumnGap)
 	for i := range column {
 		minX += g.widthsInPixels[i]
 		minX += g.ColumnGap
@@ -91,13 +66,13 @@ func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 	}
 	g.heightsInPixels = g.heightsInPixels[:heightCount]
 	for loopIndex := range row / heightCount {
-		g.getHeightsInPixels(g.heightsInPixels, loopIndex)
+		layoututil.HeightsInPixels(g.heightsInPixels, g.Heights, g.Bounds.Dy(), g.RowGap, loopIndex)
 		for _, h := range g.heightsInPixels {
 			minY += h
 			minY += g.RowGap
 		}
 	}
-	g.getHeightsInPixels(g.heightsInPixels, row/heightCount)
+	layoututil.HeightsInPixels(g.heightsInPixels, g.Heights, g.Bounds.Dy(), g.RowGap, row/heightCount)
 	for j := range row % heightCount {
 		minY += g.heightsInPixels[j]
 		minY += g.RowGap
@@ -107,129 +82,4 @@ func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 	bounds.Max.Y = g.Bounds.Min.Y + minY + g.heightsInPixels[row%heightCount]
 
 	return bounds
-}
-
-func (g *GridLayout) getWidthsInPixels(widthsInPixels []int) {
-	widths := g.Widths
-	if len(widths) == 0 {
-		widths = defaultWidths
-	}
-
-	// Calculate widths in pixels.
-	restW := g.Bounds.Dx()
-	restW -= (len(widths) - 1) * g.ColumnGap
-	if restW < 0 {
-		restW = 0
-	}
-	var denomW int
-
-	for i, width := range widths {
-		switch width.typ {
-		case sizeTypeFixed:
-			widthsInPixels[i] = width.value
-		case sizeTypeFlexible:
-			widthsInPixels[i] = 0
-			denomW += width.value
-		default:
-			panic("layout: only FixedSize and FlexibleSize are supported for widths")
-		}
-		restW -= widthsInPixels[i]
-	}
-
-	if denomW > 0 {
-		origRestW := restW
-		for i, width := range widths {
-			if width.typ != sizeTypeFlexible {
-				continue
-			}
-			w := int(float64(origRestW) * float64(width.value) / float64(denomW))
-			widthsInPixels[i] = w
-			restW -= w
-		}
-		// TODO: Use a better algorithm to distribute the rest.
-		for restW > 0 {
-			for i := len(widthsInPixels) - 1; i >= 0; i-- {
-				if widths[i].typ != sizeTypeFlexible {
-					continue
-				}
-				widthsInPixels[i]++
-				restW--
-				if restW <= 0 {
-					break
-				}
-			}
-			if restW <= 0 {
-				break
-			}
-		}
-	}
-}
-
-func (g *GridLayout) getHeightsInPixels(heightsInPixels []int, loopIndex int) {
-	heights := g.Heights
-	if len(heights) == 0 {
-		heights = defaultHeights
-	}
-
-	// Calculate hights in pixels.
-	// This is needed for each loop since the index starts with widgetBaseIdx for sizeTypeMaxContent.
-	restH := g.Bounds.Dy()
-	if restH < 0 {
-		restH = 0
-	}
-	restH -= (len(heights) - 1) * g.RowGap
-	var denomH int
-
-	for j, height := range heights {
-		switch height.typ {
-		case sizeTypeFixed:
-			heightsInPixels[j] = height.value
-		case sizeTypeFlexible:
-			heightsInPixels[j] = 0
-			denomH += height.value
-		case sizeTypeLazy:
-			if height.lazy != nil {
-				size := height.lazy(loopIndex*len(heights) + j)
-				switch size.typ {
-				case sizeTypeFixed:
-					heightsInPixels[j] = size.value
-				case sizeTypeFlexible:
-					heightsInPixels[j] = 0
-					denomH += size.value
-				default:
-					panic("layout: only FixedSize and FlexibleSize are supported for LazySize")
-				}
-			} else {
-				heightsInPixels[j] = 0
-			}
-		}
-		restH -= heightsInPixels[j]
-	}
-
-	if denomH > 0 {
-		origRestH := restH
-		for j, height := range heights {
-			if height.typ != sizeTypeFlexible {
-				continue
-			}
-			h := int(float64(origRestH) * float64(height.value) / float64(denomH))
-			heightsInPixels[j] = h
-			restH -= h
-		}
-		for restH > 0 {
-			for j := len(heightsInPixels) - 1; j >= 0; j-- {
-				if heights[j].typ != sizeTypeFlexible {
-					continue
-				}
-				heightsInPixels[j]++
-				restH--
-				if restH <= 0 {
-					break
-				}
-			}
-			if restH <= 0 {
-				break
-			}
-		}
-	}
 }
