@@ -232,7 +232,7 @@ func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	var w, h int
 	if l.item.Content != nil {
-		s := l.item.Content.DefaultSize(context)
+		s := context.Size(l.item.Content)
 		w, h = s.X, s.Y
 	}
 
