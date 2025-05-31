@@ -1,4 +1,6 @@
-# `InterVariable.ttf`
+# Licenses
+
+## `InterVariable.ttf`
 
 * https://rsms.me/inter/
 * https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
