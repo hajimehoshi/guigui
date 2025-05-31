@@ -65,7 +65,7 @@ func WidthsInPixels(widthsInPixels []int, widths []Size, totalWidth int, columnG
 			widthsInPixels[i] = 0
 			denomW += width.value
 		default:
-			panic("layout: only FixedSize and FlexibleSize are supported for getWidthsInPixels")
+			panic("layoututil: only FixedSize and FlexibleSize are supported for getWidthsInPixels")
 		}
 		restW -= widthsInPixels[i]
 	}
@@ -130,7 +130,7 @@ func HeightsInPixels(heightsInPixels []int, heights []Size, totalHeight int, row
 					heightsInPixels[j] = 0
 					denomH += size.value
 				default:
-					panic("layout: only FixedSize and FlexibleSize are supported for LazySize")
+					panic("layoututil: only FixedSize and FlexibleSize are supported for LazySize")
 				}
 			} else {
 				heightsInPixels[j] = 0
