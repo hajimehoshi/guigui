@@ -39,16 +39,7 @@ func LazySize(f func(rowOrColumn int) Size) Size {
 	}
 }
 
-var (
-	defaultWidths  = []Size{FlexibleSize(1)}
-	defaultHeights = []Size{FlexibleSize(1)}
-)
-
 func WidthsInPixels(widthsInPixels []int, widths []Size, totalWidth int, columnGap int) {
-	if len(widths) == 0 {
-		widths = defaultWidths
-	}
-
 	// Calculate widths in pixels.
 	restW := totalWidth
 	restW -= (len(widths) - 1) * columnGap
@@ -100,10 +91,6 @@ func WidthsInPixels(widthsInPixels []int, widths []Size, totalWidth int, columnG
 }
 
 func HeightsInPixels(heightsInPixels []int, heights []Size, totalHeight int, rowGap int, loopIndex int) {
-	if len(heights) == 0 {
-		heights = defaultHeights
-	}
-
 	// Calculate hights in pixels.
 	// This is needed for each loop since the index starts with widgetBaseIdx for sizeTypeMaxContent.
 	restH := totalHeight

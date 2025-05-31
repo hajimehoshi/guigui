@@ -34,6 +34,11 @@ type GridLayout struct {
 	heightsInPixels []int
 }
 
+var (
+	defaultWidths  = []Size{FlexibleSize(1)}
+	defaultHeights = []Size{FlexibleSize(1)}
+)
+
 func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 	if column < 0 || column >= max(len(g.Widths), 1) {
 		return image.Rectangle{}
@@ -50,7 +55,11 @@ func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 		g.widthsInPixels = make([]int, widthCount)
 	}
 	g.widthsInPixels = g.widthsInPixels[:widthCount]
-	layoututil.WidthsInPixels(g.widthsInPixels, g.Widths, g.Bounds.Dx(), g.ColumnGap)
+	widths := g.Widths
+	if len(widths) == 0 {
+		widths = defaultWidths
+	}
+	layoututil.WidthsInPixels(g.widthsInPixels, widths, g.Bounds.Dx(), g.ColumnGap)
 	for i := range column {
 		minX += g.widthsInPixels[i]
 		minX += g.ColumnGap
@@ -65,14 +74,18 @@ func (g *GridLayout) CellBounds(column, row int) image.Rectangle {
 		g.heightsInPixels = make([]int, heightCount)
 	}
 	g.heightsInPixels = g.heightsInPixels[:heightCount]
+	heights := g.Heights
+	if len(heights) == 0 {
+		heights = defaultHeights
+	}
 	for loopIndex := range row / heightCount {
-		layoututil.HeightsInPixels(g.heightsInPixels, g.Heights, g.Bounds.Dy(), g.RowGap, loopIndex)
+		layoututil.HeightsInPixels(g.heightsInPixels, heights, g.Bounds.Dy(), g.RowGap, loopIndex)
 		for _, h := range g.heightsInPixels {
 			minY += h
 			minY += g.RowGap
 		}
 	}
-	layoututil.HeightsInPixels(g.heightsInPixels, g.Heights, g.Bounds.Dy(), g.RowGap, row/heightCount)
+	layoututil.HeightsInPixels(g.heightsInPixels, heights, g.Bounds.Dy(), g.RowGap, row/heightCount)
 	for j := range row % heightCount {
 		minY += g.heightsInPixels[j]
 		minY += g.RowGap
