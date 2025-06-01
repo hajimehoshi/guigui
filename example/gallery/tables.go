@@ -59,6 +59,9 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		},
 	})
 	t.tableItems = slices.Delete(t.tableItems, 0, len(t.tableItems))
+
+	// Prepare widgets for table items.
+	// Use slices.Grow and slices.Delete not to break the existing widgets.
 	n := 4
 	if newNum := n * t.model.Tables().TableItemCount(); len(t.tableItemWidgets) < newNum {
 		t.tableItemWidgets = slices.Grow(t.tableItemWidgets, newNum-len(t.tableItemWidgets))[:newNum]
