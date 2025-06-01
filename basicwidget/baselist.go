@@ -501,6 +501,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			bounds := b.itemBounds(context, hoveredItemIndex)
 			op.GeoM.Translate(float64(bounds.Min.X-2*RoundedCornerRadius(context)), float64(bounds.Min.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
 			op.ColorScale.ScaleAlpha(0.5)
+			op.Filter = ebiten.FilterLinear
 			dst.DrawImage(img, op)
 		}
 	}
