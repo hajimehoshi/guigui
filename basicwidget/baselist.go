@@ -286,7 +286,7 @@ func (b *baseList[T]) SetStyle(style ListStyle) {
 func (b *baseList[T]) calcDropDstIndex(context *guigui.Context) int {
 	_, y := ebiten.CursorPosition()
 	for i := range b.abstractList.ItemCount() {
-		if b := b.itemBounds(context, i, true); y < (b.Min.Y+b.Max.Y)/2 {
+		if b := b.itemBounds(context, i); y < (b.Min.Y+b.Max.Y)/2 {
 			return i
 		}
 	}
@@ -410,13 +410,11 @@ func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 	return y
 }
 
-func (b *baseList[T]) itemBounds(context *guigui.Context, index int, fullWidth bool) image.Rectangle {
+func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Rectangle {
 	_, offsetY := b.scrollOverlay.Offset()
 	bounds := context.Bounds(b)
-	if !fullWidth {
-		bounds.Min.X += listItemPadding(context)
-		bounds.Max.X -= listItemPadding(context)
-	}
+	bounds.Min.X += listItemPadding(context)
+	bounds.Max.X -= listItemPadding(context)
 	bounds.Min.Y += b.itemYFromIndex(context, index)
 	bounds.Min.Y += int(offsetY)
 	if item, ok := b.abstractList.ItemByIndex(index); ok {
@@ -439,19 +437,6 @@ func (b *baseList[T]) selectedItemColor(context *guigui.Context) color.Color {
 		return draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.7, 0.2)
 	}
 	return draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.7, 0.5)
-}
-
-func (b *baseList[T]) drawStripe(context *guigui.Context, dst *ebiten.Image, bounds image.Rectangle) {
-	r := RoundedCornerRadius(context)
-	if b.style != ListStyleNormal && b.style != ListStyleEditor {
-		r = 0
-	}
-	clr := draw.SecondaryControlColor(context.ColorMode(), context.IsEnabled(b))
-	if r == 0 || !draw.OverlapsWithRoundedCorner(context.Bounds(b), r, bounds) {
-		dst.SubImage(bounds).(*ebiten.Image).Fill(clr)
-	} else {
-		draw.FillInRoundedCornerRect(context, dst, context.Bounds(b), r, bounds, clr)
-	}
 }
 
 func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
@@ -477,40 +462,30 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			if i%2 == 0 {
 				continue
 			}
-			bounds := b.itemBounds(context, i, true)
+			bounds := b.itemBounds(context, i)
 			if bounds.Min.Y > vb.Max.Y {
 				break
 			}
+			bounds.Min.X -= RoundedCornerRadius(context)
+			bounds.Max.X += RoundedCornerRadius(context)
 			if !bounds.Overlaps(vb) {
 				continue
 			}
-			b.drawStripe(context, dst, bounds)
+			clr := draw.SecondaryControlColor(context.ColorMode(), context.IsEnabled(b))
+			draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
 		}
 	}
 
 	// Draw the selected item background.
 	if clr := b.selectedItemColor(context); clr != nil && b.SelectedItemIndex() >= 0 && b.SelectedItemIndex() < b.abstractList.ItemCount() {
-		bounds := b.itemBounds(context, b.SelectedItemIndex(), b.stripeVisible)
+		bounds := b.itemBounds(context, b.SelectedItemIndex())
+		bounds.Min.X -= RoundedCornerRadius(context)
+		bounds.Max.X += RoundedCornerRadius(context)
 		if bounds.Overlaps(vb) {
-			if b.stripeVisible {
-				r := RoundedCornerRadius(context)
-				if !draw.OverlapsWithRoundedCorner(context.Bounds(b), r, bounds) {
-					dst.SubImage(bounds).(*ebiten.Image).Fill(clr)
-				} else {
-					if b.style != ListStyleEditor {
-						draw.FillInRoundedCornerRect(context, dst, context.Bounds(b), r, bounds, clr)
-					} else {
-						// TODO: Implement this.
-					}
-				}
+			if b.style != ListStyleEditor {
+				draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
 			} else {
-				bounds.Min.X -= RoundedCornerRadius(context)
-				bounds.Max.X += RoundedCornerRadius(context)
-				if b.style != ListStyleEditor {
-					draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
-				} else {
-					draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
-				}
+				draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
 			}
 		}
 	}
@@ -518,7 +493,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	hoveredItem, ok := b.abstractList.ItemByIndex(hoveredItemIndex)
 	if ok && b.isHoveringVisible() && hoveredItemIndex >= 0 && hoveredItemIndex < b.abstractList.ItemCount() && hoveredItem.Selectable {
-		bounds := b.itemBounds(context, hoveredItemIndex, false)
+		bounds := b.itemBounds(context, hoveredItemIndex)
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
 		if bounds.Overlaps(vb) {
@@ -544,7 +519,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			s := float64(2*RoundedCornerRadius(context)) / float64(img.Bounds().Dy())
 			op.GeoM.Scale(s, s)
-			bounds := b.itemBounds(context, hoveredItemIndex, false)
+			bounds := b.itemBounds(context, hoveredItemIndex)
 			op.GeoM.Translate(float64(bounds.Min.X-2*RoundedCornerRadius(context)), float64(bounds.Min.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
 			op.ColorScale.ScaleAlpha(0.5)
 			dst.DrawImage(img, op)
@@ -556,10 +531,6 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		p := context.Position(b)
 		x0 := float32(p.X)
 		x1 := float32(p.X + context.Size(b).X)
-		if !b.stripeVisible {
-			x0 += float32(RoundedCornerRadius(context))
-			x1 -= float32(RoundedCornerRadius(context))
-		}
 		y := float32(p.Y)
 		y += float32(b.itemYFromIndex(context, b.dragDstIndexPlus1-1))
 		_, offsetY := b.scrollOverlay.Offset()
