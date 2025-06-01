@@ -20,7 +20,6 @@ type ListStyle int
 
 const (
 	ListStyleNormal ListStyle = iota
-	ListStyleEditor
 	ListStyleSidebar
 	ListStyleMenu
 )
@@ -119,12 +118,6 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	if b.style == ListStyleEditor && !context.IsFocused(b) {
-		if b.abstractList.SelectItemByIndex(-1, false) {
-			guigui.RequestRedraw(b)
-		}
-	}
-
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
@@ -347,9 +340,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 
 			wasFocused := context.IsFocusedOrHasFocusedChild(b)
-			if b.style == ListStyleEditor {
-				context.SetFocused(b, true)
-			} else if item, ok := b.abstractList.ItemByIndex(index); ok {
+			if item, ok := b.abstractList.ItemByIndex(index); ok {
 				context.SetFocused(item.Content, true)
 			} else {
 				context.SetFocused(b, true)
@@ -374,10 +365,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		}
 
 		return guigui.HandleInputByWidget(b)
-	} else if b.style == ListStyleEditor && (left || right) {
-		if b.abstractList.SelectItemByIndex(-1, false) {
-			guigui.RequestRedraw(b)
-		}
 	}
 
 	b.dragSrcIndexPlus1 = 0
@@ -402,7 +389,7 @@ func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
 func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 	// Adjust the bounds based on the list style (inset or outset).
 	switch b.style {
-	case ListStyleNormal, ListStyleEditor:
+	case ListStyleNormal:
 		y += int(0.5 * context.Scale())
 	case ListStyleMenu:
 		y += int(-0.5 * context.Scale())
@@ -443,7 +430,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	var clr color.Color
 	switch b.style {
 	case ListStyleSidebar:
-	case ListStyleNormal, ListStyleEditor:
+	case ListStyleNormal:
 		clr = draw.ControlColor(context.ColorMode(), context.IsEnabled(b))
 	case ListStyleMenu:
 		clr = draw.SecondaryControlColor(context.ColorMode(), context.IsEnabled(b))
@@ -482,11 +469,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
 		if bounds.Overlaps(vb) {
-			if b.style != ListStyleEditor {
-				draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
-			} else {
-				draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
-			}
+			draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
 		}
 	}
 
@@ -501,11 +484,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			if b.style == ListStyleMenu {
 				clr = draw.Color(context.ColorMode(), draw.ColorTypeAccent, 0.5)
 			}
-			if b.style != ListStyleEditor {
-				draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
-			} else {
-				draw.DrawRoundedRectBorder(context, dst, bounds, clr, clr, RoundedCornerRadius(context), float32(2*context.Scale()), draw.RoundedRectBorderTypeRegular)
-			}
+			draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
 		}
 	}
 
@@ -649,7 +628,7 @@ func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	bounds := context.Bounds(l)
 	border := draw.RoundedRectBorderTypeInset
-	if l.list.style != ListStyleNormal && l.list.style != ListStyleEditor {
+	if l.list.style != ListStyleNormal {
 		border = draw.RoundedRectBorderTypeOutset
 	}
 	clr1, clr2 := draw.BorderColors(context.ColorMode(), border, false)
