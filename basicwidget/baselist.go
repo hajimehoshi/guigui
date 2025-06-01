@@ -435,6 +435,9 @@ func (b *baseList[T]) selectedItemColor(context *guigui.Context) color.Color {
 	if context.IsFocusedOrHasFocusedChild(b) || b.style == ListStyleSidebar {
 		return draw.Color(context.ColorMode(), draw.ColorTypeAccent, 0.5)
 	}
+	if !context.IsEnabled(b) {
+		return draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.7, 0.2)
+	}
 	return draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.7, 0.5)
 }
 

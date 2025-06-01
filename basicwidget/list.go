@@ -109,11 +109,11 @@ func (l *List[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 func (l *List[T]) ItemTextColor(context *guigui.Context, index int) color.Color {
 	item := &l.listItemWidgets[index]
 	switch {
-	case l.list.style == ListStyleNormal && l.list.SelectedItemIndex() == index && item.selectable():
+	case l.list.style == ListStyleNormal && l.list.SelectedItemIndex() == index && item.selectable() && context.IsEnabled(item):
 		return DefaultActiveListItemTextColor(context)
-	case l.list.style == ListStyleSidebar && l.list.SelectedItemIndex() == index && item.selectable():
+	case l.list.style == ListStyleSidebar && l.list.SelectedItemIndex() == index && item.selectable() && context.IsEnabled(item):
 		return DefaultActiveListItemTextColor(context)
-	case l.list.style == ListStyleMenu && l.list.isHoveringVisible() && l.list.hoveredItemIndex(context) == index && item.selectable():
+	case l.list.style == ListStyleMenu && l.list.isHoveringVisible() && l.list.hoveredItemIndex(context) == index && item.selectable() && context.IsEnabled(item):
 		return DefaultActiveListItemTextColor(context)
 	case !item.selectable() && !item.item.Header:
 		return DefaultDisabledListItemTextColor(context)
