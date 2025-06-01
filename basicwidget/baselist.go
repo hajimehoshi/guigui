@@ -648,6 +648,9 @@ func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		y0 := float32(bounds.Min.Y)
 		y1 := float32(bounds.Min.Y)
 		clr := draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.9, 0.4)
+		if !context.IsEnabled(l) {
+			clr = draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.8, 0.3)
+		}
 		vector.StrokeLine(dst, x0, y0, x1, y1, float32(context.Scale()), clr, false)
 	}
 
