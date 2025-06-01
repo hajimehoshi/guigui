@@ -529,8 +529,8 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	// Draw a dragging guideline.
 	if b.dragDstIndexPlus1 > 0 {
 		p := context.Position(b)
-		x0 := float32(p.X)
-		x1 := float32(p.X + context.Size(b).X)
+		x0 := float32(p.X) + float32(RoundedCornerRadius(context))
+		x1 := float32(p.X+context.Size(b).X) - float32(RoundedCornerRadius(context))
 		y := float32(p.Y)
 		y += float32(b.itemYFromIndex(context, b.dragDstIndexPlus1-1))
 		_, offsetY := b.scrollOverlay.Offset()
