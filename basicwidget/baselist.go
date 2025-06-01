@@ -483,24 +483,6 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			}
 			b.drawStripe(context, dst, bounds)
 		}
-
-		// Draw the top stripe.
-		{
-			bounds := b.itemBounds(context, 0, true)
-			bounds.Min.Y, bounds.Max.Y = bounds.Min.Y-RoundedCornerRadius(context), bounds.Min.Y
-			if bounds.Overlaps(vb) {
-				b.drawStripe(context, dst, bounds)
-			}
-		}
-
-		// Draw the bottom stripe.
-		if b.abstractList.ItemCount()%2 == 1 {
-			bounds := b.itemBounds(context, b.abstractList.ItemCount()-1, true)
-			bounds.Max.Y, bounds.Min.Y = bounds.Max.Y+RoundedCornerRadius(context), bounds.Max.Y
-			if bounds.Overlaps(vb) {
-				b.drawStripe(context, dst, bounds)
-			}
-		}
 	}
 
 	// Draw the selected item background.
