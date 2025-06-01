@@ -64,6 +64,10 @@ func (l *List[T]) SetCheckmarkIndex(index int) {
 	l.list.SetCheckmarkIndex(index)
 }
 
+func (l *List[T]) SetHeaderHeight(height int) {
+	l.list.SetHeaderHeight(height)
+}
+
 func (l *List[T]) SetFooterHeight(height int) {
 	l.list.SetFooterHeight(height)
 }

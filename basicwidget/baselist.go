@@ -63,10 +63,11 @@ type baseList[T comparable] struct {
 	pressStartPlus1         image.Point
 	startPressingIndexPlus1 int
 	startPressingLeft       bool
+	headerHeight            int
 	footerHeight            int
 
-	cachedDefaultWidth  int
-	cachedDefaultHeight int
+	cachedDefaultWidth         int
+	cachedDefaultContentHeight int
 
 	onItemsMoved func(from, count, to int)
 }
@@ -94,6 +95,14 @@ func (b *baseList[T]) SetCheckmarkIndex(index int) {
 	guigui.RequestRedraw(b)
 }
 
+func (b *baseList[T]) SetHeaderHeight(height int) {
+	if b.headerHeight == height {
+		return
+	}
+	b.headerHeight = height
+	guigui.RequestRedraw(b)
+}
+
 func (b *baseList[T]) SetFooterHeight(height int) {
 	if b.footerHeight == height {
 		return
@@ -103,7 +112,10 @@ func (b *baseList[T]) SetFooterHeight(height int) {
 }
 
 func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
-	return image.Pt(context.Size(b).X, b.defaultHeight(context)-b.footerHeight)
+	h := b.defaultHeight(context)
+	h -= b.headerHeight
+	h -= b.footerHeight
+	return image.Pt(context.Size(b).X, h)
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -122,6 +134,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	}
 
 	bounds := context.Bounds(b)
+	bounds.Min.Y += b.headerHeight
 	bounds.Max.Y -= b.footerHeight
 	appender.AppendChildWidgetWithBounds(&b.scrollOverlay, bounds)
 
@@ -130,7 +143,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	p := context.Position(b)
 	_, offsetY := b.scrollOverlay.Offset()
 	p.X += listItemPadding(context)
-	p.Y += RoundedCornerRadius(context) + int(offsetY)
+	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
@@ -200,7 +213,7 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 	}
 	_, y := ebiten.CursorPosition()
 	_, offsetY := b.scrollOverlay.Offset()
-	y -= RoundedCornerRadius(context)
+	y -= RoundedCornerRadius(context) + b.headerHeight
 	y -= context.Position(b).Y
 	y -= int(offsetY)
 	index := -1
@@ -220,7 +233,7 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 func (b *baseList[T]) SetItems(items []baseListItem[T]) {
 	b.abstractList.SetItems(items)
 	b.cachedDefaultWidth = 0
-	b.cachedDefaultHeight = 0
+	b.cachedDefaultContentHeight = 0
 }
 
 func (b *baseList[T]) SelectItemByIndex(index int) {
@@ -293,7 +306,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			_, y := ebiten.CursorPosition()
 			p := context.Position(b)
-			h := context.Size(b).Y - b.footerHeight
+			h := context.Size(b).Y - (b.headerHeight + b.footerHeight)
 			var dy float64
 			if upperY := p.Y + UnitSize(context); y < upperY {
 				dy = float64(upperY-y) / 4
@@ -374,7 +387,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 }
 
 func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
-	y := RoundedCornerRadius(context)
+	y := RoundedCornerRadius(context) + b.headerHeight
 	for i := range b.abstractList.ItemCount() {
 		if i == index {
 			break
@@ -585,20 +598,18 @@ func (b *baseList[T]) defaultWidth(context *guigui.Context) int {
 }
 
 func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
-	if b.cachedDefaultHeight > 0 {
-		return b.cachedDefaultHeight + b.footerHeight
+	r := RoundedCornerRadius(context)
+	if b.cachedDefaultContentHeight > 0 {
+		return b.cachedDefaultContentHeight + 2*r + b.headerHeight + b.footerHeight
 	}
 
 	var h int
-	h += RoundedCornerRadius(context)
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		h += context.Size(item.Content).Y
 	}
-	h += RoundedCornerRadius(context)
-	b.cachedDefaultHeight = h
-	h += b.footerHeight
-	return h
+	b.cachedDefaultContentHeight = h
+	return h + 2*r + b.headerHeight + b.footerHeight
 }
 
 func (b *baseList[T]) DefaultSize(context *guigui.Context) image.Point {
@@ -614,6 +625,12 @@ type listFrame[T comparable] struct {
 	guigui.DefaultWidget
 
 	list *baseList[T]
+}
+
+func (l *listFrame[T]) headerBounds(context *guigui.Context) image.Rectangle {
+	bounds := context.Bounds(l)
+	bounds.Max.Y = bounds.Min.Y + l.list.headerHeight
+	return bounds
 }
 
 func (l *listFrame[T]) footerBounds(context *guigui.Context) image.Rectangle {
@@ -632,8 +649,28 @@ func (l *listFrame[T]) HandlePointingInput(context *guigui.Context) guigui.Handl
 }
 
 func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
+	// Draw a header.
+	if l.list.headerHeight > 0 {
+		bounds := l.headerBounds(context)
+		draw.DrawRoundedRectWithSharpenCorners(context, dst, bounds, draw.ControlColor(context.ColorMode(), context.IsEnabled(l)), RoundedCornerRadius(context), draw.SharpenCorners{
+			UpperStart: false,
+			UpperEnd:   false,
+			LowerStart: true,
+			LowerEnd:   true,
+		})
 
-	// Draw a footer border.
+		x0 := float32(bounds.Min.X)
+		x1 := float32(bounds.Max.X)
+		y0 := float32(bounds.Max.Y)
+		y1 := float32(bounds.Max.Y)
+		clr := draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.9, 0.4)
+		if !context.IsEnabled(l) {
+			clr = draw.Color2(context.ColorMode(), draw.ColorTypeBase, 0.8, 0.3)
+		}
+		vector.StrokeLine(dst, x0, y0, x1, y1, float32(context.Scale()), clr, false)
+	}
+
+	// Draw a footer.
 	if l.list.footerHeight > 0 {
 		bounds := l.footerBounds(context)
 		draw.DrawRoundedRectWithSharpenCorners(context, dst, bounds, draw.ControlColor(context.ColorMode(), context.IsEnabled(l)), RoundedCornerRadius(context), draw.SharpenCorners{

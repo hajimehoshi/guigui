@@ -22,6 +22,8 @@ type Lists struct {
 	configForm       basicwidget.Form
 	showStripeText   basicwidget.Text
 	showStripeToggle basicwidget.Toggle
+	showHeaderText   basicwidget.Text
+	showHeaderToggle basicwidget.Toggle
 	showFooterText   basicwidget.Text
 	showFooterToggle basicwidget.Toggle
 	movableText      basicwidget.Text
@@ -44,6 +46,11 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	l.listText.SetValue("Text list")
 
 	l.list.SetItemBorderVisible(l.model.Lists().IsStripeVisible())
+	if l.model.Lists().IsHeaderVisible() {
+		l.list.SetHeaderHeight(u)
+	} else {
+		l.list.SetHeaderHeight(0)
+	}
 	if l.model.Lists().IsFooterVisible() {
 		l.list.SetFooterHeight(u)
 	} else {
@@ -73,10 +80,16 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		l.model.Lists().SetStripeVisible(value)
 	})
 	l.showStripeToggle.SetValue(l.model.Lists().IsStripeVisible())
+	l.showHeaderText.SetValue("Show header")
+	l.showHeaderToggle.SetOnValueChanged(func(value bool) {
+		l.model.Lists().SetHeaderVisible(value)
+	})
+	l.showHeaderToggle.SetValue(l.model.Lists().IsHeaderVisible())
 	l.showFooterText.SetValue("Show footer")
 	l.showFooterToggle.SetOnValueChanged(func(value bool) {
 		l.model.Lists().SetFooterVisible(value)
 	})
+	l.showFooterToggle.SetValue(l.model.Lists().IsFooterVisible())
 	l.movableText.SetValue("Enable to move items")
 	l.movableToggle.SetValue(l.model.Lists().Movable())
 	l.movableToggle.SetOnValueChanged(func(value bool) {
@@ -92,6 +105,10 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		{
 			PrimaryWidget:   &l.showStripeText,
 			SecondaryWidget: &l.showStripeToggle,
+		},
+		{
+			PrimaryWidget:   &l.showHeaderText,
+			SecondaryWidget: &l.showHeaderToggle,
 		},
 		{
 			PrimaryWidget:   &l.showFooterText,

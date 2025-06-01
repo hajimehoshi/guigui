@@ -286,6 +286,7 @@ type ListsModel struct {
 	listItems []basicwidget.ListItem[int]
 
 	stripeVisible bool
+	headerVisible bool
 	footerVisible bool
 	unmovable     bool
 	disabled      bool
@@ -315,6 +316,14 @@ func (l *ListsModel) IsStripeVisible() bool {
 
 func (l *ListsModel) SetStripeVisible(visible bool) {
 	l.stripeVisible = visible
+}
+
+func (l *ListsModel) IsHeaderVisible() bool {
+	return l.headerVisible
+}
+
+func (l *ListsModel) SetHeaderVisible(hasHeader bool) {
+	l.headerVisible = hasHeader
 }
 
 func (l *ListsModel) IsFooterVisible() bool {
