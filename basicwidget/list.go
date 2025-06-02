@@ -78,6 +78,7 @@ func (l *List[T]) updateListItems() {
 
 	for i, item := range l.listItems {
 		l.listItemWidgets[i].setListItem(item)
+		l.listItemWidgets[i].setStyle(l.list.style)
 		l.baseListItems[i] = l.listItemWidgets[i].listItem()
 	}
 	l.list.SetItems(l.baseListItems)
@@ -202,7 +203,8 @@ type listItemWidget[T comparable] struct {
 
 	item ListItem[T]
 
-	text Text
+	text  Text
+	style ListStyle
 }
 
 func (l *listItemWidget[T]) setListItem(listItem ListItem[T]) {
@@ -210,14 +212,26 @@ func (l *listItemWidget[T]) setListItem(listItem ListItem[T]) {
 	l.text.SetValue(listItem.Text)
 }
 
+func (l *listItemWidget[T]) setStyle(style ListStyle) {
+	l.style = style
+}
+
 func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if l.item.Content != nil {
-		appender.AppendChildWidgetWithBounds(l.item.Content, context.Bounds(l))
+		if l.style == ListStyleMenu {
+			appender.AppendChildWidgetWithPosition(l.item.Content, context.Bounds(l).Min)
+		} else {
+			appender.AppendChildWidgetWithBounds(l.item.Content, context.Bounds(l))
+		}
 	}
 
 	l.text.SetValue(l.item.Text)
 	l.text.SetVerticalAlign(VerticalAlignMiddle)
-	appender.AppendChildWidgetWithBounds(&l.text, context.Bounds(l))
+	if l.style == ListStyleMenu {
+		appender.AppendChildWidgetWithPosition(&l.text, context.Bounds(l).Min)
+	} else {
+		appender.AppendChildWidgetWithBounds(&l.text, context.Bounds(l))
+	}
 
 	return nil
 }
