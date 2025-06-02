@@ -190,7 +190,7 @@ func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.P
 
 	var contentSize image.Point
 	if d.content != nil {
-		contentSize = d.content.DefaultSize(context)
+		contentSize = context.Size(d.content)
 	}
 	textSize := d.text.DefaultSize(context)
 	iconSize := defaultIconSize(context)

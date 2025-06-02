@@ -61,7 +61,8 @@ func (p *PopupMenu[T]) Build(context *guigui.Context, appender *guigui.ChildWidg
 
 func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 	pos := context.Position(p)
-	s := context.Size(&p.list)
+	// List size can dynamically change based on the items. Use the default size.
+	s := p.list.DefaultSize(context)
 	s.Y = min(s.Y, 24*UnitSize(context))
 	r := image.Rectangle{
 		Min: pos,
