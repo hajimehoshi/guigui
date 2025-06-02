@@ -72,7 +72,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 	pt := context.Position(d)
 	pt.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 	pt.X = max(pt.X, 0)
-	pt.Y -= listItemPadding(context)
+	pt.Y -= RoundedCornerRadius(context)
 	pt.Y += int((float64(context.Size(d).Y) - LineHeight(context)) / 2)
 	pt.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
 	pt.Y = max(pt.Y, 0)
