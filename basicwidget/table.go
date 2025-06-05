@@ -210,7 +210,6 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chi
 	b := context.Bounds(t)
 	x := b.Min.X
 	for i, content := range t.item.Contents {
-		context.SetSize(content, image.Pt(t.table.columnWidthsInPixels[i], guigui.DefaultSize))
 		appender.AppendChildWidgetWithPosition(content, image.Pt(x, b.Min.Y))
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
 	}
