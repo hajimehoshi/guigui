@@ -26,18 +26,18 @@ type List[T comparable] struct {
 }
 
 type ListItem[T comparable] struct {
-	Text      string
-	TextColor color.Color
-	Header    bool
-	Content   guigui.Widget
-	Disabled  bool
-	Border    bool
-	Movable   bool
-	ID        T
+	Text         string
+	TextColor    color.Color
+	Header       bool
+	Content      guigui.Widget
+	Unselectable bool
+	Border       bool
+	Movable      bool
+	ID           T
 }
 
 func (l *ListItem[T]) selectable() bool {
-	return !l.Header && !l.Disabled && !l.Border
+	return !l.Header && !l.Unselectable && !l.Border
 }
 
 func (l *List[T]) SetItemBorderVisible(visible bool) {

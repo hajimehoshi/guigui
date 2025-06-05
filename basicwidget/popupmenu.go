@@ -11,13 +11,13 @@ import (
 )
 
 type PopupMenuItem[T comparable] struct {
-	Text      string
-	TextColor color.Color
-	Header    bool
-	Content   guigui.Widget
-	Disabled  bool
-	Border    bool
-	ID        T
+	Text         string
+	TextColor    color.Color
+	Header       bool
+	Content      guigui.Widget
+	Unselectable bool
+	Border       bool
+	ID           T
 }
 
 type PopupMenu[T comparable] struct {
@@ -104,13 +104,13 @@ func (p *PopupMenu[T]) SetItems(items []PopupMenuItem[T]) {
 	var listItems []ListItem[T]
 	for _, item := range items {
 		listItems = append(listItems, ListItem[T]{
-			Text:      item.Text,
-			TextColor: item.TextColor,
-			Header:    item.Header,
-			Content:   item.Content,
-			Disabled:  item.Disabled,
-			Border:    item.Border,
-			ID:        item.ID,
+			Text:         item.Text,
+			TextColor:    item.TextColor,
+			Header:       item.Header,
+			Content:      item.Content,
+			Unselectable: item.Unselectable,
+			Border:       item.Border,
+			ID:           item.ID,
 		})
 	}
 	p.list.SetItems(listItems)
@@ -126,13 +126,13 @@ func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
 		return PopupMenuItem[T]{}, false
 	}
 	return PopupMenuItem[T]{
-		Text:      listItem.Text,
-		TextColor: listItem.TextColor,
-		Header:    listItem.Header,
-		Content:   listItem.Content,
-		Disabled:  listItem.Disabled,
-		Border:    listItem.Border,
-		ID:        listItem.ID,
+		Text:         listItem.Text,
+		TextColor:    listItem.TextColor,
+		Header:       listItem.Header,
+		Content:      listItem.Content,
+		Unselectable: listItem.Unselectable,
+		Border:       listItem.Border,
+		ID:           listItem.ID,
 	}, true
 }
 
@@ -142,13 +142,13 @@ func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
 		return PopupMenuItem[T]{}, false
 	}
 	return PopupMenuItem[T]{
-		Text:      listItem.Text,
-		TextColor: listItem.TextColor,
-		Header:    listItem.Header,
-		Content:   listItem.Content,
-		Disabled:  listItem.Disabled,
-		Border:    listItem.Border,
-		ID:        listItem.ID,
+		Text:         listItem.Text,
+		TextColor:    listItem.TextColor,
+		Header:       listItem.Header,
+		Content:      listItem.Content,
+		Unselectable: listItem.Unselectable,
+		Border:       listItem.Border,
+		ID:           listItem.ID,
 	}, true
 }
 

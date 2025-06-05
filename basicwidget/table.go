@@ -38,14 +38,14 @@ type TableColumn struct {
 }
 
 type TableItem[T comparable] struct {
-	Contents []guigui.Widget
-	Disabled bool
-	Movable  bool
-	ID       T
+	Contents     []guigui.Widget
+	Unselectable bool
+	Movable      bool
+	ID           T
 }
 
 func (t *TableItem[T]) selectable() bool {
-	return !t.Disabled
+	return !t.Unselectable
 }
 
 func (t *Table[T]) SetColumns(columns []TableColumn) {
