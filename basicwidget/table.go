@@ -210,6 +210,9 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chi
 	b := context.Bounds(t)
 	x := b.Min.X
 	for i, content := range t.item.Contents {
+		if content == nil {
+			continue
+		}
 		appender.AppendChildWidgetWithPosition(content, image.Pt(x, b.Min.Y))
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
 	}
@@ -220,6 +223,9 @@ func (t *tableItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	w := 12 * UnitSize(context)
 	var h int
 	for _, content := range t.item.Contents {
+		if content == nil {
+			continue
+		}
 		h = max(h, context.Size(content).Y)
 	}
 	h = max(h, int(LineHeight(context)))
