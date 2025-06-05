@@ -140,8 +140,6 @@ func (t *Table[T]) ItemTextColor(context *guigui.Context, index int) color.Color
 	switch {
 	case t.list.SelectedItemIndex() == index && item.selectable():
 		return DefaultActiveListItemTextColor(context)
-	case !item.selectable():
-		return DefaultDisabledListItemTextColor(context)
 	default:
 		return draw.TextColor(context.ColorMode(), context.IsEnabled(item))
 	}

@@ -39,10 +39,6 @@ func DefaultActiveListItemTextColor(context *guigui.Context) color.Color {
 	return draw.Color2(context.ColorMode(), draw.ColorTypeBase, 1, 1)
 }
 
-func DefaultDisabledListItemTextColor(context *guigui.Context) color.Color {
-	return draw.Color(context.ColorMode(), draw.ColorTypeBase, 0.5)
-}
-
 type baseList[T comparable] struct {
 	guigui.DefaultWidget
 
