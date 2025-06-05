@@ -121,7 +121,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
-		y := b.itemYFromIndex(context, idx) - RoundedCornerRadius(context)
+		y := b.itemYFromIndex(context, idx) - b.headerHeight - RoundedCornerRadius(context)
 		b.scrollOverlay.SetOffset(context, b.contentSize(context), 0, float64(-y))
 		b.indexToJumpPlus1 = 0
 	}
