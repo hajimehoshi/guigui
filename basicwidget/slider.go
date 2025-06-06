@@ -195,7 +195,11 @@ func (s *Slider) setValue(context *guigui.Context, originValue *big.Int, originX
 
 func (s *Slider) barWidth(context *guigui.Context) int {
 	w := context.Bounds(s).Dx()
-	return w - UnitSize(context)
+	return w - 2*sliderThumbRadius(context)
+}
+
+func sliderThumbRadius(context *guigui.Context) int {
+	return int(UnitSize(context) * 7 / 16)
 }
 
 func (s *Slider) thumbBounds(context *guigui.Context) image.Rectangle {
@@ -205,9 +209,9 @@ func (s *Slider) thumbBounds(context *guigui.Context) image.Rectangle {
 	}
 	bounds := context.Bounds(s)
 	x := bounds.Min.X + int(rate*float64(s.barWidth(context)))
-	y := bounds.Min.Y
-	w := UnitSize(context)
-	h := UnitSize(context)
+	y := bounds.Min.Y + (bounds.Dy()-2*sliderThumbRadius(context))/2
+	w := 2 * sliderThumbRadius(context)
+	h := 2 * sliderThumbRadius(context)
 	return image.Rect(x, y, x+w, y+h)
 }
 
@@ -222,12 +226,12 @@ func (s *Slider) Draw(context *guigui.Context, dst *ebiten.Image) {
 	rate := s.abstractNumberInput.Rate()
 
 	b := context.Bounds(s)
-	x0 := b.Min.X + UnitSize(context)/2
+	x0 := b.Min.X + sliderThumbRadius(context)
 	x1 := x0
 	if !math.IsNaN(rate) {
 		x1 += int(float64(s.barWidth(context)) * float64(rate))
 	}
-	x2 := b.Max.X - UnitSize(context)/2
+	x2 := b.Max.X - sliderThumbRadius(context)
 	strokeWidth := int(5 * context.Scale())
 	r := strokeWidth / 2
 	y0 := (b.Min.Y+b.Max.Y)/2 - r
