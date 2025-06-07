@@ -108,7 +108,13 @@ type widgetState struct {
 	hasVisibleBoundsCache bool
 	visibleBoundsCache    image.Rectangle
 
+	onFocusChanged func(focused bool)
+
 	_ noCopy
+}
+
+func (w *widgetState) setOnFocusChanged(f func(focused bool)) {
+	w.onFocusChanged = f
 }
 
 func (w *widgetState) isInTree(now int64) bool {

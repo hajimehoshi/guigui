@@ -167,9 +167,26 @@ func (a *app) bounds() image.Rectangle {
 	return image.Rect(0, 0, int(math.Ceil(a.screenWidth)), int(math.Ceil(a.screenHeight)))
 }
 
+func (a *app) focusWidget(widgetState *widgetState) {
+	if a.focusedWidgetState == widgetState {
+		return
+	}
+	if a.focusedWidgetState != nil {
+		if a.focusedWidgetState.onFocusChanged != nil {
+			a.focusedWidgetState.onFocusChanged(false)
+		}
+	}
+	a.focusedWidgetState = widgetState
+	if a.focusedWidgetState != nil {
+		if a.focusedWidgetState.onFocusChanged != nil {
+			a.focusedWidgetState.onFocusChanged(true)
+		}
+	}
+}
+
 func (a *app) Update() error {
 	if a.focusedWidgetState == nil {
-		a.focusedWidgetState = a.root.widgetState()
+		a.focusWidget(a.root.widgetState())
 	}
 
 	rootState := a.root.widgetState()

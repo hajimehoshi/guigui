@@ -192,23 +192,19 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		}
 	}
 
-	focused := context.IsFocused(t)
-	if focused {
-		if !t.prevFocused {
+	t.SetOnFocusChanged(func(focused bool) {
+		if focused {
 			t.field.Focus()
 			t.cursor.resetCounter()
 			start, end := t.field.Selection()
 			if start < 0 || end < 0 {
 				t.selectAll()
 			}
-		}
-	} else {
-		if t.prevFocused {
+		} else {
 			t.commit()
 		}
-	}
-
-	t.prevFocused = focused
+	})
+	t.prevFocused = context.IsFocused(t)
 
 	if t.selectable || t.editable {
 		t.cursor.text = t

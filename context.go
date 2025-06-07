@@ -358,7 +358,7 @@ func (c *Context) focus(widget Widget) {
 		return
 	}
 
-	c.app.focusedWidgetState = widget.widgetState()
+	c.app.focusWidget(widget.widgetState())
 
 	// Rerender everything when a focus changes.
 	// A widget including a focused widget might be affected.
@@ -373,7 +373,7 @@ func (c *Context) blur(widget Widget) {
 	var unfocused bool
 	_ = traverseWidget(widget, func(w Widget) error {
 		if c.app.focusedWidgetState == w.widgetState() {
-			c.app.focusedWidgetState = c.app.root.widgetState()
+			c.app.focusWidget(c.app.root.widgetState())
 			unfocused = true
 			return skipTraverse
 		}
