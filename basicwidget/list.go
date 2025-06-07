@@ -85,7 +85,7 @@ func (l *List[T]) updateListItems() {
 }
 
 func (l *List[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	context.SetSize(&l.list, context.Size(l))
+	context.SetSize(&l.list, context.ActualSize(l))
 
 	l.updateListItems()
 
@@ -94,7 +94,7 @@ func (l *List[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 	setWidth := l.list.style != ListStyleMenu
 	var w int
 	if setWidth {
-		w = context.Size(l).X - 2*listItemPadding(context)
+		w = context.ActualSize(l).X - 2*listItemPadding(context)
 	}
 	for i := range l.listItemWidgets {
 		item := &l.listItemWidgets[i]
@@ -237,7 +237,7 @@ func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chil
 func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	if l.item.Border {
 		p := context.Position(l)
-		s := context.Size(l)
+		s := context.ActualSize(l)
 		x0 := float32(p.X)
 		x1 := float32(p.X + s.X)
 		y := float32(p.Y) + float32(s.Y)/2
@@ -254,7 +254,7 @@ func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	var w, h int
 	if l.item.Content != nil {
-		s := context.Size(l.item.Content)
+		s := context.ActualSize(l.item.Content)
 		w, h = s.X, s.Y
 	}
 

@@ -179,8 +179,8 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		t.lastScale = context.Scale()
 		t.resetCachedTextSize()
 	}
-	if t.autoWrap && t.lastWidth != context.Size(t).X {
-		t.lastWidth = context.Size(t).X
+	if t.autoWrap && t.lastWidth != context.ActualSize(t).X {
+		t.lastWidth = context.ActualSize(t).X
 		t.resetAutoWrapCachedTextSize()
 	}
 
@@ -975,7 +975,7 @@ func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold boo
 	txt := t.textToDraw(context, true)
 	var w, h float64
 	if useAutoWrap {
-		cw := context.Size(t).X
+		cw := context.ActualSize(t).X
 		w, h = textutil.Measure(cw, txt, true, t.face(context, forceBold), t.lineHeight(context), t.keepTailingSpace)
 	} else {
 		// context.Size is not available as this causes infinite recursion, and is not needed. Give 0 as a width.

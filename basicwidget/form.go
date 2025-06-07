@@ -75,10 +75,10 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 		var primaryH int
 		var secondaryH int
 		if item.PrimaryWidget != nil {
-			primaryH = context.Size(item.PrimaryWidget).Y
+			primaryH = context.ActualSize(item.PrimaryWidget).Y
 		}
 		if item.SecondaryWidget != nil {
-			secondaryH = context.Size(item.SecondaryWidget).Y
+			secondaryH = context.ActualSize(item.SecondaryWidget).Y
 		}
 		h := max(primaryH, secondaryH, minFormItemHeight(context))
 		baseBounds := context.Bounds(f)
@@ -89,7 +89,7 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 
 		if item.PrimaryWidget != nil {
 			bounds := baseBounds
-			ws := context.Size(item.PrimaryWidget)
+			ws := context.ActualSize(item.PrimaryWidget)
 			bounds.Max.X = bounds.Min.X + ws.X
 			pY := (h + 2*paddingS.Y - ws.Y) / 2
 			pY = min(pY, paddingS.Y+int((float64(UnitSize(context))-LineHeight(context))/2))
@@ -99,7 +99,7 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 		}
 		if item.SecondaryWidget != nil {
 			bounds := baseBounds
-			ws := context.Size(item.SecondaryWidget)
+			ws := context.ActualSize(item.SecondaryWidget)
 			bounds.Min.X = bounds.Max.X - ws.X
 			pY := (h + 2*paddingS.Y - ws.Y) / 2
 			if ws.Y < UnitSize(context)+2*paddingS.Y {
@@ -129,10 +129,10 @@ func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
 			var primaryH int
 			var secondaryH int
 			if item.PrimaryWidget != nil {
-				primaryH = context.Size(item.PrimaryWidget).Y
+				primaryH = context.ActualSize(item.PrimaryWidget).Y
 			}
 			if item.SecondaryWidget != nil {
-				secondaryH = context.Size(item.SecondaryWidget).Y
+				secondaryH = context.ActualSize(item.SecondaryWidget).Y
 			}
 			h := max(primaryH, secondaryH, minFormItemHeight(context))
 			y += h + paddingS.Y
@@ -162,10 +162,10 @@ func (f *Form) DefaultSize(context *guigui.Context) image.Point {
 		var primaryS image.Point
 		var secondaryS image.Point
 		if item.PrimaryWidget != nil {
-			primaryS = context.Size(item.PrimaryWidget)
+			primaryS = context.ActualSize(item.PrimaryWidget)
 		}
 		if item.SecondaryWidget != nil {
-			secondaryS = context.Size(item.SecondaryWidget)
+			secondaryS = context.ActualSize(item.SecondaryWidget)
 		}
 
 		s.X = max(s.X, primaryS.X+secondaryS.X+2*paddingS.X+gapX)

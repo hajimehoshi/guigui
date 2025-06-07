@@ -265,9 +265,9 @@ func (c *inlineTextInputContainer) Build(context *guigui.Context, appender *guig
 	switch c.horizontalAlign {
 	case basicwidget.HorizontalAlignStart:
 	case basicwidget.HorizontalAlignCenter:
-		pos.X += (context.Size(c).X - context.Size(&c.textInput).X) / 2
+		pos.X += (context.ActualSize(c).X - context.ActualSize(&c.textInput).X) / 2
 	case basicwidget.HorizontalAlignEnd:
-		pos.X += context.Size(c).X - context.Size(&c.textInput).X
+		pos.X += context.ActualSize(c).X - context.ActualSize(&c.textInput).X
 	}
 	appender.AppendChildWidgetWithPosition(&c.textInput, pos)
 	return nil

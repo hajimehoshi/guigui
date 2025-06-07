@@ -228,7 +228,23 @@ func (c *Context) SetSize(widget Widget, size image.Point) {
 	widget.widgetState().heightPlus1 = size.Y + 1
 }
 
-func (c *Context) Size(widget Widget) image.Point {
+func (c *Context) LogicalSize(widget Widget) image.Point {
+	widgetState := widget.widgetState()
+	var s image.Point
+	if widgetState.widthPlus1 == 0 {
+		s.X = DefaultSize
+	} else {
+		s.X = widgetState.widthPlus1 - 1
+	}
+	if widgetState.heightPlus1 == 0 {
+		s.Y = DefaultSize
+	} else {
+		s.Y = widgetState.heightPlus1 - 1
+	}
+	return s
+}
+
+func (c *Context) ActualSize(widget Widget) image.Point {
 	widgetState := widget.widgetState()
 	var defaultSize image.Point
 	if widgetState.widthPlus1 == 0 || widgetState.heightPlus1 == 0 {
@@ -252,7 +268,7 @@ func (c *Context) Bounds(widget Widget) image.Rectangle {
 	widgetState := widget.widgetState()
 	return image.Rectangle{
 		Min: widgetState.position,
-		Max: widgetState.position.Add(c.Size(widget)),
+		Max: widgetState.position.Add(c.ActualSize(widget)),
 	}
 }
 

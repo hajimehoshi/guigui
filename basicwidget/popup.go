@@ -82,7 +82,7 @@ func (p *Popup) ContentBounds(context *guigui.Context) image.Rectangle {
 	}
 	return image.Rectangle{
 		Min: pt,
-		Max: pt.Add(context.Size(p)),
+		Max: pt.Add(context.ActualSize(p)),
 	}
 }
 
@@ -291,7 +291,7 @@ func (p *popupFrame) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupFrame) DefaultSize(context *guigui.Context) image.Point {
-	return context.Size(p.popup)
+	return context.ActualSize(p.popup)
 }
 
 func (p *popupFrame) ZDelta() int {
@@ -351,7 +351,7 @@ func (p *popupBackground) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupBackground) DefaultSize(context *guigui.Context) image.Point {
-	return context.Size(p.popup)
+	return context.ActualSize(p.popup)
 }
 
 func (p *popupBackground) ZDelta() int {
@@ -375,7 +375,7 @@ func (p *popupShadow) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupShadow) DefaultSize(context *guigui.Context) image.Point {
-	return context.Size(p.popup)
+	return context.ActualSize(p.popup)
 }
 
 func (p *popupShadow) ZDelta() int {

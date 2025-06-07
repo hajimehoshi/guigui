@@ -141,7 +141,7 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 	switch t.style {
 	case TextInputStyleNormal:
 		x = UnitSize(context) / 2
-		y = int(float64(min(context.Size(t).Y, UnitSize(context)))-LineHeight(context)*(t.text.scaleMinus1+1)) / 2
+		y = int(float64(min(context.ActualSize(t).Y, UnitSize(context)))-LineHeight(context)*(t.text.scaleMinus1+1)) / 2
 	case TextInputStyleInline:
 		x = UnitSize(context) / 4
 	}
@@ -184,8 +184,8 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 
 	pt := context.Position(t)
 	s := t.text.TextSize(context)
-	s.X = max(s.X, context.Size(t).X-paddingStart-paddingEnd)
-	s.Y = max(s.Y, context.Size(t).Y-paddingTop-paddingBottom)
+	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
+	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
 	textBounds := image.Rectangle{
 		Min: pt,
 		Max: pt.Add(s),
@@ -363,7 +363,7 @@ func (t *textInputFocus) ZDelta() int {
 }
 
 func (t *textInputFocus) DefaultSize(context *guigui.Context) image.Point {
-	return context.Size(t.textInput).Add(image.Pt(2*textInputFocusBorderWidth(context), 2*textInputFocusBorderWidth(context)))
+	return context.ActualSize(t.textInput).Add(image.Pt(2*textInputFocusBorderWidth(context), 2*textInputFocusBorderWidth(context)))
 }
 
 func (t *textInputFocus) PassThrough() bool {

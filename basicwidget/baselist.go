@@ -110,7 +110,7 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	h := b.defaultHeight(context)
 	h -= b.headerHeight
 	h -= b.footerHeight
-	return image.Pt(context.Size(b).X, h)
+	return image.Pt(context.ActualSize(b).X, h)
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -148,7 +148,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 
 			imgSize := listItemCheckmarkSize(context)
 			imgP := p
-			itemH := context.Size(item.Content).Y
+			itemH := context.ActualSize(item.Content).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
 			appender.AppendChildWidgetWithBounds(&b.checkmark, image.Rectangle{
@@ -164,7 +164,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 
 		appender.AppendChildWidgetWithPosition(item.Content, itemP)
-		p.Y += context.Size(item.Content).Y
+		p.Y += context.ActualSize(item.Content).Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
@@ -209,7 +209,7 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 	var cy int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		h := context.Size(item.Content).Y
+		h := context.ActualSize(item.Content).Y
 		if cy <= y && y < cy+h {
 			index = i
 			break
@@ -295,7 +295,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			_, y := ebiten.CursorPosition()
 			p := context.Position(b)
-			h := context.Size(b).Y - (b.headerHeight + b.footerHeight)
+			h := context.ActualSize(b).Y - (b.headerHeight + b.footerHeight)
 			var dy float64
 			if upperY := p.Y + UnitSize(context); y < upperY {
 				dy = float64(upperY-y) / 4
@@ -376,7 +376,7 @@ func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
 			break
 		}
 		item, _ := b.abstractList.ItemByIndex(i)
-		y += context.Size(item.Content).Y
+		y += context.ActualSize(item.Content).Y
 	}
 	y = b.adjustItemY(context, y)
 	return y
@@ -401,7 +401,7 @@ func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Recta
 	bounds.Min.Y += b.itemYFromIndex(context, index)
 	bounds.Min.Y += int(offsetY)
 	if item, ok := b.abstractList.ItemByIndex(index); ok {
-		bounds.Max.Y = bounds.Min.Y + context.Size(item.Content).Y
+		bounds.Max.Y = bounds.Min.Y + context.ActualSize(item.Content).Y
 	}
 	return bounds
 }
@@ -506,7 +506,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	if b.dragDstIndexPlus1 > 0 {
 		p := context.Position(b)
 		x0 := float32(p.X) + float32(RoundedCornerRadius(context))
-		x1 := float32(p.X+context.Size(b).X) - float32(RoundedCornerRadius(context))
+		x1 := float32(p.X+context.ActualSize(b).X) - float32(RoundedCornerRadius(context))
 		y := float32(p.Y)
 		y += float32(b.itemYFromIndex(context, b.dragDstIndexPlus1-1))
 		_, offsetY := b.scrollOverlay.Offset()
@@ -522,7 +522,7 @@ func (b *baseList[T]) defaultWidth(context *guigui.Context) int {
 	var w int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		w = max(w, context.Size(item.Content).X)
+		w = max(w, context.ActualSize(item.Content).X)
 	}
 	w += 2 * listItemPadding(context)
 	b.cachedDefaultWidth = w
@@ -538,7 +538,7 @@ func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
 	var h int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		h += context.Size(item.Content).Y
+		h += context.ActualSize(item.Content).Y
 	}
 	b.cachedDefaultContentHeight = h
 	return h + 2*r + b.headerHeight + b.footerHeight

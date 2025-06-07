@@ -16,7 +16,7 @@ type ContentPanel struct {
 }
 
 func (c *ContentPanel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	context.SetSize(&c.content, context.Size(c))
+	context.SetSize(&c.content, context.ActualSize(c))
 	c.panel.SetContent(&c.content)
 
 	appender.AppendChildWidgetWithBounds(&c.panel, context.Bounds(c))

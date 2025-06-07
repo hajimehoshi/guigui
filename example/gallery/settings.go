@@ -202,7 +202,7 @@ func (t *textWithSubText) Build(context *guigui.Context, appender *guigui.ChildW
 	pt := context.Position(t)
 	appender.AppendChildWidgetWithPosition(&t.text, pt)
 
-	pt.Y += context.Size(&t.text).Y
+	pt.Y += context.ActualSize(&t.text).Y
 	t.subText.SetScale(0.875)
 	t.subText.SetMultiline(true)
 	t.subText.SetAutoWrap(true)

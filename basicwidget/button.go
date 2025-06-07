@@ -87,7 +87,7 @@ func (b *Button) setKeepPressed(keep bool) {
 func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	appender.AppendChildWidgetWithBounds(&b.button, context.Bounds(b))
 
-	s := context.Size(b)
+	s := context.ActualSize(b)
 
 	if b.content != nil {
 		contentP := context.Position(b)
@@ -219,7 +219,7 @@ func buttonEdgeAndImagePadding(context *guigui.Context) int {
 }
 
 func (b *Button) iconSize(context *guigui.Context) image.Point {
-	s := context.Size(b)
+	s := context.ActualSize(b)
 	if b.text.Value() != "" {
 		s := min(defaultIconSize(context), s.X, s.Y)
 		return image.Pt(s, s)

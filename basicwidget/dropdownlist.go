@@ -73,7 +73,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 	pt.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 	pt.X = max(pt.X, 0)
 	pt.Y -= RoundedCornerRadius(context)
-	pt.Y += int((float64(context.Size(d).Y) - LineHeight(context)) / 2)
+	pt.Y += int((float64(context.ActualSize(d).Y) - LineHeight(context)) / 2)
 	pt.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
 	pt.Y = max(pt.Y, 0)
 	appender.AppendChildWidgetWithPosition(&d.popupMenu, pt)
@@ -190,7 +190,7 @@ func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.P
 
 	var contentSize image.Point
 	if d.content != nil {
-		contentSize = context.Size(d.content)
+		contentSize = context.ActualSize(d.content)
 	}
 	textSize := d.text.DefaultSize(context)
 	iconSize := defaultIconSize(context)

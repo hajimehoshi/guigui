@@ -82,9 +82,9 @@ func (p *Panel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 
 	if p.hasNextOffset {
 		if p.isNextOffsetDelta {
-			p.scollOverlay.SetOffsetByDelta(context, context.Size(p.content), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffsetByDelta(context, context.ActualSize(p.content), p.nextOffsetX, p.nextOffsetY)
 		} else {
-			p.scollOverlay.SetOffset(context, context.Size(p.content), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffset(context, context.ActualSize(p.content), p.nextOffsetX, p.nextOffsetY)
 		}
 		p.hasNextOffset = false
 		p.nextOffsetX = 0
@@ -94,7 +94,7 @@ func (p *Panel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	offsetX, offsetY := p.scollOverlay.Offset()
 	appender.AppendChildWidgetWithPosition(p.content, context.Position(p).Add(image.Pt(int(offsetX), int(offsetY))))
 
-	p.scollOverlay.SetContentSize(context, context.Size(p.content))
+	p.scollOverlay.SetContentSize(context, context.ActualSize(p.content))
 	appender.AppendChildWidgetWithBounds(&p.scollOverlay, context.Bounds(p))
 
 	p.border.scrollOverlay = &p.scollOverlay
