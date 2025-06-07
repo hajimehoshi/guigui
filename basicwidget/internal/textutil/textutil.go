@@ -37,6 +37,8 @@ const (
 	HorizontalAlignStart HorizontalAlign = iota
 	HorizontalAlignCenter
 	HorizontalAlignEnd
+	HorizontalAlignLeft
+	HorizontalAlignRight
 )
 
 type VerticalAlign int
@@ -121,11 +123,13 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 func oneLineLeft(width int, line string, face text.Face, hAlign HorizontalAlign, keepTailingSpace bool) float64 {
 	w := advance(line[:len(line)-tailingLineBreakLen(line)], face, keepTailingSpace)
 	switch hAlign {
-	case HorizontalAlignStart:
+	case HorizontalAlignStart, HorizontalAlignLeft:
+		// For RTL languages, HorizontalAlignStart should be the same as HorizontalAlignRight.
 		return 0
 	case HorizontalAlignCenter:
 		return (float64(width) - w) / 2
-	case HorizontalAlignEnd:
+	case HorizontalAlignEnd, HorizontalAlignRight:
+		// For RTL languages, HorizontalAlignEnd should be the same as HorizontalAlignLeft.
 		return float64(width) - w
 	default:
 		panic(fmt.Sprintf("textutil: invalid HorizontalAlign: %d", hAlign))

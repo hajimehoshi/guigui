@@ -45,12 +45,14 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	op.LineSpacing = options.LineHeight
 
 	switch options.HorizontalAlign {
-	case HorizontalAlignStart:
+	case HorizontalAlignStart, HorizontalAlignLeft:
+		// TODO: For RTL languages, HorizontalAlignStart should be the same as HorizontalAlignRight.
 		op.PrimaryAlign = text.AlignStart
 	case HorizontalAlignCenter:
 		op.GeoM.Translate(float64(bounds.Dx())/2, 0)
 		op.PrimaryAlign = text.AlignCenter
-	case HorizontalAlignEnd:
+	case HorizontalAlignEnd, HorizontalAlignRight:
+		// TODO: For RTL languages, HorizontalAlignEnd should be the same as HorizontalAlignLeft.
 		op.GeoM.Translate(float64(bounds.Dx()), 0)
 		op.PrimaryAlign = text.AlignEnd
 	}

@@ -40,7 +40,7 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	t.table.SetColumns([]basicwidget.TableColumn{
 		{
 			HeaderText:                "ID",
-			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignEnd,
+			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
 		},
 		{
@@ -49,12 +49,12 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		},
 		{
 			HeaderText:                "Amount",
-			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignEnd,
+			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
 		},
 		{
 			HeaderText:                "Cost",
-			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignEnd,
+			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
 		},
 	})
@@ -78,7 +78,7 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	for i, item := range t.model.Tables().TableItems() {
 		text := t.tableItemWidgets[n*i].(*basicwidget.Text)
 		text.SetValue(strconv.Itoa(item.ID))
-		text.SetHorizontalAlign(basicwidget.HorizontalAlignEnd)
+		text.SetHorizontalAlign(basicwidget.HorizontalAlignRight)
 		text.SetTabular(true)
 
 		text = t.tableItemWidgets[n*i+1].(*basicwidget.Text)
@@ -86,12 +86,12 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 
 		text = t.tableItemWidgets[n*i+2].(*basicwidget.Text)
 		text.SetValue(strconv.Itoa(item.Amount))
-		text.SetHorizontalAlign(basicwidget.HorizontalAlignEnd)
+		text.SetHorizontalAlign(basicwidget.HorizontalAlignRight)
 		text.SetTabular(true)
 
 		text = t.tableItemWidgets[n*i+3].(*basicwidget.Text)
 		text.SetValue(fmt.Sprintf("%d.%02d", item.Cost/100, item.Cost%100))
-		text.SetHorizontalAlign(basicwidget.HorizontalAlignEnd)
+		text.SetHorizontalAlign(basicwidget.HorizontalAlignRight)
 		text.SetTabular(true)
 
 		t.tableItems = append(t.tableItems, basicwidget.TableItem[int]{
