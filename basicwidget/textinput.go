@@ -43,6 +43,10 @@ type TextInput struct {
 	onTextAndSelectionChanged func(text string, start, end int)
 }
 
+func (t *TextInput) SetOnEnterPressed(f func(text string)) {
+	t.text.SetOnEnterPressed(f)
+}
+
 func (t *TextInput) SetOnValueChanged(f func(text string, committed bool)) {
 	t.text.SetOnValueChanged(f)
 }
