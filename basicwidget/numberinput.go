@@ -57,6 +57,10 @@ func (n *NumberInput) SetOnValueChangedUint64(f func(value uint64, committed boo
 	n.abstractNumberInput.SetOnValueChangedUint64(f)
 }
 
+func (n *NumberInput) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool)) {
+	n.textInput.SetOnKeyJustPressed(f)
+}
+
 func (n *NumberInput) ValueBigInt() *big.Int {
 	if n.nextValue != nil {
 		return n.nextValue

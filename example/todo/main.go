@@ -47,8 +47,12 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 
 	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
 
-	r.textInput.SetOnEnterPressed(func(text string) {
-		r.tryCreateTask(text)
+	r.textInput.SetOnKeyJustPressed(func(key ebiten.Key) bool {
+		if key == ebiten.KeyEnter {
+			r.tryCreateTask(r.textInput.Value())
+			return true
+		}
+		return false
 	})
 
 	r.createButton.SetText("Create")

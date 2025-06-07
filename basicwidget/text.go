@@ -134,8 +134,8 @@ type Text struct {
 	lastScale           float64
 	lastWidth           int
 
-	onValueChanged func(text string, committed bool)
-	onEnterPressed func(text string)
+	onValueChanged   func(text string, committed bool)
+	onKeyJustPressed func(key ebiten.Key) bool
 
 	tmpLocales []language.Tag
 }
@@ -157,8 +157,8 @@ func (t *Text) SetOnValueChanged(f func(text string, committed bool)) {
 	t.onValueChanged = f
 }
 
-func (t *Text) SetOnEnterPressed(f func(text string)) {
-	t.onEnterPressed = f
+func (t *Text) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool)) {
+	t.onKeyJustPressed = f
 }
 
 func (t *Text) resetCachedTextSize() {
@@ -623,6 +623,17 @@ func (t *Text) compositionSelectionToDraw(context *guigui.Context) (uStart, cSta
 }
 
 func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {
+	// Handle a key input by user-setting callback, unless IME is working.
+	if t.field.UncommittedTextLengthInBytes() == 0 && t.onKeyJustPressed != nil {
+		var handled bool
+		for _, key := range inpututil.AppendJustPressedKeys(nil) {
+			handled = handled || t.onKeyJustPressed(key)
+		}
+		if handled {
+			return guigui.HandleInputByWidget(t)
+		}
+	}
+
 	if !t.selectable && !t.editable {
 		return guigui.HandleInputResult{}
 	}
@@ -668,10 +679,6 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 			}
 			if !t.multiline {
 				t.commit()
-			}
-			// TODO: This is not reached on browsers. Fix this.
-			if t.onEnterPressed != nil {
-				t.onEnterPressed(t.field.Text())
 			}
 			return guigui.HandleInputByWidget(t)
 		case isKeyRepeating(ebiten.KeyBackspace) ||
