@@ -135,7 +135,6 @@ type Text struct {
 	lastWidth           int
 
 	onValueChanged func(text string, committed bool)
-	onEnterPressed func(text string)
 
 	tmpLocales []language.Tag
 }
@@ -155,10 +154,6 @@ func newTextSizeCacheKey(autoWrap, bold bool) textSizeCacheKey {
 
 func (t *Text) SetOnValueChanged(f func(text string, committed bool)) {
 	t.onValueChanged = f
-}
-
-func (t *Text) SetOnEnterPressed(f func(text string)) {
-	t.onEnterPressed = f
 }
 
 func (t *Text) resetCachedTextSize() {
@@ -668,10 +663,6 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 			}
 			if !t.multiline {
 				t.commit()
-			}
-			// TODO: This is not reached on browsers. Fix this.
-			if t.onEnterPressed != nil {
-				t.onEnterPressed(t.field.Text())
 			}
 			return guigui.HandleInputByWidget(t)
 		case isKeyRepeating(ebiten.KeyBackspace) ||

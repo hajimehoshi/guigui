@@ -47,7 +47,10 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 
 	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
 
-	r.textInput.SetOnEnterPressed(func(text string) {
+	r.textInput.SetOnValueChanged(func(text string, committed bool) {
+		if !committed {
+			return
+		}
 		r.tryCreateTask(text)
 	})
 
