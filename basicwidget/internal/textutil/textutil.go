@@ -356,7 +356,10 @@ func Measure(width int, str string, autoWrap bool, face text.Face, lineHeight fl
 	for l := range lines(width, str, autoWrap, func(str string) float64 {
 		return advance(str, face, tabWidth, keepTailingSpace)
 	}) {
-		line := trimTailingLineBreak(l.str)
+		line := l.str
+		if !keepTailingSpace {
+			line = trimTailingLineBreak(line)
+		}
 		maxWidth = max(maxWidth, advance(line, face, tabWidth, keepTailingSpace))
 		// The text is already shifted by (lineHeight - (m.HAscent + m.Descent)) / 2.
 		// Thus, just counting the line number is enough.
