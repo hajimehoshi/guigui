@@ -43,19 +43,7 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	}
 
 	op.LineSpacing = options.LineHeight
-
-	switch options.HorizontalAlign {
-	case HorizontalAlignStart, HorizontalAlignLeft:
-		// TODO: For RTL languages, HorizontalAlignStart should be the same as HorizontalAlignRight.
-		op.PrimaryAlign = text.AlignStart
-	case HorizontalAlignCenter:
-		op.GeoM.Translate(float64(bounds.Dx())/2, 0)
-		op.PrimaryAlign = text.AlignCenter
-	case HorizontalAlignEnd, HorizontalAlignRight:
-		// TODO: For RTL languages, HorizontalAlignEnd should be the same as HorizontalAlignLeft.
-		op.GeoM.Translate(float64(bounds.Dx()), 0)
-		op.PrimaryAlign = text.AlignEnd
-	}
+	// Do not use op.PrimaryAlign due to tab width.
 
 	yOffset := textPositionYOffset(bounds.Size(), str, &options.Options)
 	op.GeoM.Translate(0, yOffset)
@@ -133,13 +121,15 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 		}
 
 		// Draw the text.
+		origGeoM := op.GeoM
 		if !options.KeepTailingSpace {
 			line = strings.TrimRightFunc(line, unicode.IsSpace)
 		}
+		x := oneLineLeft(bounds.Dx(), line, options.Face, options.HorizontalAlign, options.TabWidth, options.KeepTailingSpace)
+		op.GeoM.Translate(x, 0)
 		if options.TabWidth == 0 {
 			text.Draw(dst, line, options.Face, op)
 		} else {
-			origGeoM := op.GeoM
 			var origX float64
 			for {
 				head, tail, ok := strings.Cut(line, "\t")
@@ -153,8 +143,8 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 				origX = nextX
 				line = tail
 			}
-			op.GeoM = origGeoM
 		}
+		op.GeoM = origGeoM
 		op.GeoM.Translate(0, options.LineHeight)
 	}
 }

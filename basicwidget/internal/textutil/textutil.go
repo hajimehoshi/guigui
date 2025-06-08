@@ -19,6 +19,7 @@ func nextIndentPosition(position float64, indentWidth float64) float64 {
 	if indentWidth == 0 {
 		return position
 	}
+	// TODO: The calculation should consider the center and right alignment (#162).
 	return float64(int(position/indentWidth)+1) * indentWidth
 }
 
