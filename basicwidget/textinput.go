@@ -161,7 +161,7 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 
 func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 	start, top, end, bottom := t.textInputPaddingInScrollableContent(context)
-	return t.text.TextSize(context).Add(image.Pt(start+end, top+bottom))
+	return t.text.TextSize(context, context.ActualSize(t).X-start-end).Add(image.Pt(start+end, top+bottom))
 }
 
 func (t *TextInput) isFocused(context *guigui.Context) bool {
@@ -187,7 +187,7 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	t.text.setKeepTailingSpace(true)
 
 	pt := context.Position(t)
-	s := t.text.TextSize(context)
+	s := t.text.TextSize(context, context.ActualSize(t).X-paddingStart-paddingEnd)
 	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
 	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
 	textBounds := image.Rectangle{

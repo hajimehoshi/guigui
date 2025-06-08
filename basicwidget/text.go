@@ -471,7 +471,7 @@ func (t *Text) setKeepTailingSpace(keep bool) {
 func (t *Text) textBounds(context *guigui.Context) image.Rectangle {
 	b := context.Bounds(t)
 
-	ts := t.TextSize(context)
+	ts := t.TextSize(context, context.ActualSize(t).X)
 
 	switch t.vAlign {
 	case VerticalAlignTop:
@@ -988,18 +988,18 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (t *Text) DefaultSize(context *guigui.Context) image.Point {
-	return t.textSize(context, true, false)
+	return t.textSize(context, 0, true, false)
 }
 
-func (t *Text) TextSize(context *guigui.Context) image.Point {
-	return t.textSize(context, false, false)
+func (t *Text) TextSize(context *guigui.Context, containerWidth int) image.Point {
+	return t.textSize(context, containerWidth, false, false)
 }
 
-func (t *Text) boldTextSize(context *guigui.Context) image.Point {
-	return t.textSize(context, false, true)
+func (t *Text) boldTextSize(context *guigui.Context, containerWidth int) image.Point {
+	return t.textSize(context, containerWidth, false, true)
 }
 
-func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold bool) image.Point {
+func (t *Text) textSize(context *guigui.Context, containerWidth int, forceUnwrap bool, forceBold bool) image.Point {
 	useAutoWrap := t.autoWrap && !forceUnwrap
 
 	key := newTextSizeCacheKey(useAutoWrap, t.bold || forceBold)
@@ -1008,14 +1008,10 @@ func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold boo
 	}
 
 	txt := t.textToDraw(context, true)
-	var w, h float64
-	if useAutoWrap {
-		cw := context.ActualSize(t).X
-		w, h = textutil.Measure(cw, txt, true, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
-	} else {
-		// context.Size is not available as this causes infinite recursion, and is not needed. Give 0 as a width.
-		w, h = textutil.Measure(0, txt, false, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
+	if containerWidth == 0 {
+		containerWidth = math.MaxInt
 	}
+	w, h := textutil.Measure(containerWidth, txt, useAutoWrap, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
 	// If width is 0, the text's bounds and visible bounds are empty, and nothing including its cursor is rendered.
 	// Force to set a positive number as the width.
 	w = max(w, 1)

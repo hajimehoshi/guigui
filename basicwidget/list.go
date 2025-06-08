@@ -259,7 +259,7 @@ func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	}
 
 	// Assume that every item can use a bold font.
-	w = max(w, l.text.boldTextSize(context).X)
+	w = max(w, l.text.boldTextSize(context, 0).X)
 	h = max(h, int(LineHeight(context)))
 	if l.item.Border {
 		h = UnitSize(context) / 2
