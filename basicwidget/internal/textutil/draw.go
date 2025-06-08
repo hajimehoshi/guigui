@@ -49,7 +49,7 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	yOffset := textPositionYOffset(bounds.Size(), str, &options.Options)
 	op.GeoM.Translate(0, yOffset)
 
-	for pos, line := range lines(bounds.Dx(), str, options.AutoWrap, func(str string) float64 {
+	for line := range lines(bounds.Dx(), str, options.AutoWrap, func(str string) float64 {
 		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
 		y := op.GeoM.Element(1, 2)
@@ -60,8 +60,8 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 			break
 		}
 
-		start := pos
-		end := pos + len(line) - tailingLineBreakLen(line)
+		start := line.pos
+		end := line.pos + len(line.str) - tailingLineBreakLen(line.str)
 
 		if options.DrawSelection {
 			if start <= options.SelectionEnd && end >= options.SelectionStart {
@@ -130,18 +130,19 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 		}
 
 		// Draw the text.
+		lineStr := line.str
 		origGeoM := op.GeoM
 		if !options.KeepTailingSpace {
-			line = strings.TrimRightFunc(line, unicode.IsSpace)
+			lineStr = strings.TrimRightFunc(lineStr, unicode.IsSpace)
 		}
-		x := oneLineLeft(bounds.Dx(), line, options.Face, options.HorizontalAlign, options.TabWidth, options.KeepTailingSpace)
+		x := oneLineLeft(bounds.Dx(), lineStr, options.Face, options.HorizontalAlign, options.TabWidth, options.KeepTailingSpace)
 		op.GeoM.Translate(x, 0)
 		if options.TabWidth == 0 {
-			text.Draw(dst, line, options.Face, op)
+			text.Draw(dst, lineStr, options.Face, op)
 		} else {
 			var origX float64
 			for {
-				head, tail, ok := strings.Cut(line, "\t")
+				head, tail, ok := strings.Cut(lineStr, "\t")
 				text.Draw(dst, head, options.Face, op)
 				if !ok {
 					break
@@ -150,7 +151,7 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 				nextX := nextIndentPosition(x, options.TabWidth)
 				op.GeoM.Translate(nextX-origX, 0)
 				origX = nextX
-				line = tail
+				lineStr = tail
 			}
 		}
 		op.GeoM = origGeoM

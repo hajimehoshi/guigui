@@ -72,9 +72,9 @@ func TestNoWrapLines(t *testing.T) {
 		t.Run(tc.str, func(t *testing.T) {
 			var gotPositions []int
 			var gotLines []string
-			for pos, line := range textutil.Lines(0, tc.str, false, nil) {
-				gotPositions = append(gotPositions, pos)
-				gotLines = append(gotLines, line)
+			for l := range textutil.Lines(0, tc.str, false, nil) {
+				gotPositions = append(gotPositions, l.Pos)
+				gotLines = append(gotLines, l.Str)
 			}
 			if !slices.Equal(gotPositions, tc.positions) {
 				t.Errorf("got positions %v, want %v", gotPositions, tc.positions)

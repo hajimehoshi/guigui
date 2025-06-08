@@ -75,8 +75,13 @@ func visibleCulsters(str string, face text.Face) []text.Glyph {
 	return text.AppendGlyphs(nil, str, face, nil)
 }
 
-func lines(width int, str string, autoWrap bool, advance func(str string) float64) iter.Seq2[int, string] {
-	return func(yield func(pos int, s string) bool) {
+type line struct {
+	pos int
+	str string
+}
+
+func lines(width int, str string, autoWrap bool, advance func(str string) float64) iter.Seq[line] {
+	return func(yield func(line) bool) {
 		origStr := str
 
 		if !autoWrap {
@@ -84,12 +89,18 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 			for pos < len(str) {
 				p, l := FirstLineBreakPositionAndLen(str[pos:])
 				if p == -1 {
-					if !yield(pos, str[pos:]) {
+					if !yield(line{
+						pos: pos,
+						str: str[pos:],
+					}) {
 						return
 					}
 					break
 				}
-				if !yield(pos, str[pos:pos+p+l]) {
+				if !yield(line{
+					pos: pos,
+					str: str[pos : pos+p+l],
+				}) {
 					return
 				}
 				pos += p + l
@@ -105,7 +116,10 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 					l := origStr[lineStart : lineEnd+len(segment)]
 					// TODO: Consider a line alignment and/or editable/selectable states when calculating the width.
 					if advance(l[:len(l)-tailingLineBreakLen(l)]) > float64(width) {
-						if !yield(pos, origStr[lineStart:lineEnd]) {
+						if !yield(line{
+							pos: pos,
+							str: origStr[lineStart:lineEnd],
+						}) {
 							return
 						}
 						pos += lineEnd - lineStart
@@ -114,7 +128,10 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 				}
 				lineEnd += len(segment)
 				if mustBreak {
-					if !yield(pos, origStr[lineStart:lineEnd]) {
+					if !yield(line{
+						pos: pos,
+						str: origStr[lineStart:lineEnd],
+					}) {
 						return
 					}
 					pos += lineEnd - lineStart
@@ -125,7 +142,10 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 			}
 
 			if lineEnd-lineStart > 0 {
-				if !yield(pos, origStr[lineStart:lineEnd]) {
+				if !yield(line{
+					pos: pos,
+					str: origStr[lineStart:lineEnd],
+				}) {
 					return
 				}
 				pos += lineEnd - lineStart
@@ -135,7 +155,9 @@ func lines(width int, str string, autoWrap bool, advance func(str string) float6
 
 		// If the string ends with a line break, or an empty line, add an extra empty line.
 		if tailingLineBreakLen(origStr) > 0 || origStr == "" {
-			if !yield(len(origStr), "") {
+			if !yield(line{
+				pos: len(origStr),
+			}) {
 				return
 			}
 		}
@@ -166,11 +188,11 @@ func TextIndexFromPosition(width int, position image.Point, str string, options 
 	var pos int
 	var line string
 	var lineIndex int
-	for p, l := range lines(width, str, options.AutoWrap, func(str string) float64 {
+	for l := range lines(width, str, options.AutoWrap, func(str string) float64 {
 		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
-		line = l
-		pos = p
+		line = l.str
+		pos = l.pos
 		if lineIndex >= n {
 			break
 		}
@@ -213,20 +235,20 @@ func TextPositionFromIndex(width int, str string, index int, options *Options) (
 	var indexInLine0, indexInLine1 int
 	var line0, line1 string
 	var found0, found1 bool
-	for p, l := range lines(width, str, options.AutoWrap, func(str string) float64 {
+	for l := range lines(width, str, options.AutoWrap, func(str string) float64 {
 		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
 		// When auto wrap is on, there can be two positions:
 		// one in the tail of the previous line and one in the head of the next line.
-		if tailingLineBreakLen(l) == 0 && index == p+len(l) {
+		if tailingLineBreakLen(l.str) == 0 && index == l.pos+len(l.str) {
 			found0 = true
-			line0 = l
-			indexInLine0 = index - p
+			line0 = l.str
+			indexInLine0 = index - l.pos
 			y0 = y
-		} else if p <= index && index < p+len(l) {
+		} else if l.pos <= index && index < l.pos+len(l.str) {
 			found1 = true
-			line1 = l
-			indexInLine1 = index - p
+			line1 = l.str
+			indexInLine1 = index - l.pos
 			y1 = y
 			break
 		}
@@ -331,10 +353,10 @@ func lineCount(width int, str string, autoWrap bool, face text.Face, tabWidth fl
 
 func Measure(width int, str string, autoWrap bool, face text.Face, lineHeight float64, tabWidth float64, keepTailingSpace bool) (float64, float64) {
 	var maxWidth, height float64
-	for _, line := range lines(width, str, autoWrap, func(str string) float64 {
+	for l := range lines(width, str, autoWrap, func(str string) float64 {
 		return advance(str, face, tabWidth, keepTailingSpace)
 	}) {
-		line = trimTailingLineBreak(line)
+		line := trimTailingLineBreak(l.str)
 		maxWidth = max(maxWidth, advance(line, face, tabWidth, keepTailingSpace))
 		// The text is already shifted by (lineHeight - (m.HAscent + m.Descent)) / 2.
 		// Thus, just counting the line number is enough.
