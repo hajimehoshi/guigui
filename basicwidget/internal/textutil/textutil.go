@@ -230,14 +230,21 @@ func TextPositionFromIndex(width int, str string, index int, options *Options) (
 	if index < 0 || index > len(str) {
 		return TextPosition{}, TextPosition{}, 0
 	}
+	return textPositionFromIndex(width, str, lines(width, str, options.AutoWrap, func(str string) float64 {
+		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
+	}), index, options)
+}
+
+func textPositionFromIndex(width int, str string, lines iter.Seq[line], index int, options *Options) (position0, position1 TextPosition, count int) {
+	if index < 0 || index > len(str) {
+		return TextPosition{}, TextPosition{}, 0
+	}
 
 	var y, y0, y1 float64
 	var indexInLine0, indexInLine1 int
 	var line0, line1 string
 	var found0, found1 bool
-	for l := range lines(width, str, options.AutoWrap, func(str string) float64 {
-		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
-	}) {
+	for l := range lines {
 		// When auto wrap is on, there can be two positions:
 		// one in the tail of the previous line and one in the head of the next line.
 		if tailingLineBreakLen(l.str) == 0 && index == l.pos+len(l.str) {
