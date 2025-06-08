@@ -6,6 +6,7 @@ package textutil
 import (
 	"image"
 	"image/color"
+	"math"
 	"strings"
 	"unicode"
 
@@ -51,6 +52,14 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	for pos, line := range lines(bounds.Dx(), str, options.AutoWrap, func(str string) float64 {
 		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
+		y := op.GeoM.Element(1, 2)
+		if int(math.Ceil(y+options.LineHeight)) < bounds.Min.Y {
+			continue
+		}
+		if int(math.Floor(y)) >= bounds.Max.Y {
+			break
+		}
+
 		start := pos
 		end := pos + len(line) - tailingLineBreakLen(line)
 
