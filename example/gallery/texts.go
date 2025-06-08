@@ -4,6 +4,8 @@
 package main
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
+
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 	"github.com/hajimehoshi/guigui/layout"
@@ -172,6 +174,16 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		if committed {
 			t.model.Texts().SetText(text)
 		}
+	})
+	t.sampleText.SetOnKeyJustPressed(func(key ebiten.Key) bool {
+		if !t.sampleText.IsEditable() {
+			return false
+		}
+		if key == ebiten.KeyTab {
+			t.sampleText.ReplaceValueAtSelection("\t")
+			return true
+		}
+		return false
 	})
 	t.sampleText.SetValue(t.model.Texts().Text())
 

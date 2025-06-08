@@ -255,6 +255,18 @@ func (t *Text) ForceSetValue(text string) {
 	t.setText(text)
 }
 
+func (t *Text) ReplaceValueAtSelection(text string) {
+	if text == "" {
+		return
+	}
+	start, end := t.field.Selection()
+	newText := t.field.Text()[:start] + text + t.field.Text()[end:]
+	t.setTextAndSelection(newText, start+len(text), start+len(text), -1)
+	t.nextText = ""
+	t.nextTextSet = false
+	t.resetCachedTextSize()
+}
+
 func (t *Text) CommitWithCurrentInputValue() {
 	changed := t.setText(t.field.Text())
 	if changed {
