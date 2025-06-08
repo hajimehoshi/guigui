@@ -35,6 +35,8 @@ type DrawOptions struct {
 	CompositionBorderWidth   float32
 }
 
+var theAdvanceCache = map[string]float64{}
+
 func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOptions) {
 	op := &text.DrawOptions{}
 	op.GeoM.Translate(float64(bounds.Min.X), float64(bounds.Min.Y))
@@ -49,8 +51,19 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	yOffset := textPositionYOffset(bounds.Size(), str, &options.Options)
 	op.GeoM.Translate(0, yOffset)
 
+	// Cache is valid only for this call, as the options can be changed.
+	clear(theAdvanceCache)
+	cachedAdvance := func(str string, face text.Face, tabWidth float64, keepTailingSpace bool) float64 {
+		if v, ok := theAdvanceCache[str]; ok {
+			return v
+		}
+		a := advance(str, face, tabWidth, keepTailingSpace)
+		theAdvanceCache[str] = a
+		return a
+	}
+
 	for pos, line := range lines(bounds.Dx(), str, options.AutoWrap, func(str string) float64 {
-		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
+		return cachedAdvance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
 		y := op.GeoM.Element(1, 2)
 		if int(math.Ceil(y+options.LineHeight)) < bounds.Min.Y {
@@ -68,8 +81,9 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 				start := max(start, options.SelectionStart)
 				end := min(end, options.SelectionEnd)
 				if start != end {
-					posStart0, posStart1, countStart := TextPositionFromIndex(bounds.Dx(), str, start, &options.Options)
-					posEnd0, _, countEnd := TextPositionFromIndex(bounds.Dx(), str, end, &options.Options)
+					// TextPositionFromIndex is too slow here.
+					posStart0, posStart1, countStart := textPositionFromIndex(bounds.Dx(), str, start, &options.Options, cachedAdvance)
+					posEnd0, _, countEnd := textPositionFromIndex(bounds.Dx(), str, end, &options.Options, cachedAdvance)
 					if countStart > 0 && countEnd > 0 {
 						posStart := posStart0
 						if countStart == 2 {
@@ -91,8 +105,8 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 				start := max(start, options.CompositionStart)
 				end := min(end, options.CompositionEnd)
 				if start != end {
-					posStart0, posStart1, countStart := TextPositionFromIndex(bounds.Dx(), str, start, &options.Options)
-					posEnd0, _, countEnd := TextPositionFromIndex(bounds.Dx(), str, end, &options.Options)
+					posStart0, posStart1, countStart := textPositionFromIndex(bounds.Dx(), str, start, &options.Options, cachedAdvance)
+					posEnd0, _, countEnd := textPositionFromIndex(bounds.Dx(), str, end, &options.Options, cachedAdvance)
 					if countStart > 0 && countEnd > 0 {
 						posStart := posStart0
 						if countStart == 2 {
@@ -111,8 +125,8 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 				start := max(start, options.CompositionActiveStart)
 				end := min(end, options.CompositionActiveEnd)
 				if start != end {
-					posStart0, posStart1, countStart := TextPositionFromIndex(bounds.Dx(), str, start, &options.Options)
-					posEnd0, _, countEnd := TextPositionFromIndex(bounds.Dx(), str, end, &options.Options)
+					posStart0, posStart1, countStart := textPositionFromIndex(bounds.Dx(), str, start, &options.Options, cachedAdvance)
+					posEnd0, _, countEnd := textPositionFromIndex(bounds.Dx(), str, end, &options.Options, cachedAdvance)
 					if countStart > 0 && countEnd > 0 {
 						posStart := posStart0
 						if countStart == 2 {

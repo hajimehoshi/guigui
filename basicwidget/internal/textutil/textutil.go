@@ -205,6 +205,10 @@ type TextPosition struct {
 }
 
 func TextPositionFromIndex(width int, str string, index int, options *Options) (position0, position1 TextPosition, count int) {
+	return textPositionFromIndex(width, str, index, options, advance)
+}
+
+func textPositionFromIndex(width int, str string, index int, options *Options, advance func(str string, face text.Face, tabWidth float64, keepTailingSpace bool) float64) (position0, position1 TextPosition, count int) {
 	if index < 0 || index > len(str) {
 		return TextPosition{}, TextPosition{}, 0
 	}
