@@ -61,7 +61,7 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 	op.GeoM.Translate(0, yOffset)
 
 	for pos, line := range lines(bounds.Dx(), str, options.AutoWrap, func(str string) float64 {
-		return advance(str, options.Face, options.KeepTailingSpace)
+		return advance(str, options.Face, options.TabWidth, options.KeepTailingSpace)
 	}) {
 		start := pos
 		end := pos + len(line) - tailingLineBreakLen(line)
@@ -133,10 +133,27 @@ func Draw(bounds image.Rectangle, dst *ebiten.Image, str string, options *DrawOp
 		}
 
 		// Draw the text.
-		if options.KeepTailingSpace {
+		if !options.KeepTailingSpace {
+			line = strings.TrimRightFunc(line, unicode.IsSpace)
+		}
+		if options.TabWidth == 0 {
 			text.Draw(dst, line, options.Face, op)
 		} else {
-			text.Draw(dst, strings.TrimRightFunc(line, unicode.IsSpace), options.Face, op)
+			origGeoM := op.GeoM
+			var origX float64
+			for {
+				head, tail, ok := strings.Cut(line, "\t")
+				text.Draw(dst, head, options.Face, op)
+				if !ok {
+					break
+				}
+				x := origX + text.Advance(head, options.Face)
+				nextX := nextIndentPosition(x, options.TabWidth)
+				op.GeoM.Translate(nextX-origX, 0)
+				origX = nextX
+				line = tail
+			}
+			op.GeoM = origGeoM
 		}
 		op.GeoM.Translate(0, options.LineHeight)
 	}

@@ -105,6 +105,7 @@ type Text struct {
 	scaleMinus1 float64
 	bold        bool
 	tabular     bool
+	tabWidth    float64
 
 	selectable       bool
 	editable         bool
@@ -346,6 +347,23 @@ func (t *Text) SetTabular(tabular bool) {
 
 	t.tabular = tabular
 	guigui.RequestRedraw(t)
+}
+
+func (t *Text) SetTabWidth(tabWidth float64) {
+	if t.tabWidth == tabWidth {
+		return
+	}
+	t.tabWidth = tabWidth
+	t.resetCachedTextSize()
+	guigui.RequestRedraw(t)
+}
+
+func (t *Text) actualTabWidth(context *guigui.Context) float64 {
+	if t.tabWidth > 0 {
+		return t.tabWidth
+	}
+	face := t.face(context, false)
+	return text.Advance("        ", face)
 }
 
 func (t *Text) SetScale(scale float64) {
@@ -941,6 +959,7 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 			LineHeight:       t.lineHeight(context),
 			HorizontalAlign:  textutil.HorizontalAlign(t.hAlign),
 			VerticalAlign:    textutil.VerticalAlign(t.vAlign),
+			TabWidth:         t.actualTabWidth(context),
 			KeepTailingSpace: t.keepTailingSpace,
 		},
 		TextColor: textColor,
@@ -992,10 +1011,10 @@ func (t *Text) textSize(context *guigui.Context, forceUnwrap bool, forceBold boo
 	var w, h float64
 	if useAutoWrap {
 		cw := context.ActualSize(t).X
-		w, h = textutil.Measure(cw, txt, true, t.face(context, forceBold), t.lineHeight(context), t.keepTailingSpace)
+		w, h = textutil.Measure(cw, txt, true, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
 	} else {
 		// context.Size is not available as this causes infinite recursion, and is not needed. Give 0 as a width.
-		w, h = textutil.Measure(0, txt, false, t.face(context, forceBold), t.lineHeight(context), t.keepTailingSpace)
+		w, h = textutil.Measure(0, txt, false, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
 	}
 	// If width is 0, the text's bounds and visible bounds are empty, and nothing including its cursor is rendered.
 	// Force to set a positive number as the width.
@@ -1052,6 +1071,7 @@ func (t *Text) textIndexFromPosition(context *guigui.Context, position image.Poi
 		LineHeight:       t.lineHeight(context),
 		HorizontalAlign:  textutil.HorizontalAlign(t.hAlign),
 		VerticalAlign:    textutil.VerticalAlign(t.vAlign),
+		TabWidth:         t.actualTabWidth(context),
 		KeepTailingSpace: t.keepTailingSpace,
 	}
 	position = position.Sub(textBounds.Min)
@@ -1074,6 +1094,7 @@ func (t *Text) textPosition(context *guigui.Context, index int, showComposition 
 		LineHeight:       t.lineHeight(context),
 		HorizontalAlign:  textutil.HorizontalAlign(t.hAlign),
 		VerticalAlign:    textutil.VerticalAlign(t.vAlign),
+		TabWidth:         t.actualTabWidth(context),
 		KeepTailingSpace: t.keepTailingSpace,
 	}
 	pos0, pos1, count := textutil.TextPositionFromIndex(textBounds.Dx(), txt, index, op)

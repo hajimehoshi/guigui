@@ -4,6 +4,7 @@
 package textutil_test
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 
@@ -80,6 +81,53 @@ func TestNoWrapLines(t *testing.T) {
 			}
 			if !slices.Equal(gotLines, tc.lines) {
 				t.Errorf("got lines %v, want %v", gotLines, tc.lines)
+			}
+		})
+	}
+}
+
+func TestNextIndentPosition(t *testing.T) {
+	testCases := []struct {
+		position    float64
+		indentWidth float64
+		expected    float64
+	}{
+		{
+			position:    0,
+			indentWidth: 10.5,
+			expected:    10.5,
+		},
+		{
+			position:    104,
+			indentWidth: 10.5,
+			expected:    105,
+		},
+		{
+			position:    104.9995,
+			indentWidth: 10.5,
+			expected:    105,
+		},
+		{
+			position:    105,
+			indentWidth: 10.5,
+			expected:    115.5,
+		},
+		{
+			position:    105.0001,
+			indentWidth: 10.5,
+			expected:    115.5,
+		},
+		{
+			position:    106,
+			indentWidth: 10.5,
+			expected:    115.5,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("position=%f indentWidth=%f", tc.position, tc.indentWidth), func(t *testing.T) {
+			got := textutil.NextIndentPosition(tc.position, tc.indentWidth)
+			if got != tc.expected {
+				t.Errorf("got %f, want %f", got, tc.expected)
 			}
 		})
 	}
