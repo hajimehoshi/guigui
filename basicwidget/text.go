@@ -676,8 +676,7 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 				start, end := t.field.Selection()
 				text := t.field.Text()[:start] + "\n" + t.field.Text()[end:]
 				t.setTextAndSelection(text, start+len("\n"), start+len("\n"), -1)
-			}
-			if !t.multiline {
+			} else {
 				t.commit()
 			}
 			return guigui.HandleInputByWidget(t)
