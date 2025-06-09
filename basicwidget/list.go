@@ -224,27 +224,31 @@ func (l *listItemWidget[T]) setStyle(style ListStyle) {
 }
 
 func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	height := guigui.DefaultSize
-	if l.heightPlus1 > 0 {
-		height = l.heightPlus1 - 1
-	}
-
 	if l.item.Content != nil {
-		if l.style != ListStyleMenu {
-			context.SetSize(l.item.Content, image.Pt(context.ActualSize(l).X, height))
-		} else {
-			context.SetSize(l.item.Content, image.Pt(guigui.DefaultSize, height))
+		s := context.LogicalSize(l.item.Content)
+		if l.heightPlus1 > 0 {
+			s.Y = l.heightPlus1 - 1
 		}
+		if l.style != ListStyleMenu {
+			s.X = context.ActualSize(l).X
+		}
+		// TODO: Once the size is set, the original content size is lost.
+		// This is problematic e.g. when l.heightPlus1 is set and reset again.
+		// Maybe cascating system like CSS would be needed.
+		context.SetSize(l.item.Content, s)
 		appender.AppendChildWidgetWithPosition(l.item.Content, context.Bounds(l).Min)
 	}
 
 	l.text.SetValue(l.item.Text)
 	l.text.SetVerticalAlign(VerticalAlignMiddle)
-	if l.style != ListStyleMenu {
-		context.SetSize(&l.text, image.Pt(context.ActualSize(l).X, height))
-	} else {
-		context.SetSize(&l.text, image.Pt(guigui.DefaultSize, height))
+	s := context.LogicalSize(&l.text)
+	if l.heightPlus1 > 0 {
+		s.Y = l.heightPlus1 - 1
 	}
+	if l.style != ListStyleMenu {
+		s.X = context.ActualSize(l).X
+	}
+	context.SetSize(&l.text, s)
 	appender.AppendChildWidgetWithPosition(&l.text, context.Bounds(l).Min)
 
 	return nil
