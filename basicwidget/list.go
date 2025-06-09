@@ -78,6 +78,7 @@ func (l *List[T]) updateListItems() {
 
 	for i, item := range l.listItems {
 		l.listItemWidgets[i].setListItem(item)
+		l.listItemWidgets[i].setHeight(l.listItemHeightPlus1 - 1)
 		l.listItemWidgets[i].setStyle(l.list.style)
 		l.baseListItems[i] = l.listItemWidgets[i].listItem()
 	}
@@ -201,8 +202,9 @@ type listItemWidget[T comparable] struct {
 
 	item ListItem[T]
 
-	text  Text
-	style ListStyle
+	text        Text
+	heightPlus1 int
+	style       ListStyle
 }
 
 func (l *listItemWidget[T]) setListItem(listItem ListItem[T]) {
@@ -210,26 +212,40 @@ func (l *listItemWidget[T]) setListItem(listItem ListItem[T]) {
 	l.text.SetValue(listItem.Text)
 }
 
+func (l *listItemWidget[T]) setHeight(height int) {
+	if l.heightPlus1 == height+1 {
+		return
+	}
+	l.heightPlus1 = height + 1
+}
+
 func (l *listItemWidget[T]) setStyle(style ListStyle) {
 	l.style = style
 }
 
 func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	height := guigui.DefaultSize
+	if l.heightPlus1 > 0 {
+		height = l.heightPlus1 - 1
+	}
+
 	if l.item.Content != nil {
-		if l.style == ListStyleMenu {
-			appender.AppendChildWidgetWithPosition(l.item.Content, context.Bounds(l).Min)
+		if l.style != ListStyleMenu {
+			context.SetSize(l.item.Content, image.Pt(context.ActualSize(l).X, height))
 		} else {
-			appender.AppendChildWidgetWithBounds(l.item.Content, context.Bounds(l))
+			context.SetSize(l.item.Content, image.Pt(guigui.DefaultSize, height))
 		}
+		appender.AppendChildWidgetWithPosition(l.item.Content, context.Bounds(l).Min)
 	}
 
 	l.text.SetValue(l.item.Text)
 	l.text.SetVerticalAlign(VerticalAlignMiddle)
-	if l.style == ListStyleMenu {
-		appender.AppendChildWidgetWithPosition(&l.text, context.Bounds(l).Min)
+	if l.style != ListStyleMenu {
+		context.SetSize(&l.text, image.Pt(context.ActualSize(l).X, height))
 	} else {
-		appender.AppendChildWidgetWithBounds(&l.text, context.Bounds(l))
+		context.SetSize(&l.text, image.Pt(guigui.DefaultSize, height))
 	}
+	appender.AppendChildWidgetWithPosition(&l.text, context.Bounds(l).Min)
 
 	return nil
 }
