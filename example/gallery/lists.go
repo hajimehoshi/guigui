@@ -45,7 +45,7 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	// Lists
 	l.listText.SetValue("Text list")
 
-	l.list.SetItemBorderVisible(l.model.Lists().IsStripeVisible())
+	l.list.SetStripeVisible(l.model.Lists().IsStripeVisible())
 	if l.model.Lists().IsHeaderVisible() {
 		l.list.SetHeaderHeight(u)
 	} else {

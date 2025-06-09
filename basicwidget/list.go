@@ -40,7 +40,7 @@ func (l *ListItem[T]) selectable() bool {
 	return !l.Header && !l.Unselectable && !l.Border
 }
 
-func (l *List[T]) SetItemBorderVisible(visible bool) {
+func (l *List[T]) SetStripeVisible(visible bool) {
 	l.list.SetStripeVisible(visible)
 }
 
