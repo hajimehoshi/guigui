@@ -117,7 +117,6 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 	t.inlineText.SetValue("Inline")
 	t.inlineTextInput.SetHorizontalAlign(t.model.TextInputs().HorizontalAlign())
 	t.inlineTextInput.textInput.SetVerticalAlign(t.model.TextInputs().VerticalAlign())
-	t.inlineTextInput.textInput.SetAutoWrap(t.model.TextInputs().AutoWrap())
 	t.inlineTextInput.textInput.SetEditable(t.model.TextInputs().Editable())
 	context.SetEnabled(&t.inlineTextInput, t.model.TextInputs().Enabled())
 	context.SetSize(&t.inlineTextInput, image.Pt(width, guigui.DefaultSize))
@@ -261,6 +260,12 @@ func (c *inlineTextInputContainer) SetHorizontalAlign(align basicwidget.Horizont
 
 func (c *inlineTextInputContainer) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	c.textInput.SetStyle(basicwidget.TextInputStyleInline)
+	if c.textInput.DefaultSize(context).X > context.ActualSize(c).X {
+		context.SetSize(&c.textInput, image.Pt(context.ActualSize(c).X, guigui.DefaultSize))
+	} else {
+		context.SetSize(&c.textInput, image.Pt(guigui.DefaultSize, guigui.DefaultSize))
+	}
+
 	pos := context.Position(c)
 	switch c.horizontalAlign {
 	case basicwidget.HorizontalAlignStart:

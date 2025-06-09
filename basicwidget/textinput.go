@@ -202,10 +202,8 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	// Set the content size before adjustScrollOffset, as the size affects the adjustment.
 	context.SetSize(&t.text, textBounds.Size())
 	t.adjustScrollOffsetIfNeeded(context)
-	if t.style == TextInputStyleNormal {
-		offsetX, offsetY := t.scrollOverlay.Offset()
-		textBounds.Min = textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
-	}
+	offsetX, offsetY := t.scrollOverlay.Offset()
+	textBounds.Min = textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
 	appender.AppendChildWidgetWithPosition(&t.text, textBounds.Min)
 	if draw.OverlapsWithRoundedCorner(context.Bounds(t), RoundedCornerRadius(context), textBounds) {
 		// CustomDraw might be too generic and overkill for this case.
