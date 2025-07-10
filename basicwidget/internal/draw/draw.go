@@ -100,14 +100,7 @@ func ensureWhiteRoundedRect(radius int) *ebiten.Image {
 	appendRoundedRectVectorPath(&path, 0, 0, float32(s), float32(s), float32(radius))
 	path.Close()
 
-	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
-	for i := range vs {
-		vs[i].SrcX = 1
-		vs[i].SrcY = 1
-	}
-	op := &ebiten.DrawTrianglesOptions{}
-	op.AntiAlias = true
-	img.DrawTriangles(vs, is, whiteSubImage, op)
+	vector.FillPath(img, &path, color.White, true, vector.FillRuleNonZero)
 
 	whiteRoundedRects[key] = img
 
@@ -256,12 +249,8 @@ func ensureWhiteRoundedRectBorder(radius int, borderWidth float32, borderType Ro
 }
 
 func whiteRoundedRectBorder(radius int, borderWidth float32, borderType RoundedRectBorderType, colorMode guigui.ColorMode, appendPathFunc func(path *vector.Path, rx0, ry0, rx1, ry1 float32, radius float32)) *ebiten.Image {
-	// Use it's own anti-aliasing instead of Ebitengine's anti-aliasing for higher quality result.
-	// Ebitengine's anti-aliasing just scales vertice and doesn't create finer paths for anti-aliasing scale.
-	const aaScale = 2
-	radius *= aaScale
 	s := radius * 3
-	inset := borderWidth * aaScale
+	inset := borderWidth
 
 	var path vector.Path
 	appendPathFunc(&path, 0, 0, float32(s), float32(s), float32(radius))
@@ -285,24 +274,8 @@ func whiteRoundedRectBorder(radius int, borderWidth float32, borderType RoundedR
 	}
 	path.Close()
 
-	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
-	for i := range vs {
-		vs[i].SrcX = 1
-		vs[i].SrcY = 1
-	}
-	op := &ebiten.DrawTrianglesOptions{}
-	op.AntiAlias = true
-	op.FillRule = ebiten.FillRuleEvenOdd
-
-	offscreen := ebiten.NewImage(s, s)
-	offscreen.DrawTriangles(vs, is, whiteSubImage, op)
-	defer offscreen.Deallocate()
-
-	op2 := &ebiten.DrawImageOptions{}
-	op2.GeoM.Scale(1.0/aaScale, 1.0/aaScale)
-	op2.Filter = ebiten.FilterLinear
-	img := ebiten.NewImage(s/aaScale, s/aaScale)
-	img.DrawImage(offscreen, op2)
+	img := ebiten.NewImage(s, s)
+	vector.FillPath(img, &path, color.White, true, vector.FillRuleEvenOdd)
 
 	return img
 }
