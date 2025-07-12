@@ -245,20 +245,15 @@ func (c *Context) LogicalSize(widget Widget) image.Point {
 
 func (c *Context) ActualSize(widget Widget) image.Point {
 	widgetState := widget.widgetState()
-	var defaultSize image.Point
-	if widgetState.sizePlus1.X == 0 || widgetState.sizePlus1.Y == 0 {
-		defaultSize = widget.DefaultSize(c)
-	}
-	var s image.Point
-	if widgetState.sizePlus1.X == 0 {
-		s.X = defaultSize.X
-	} else {
-		s.X = widgetState.sizePlus1.X - 1
-	}
-	if widgetState.sizePlus1.Y == 0 {
-		s.Y = defaultSize.Y
-	} else {
-		s.Y = widgetState.sizePlus1.Y - 1
+	s := widgetState.sizePlus1.Sub(image.Pt(1, 1))
+	if s.X == DefaultSize || s.Y == DefaultSize {
+		defaultSize := widget.DefaultSize(c)
+		if s.X == DefaultSize {
+			s.X = defaultSize.X
+		}
+		if s.Y == DefaultSize {
+			s.Y = defaultSize.Y
+		}
 	}
 	return s
 }
