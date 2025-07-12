@@ -57,7 +57,7 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	n.numberInput1.SetValueBigInt(n.model.NumberInputs().NumberInputValue1())
 	n.numberInput1.SetEditable(n.model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput1, n.model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput1, image.Pt(width, guigui.DefaultSize))
+	context.SetSize(&n.numberInput1, image.Pt(width, guigui.AutoSize), n)
 
 	n.numberInput2Text.SetValue("Number input (uint64)")
 	n.numberInput2.SetOnValueChangedUint64(func(value uint64, committed bool) {
@@ -71,7 +71,7 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	n.numberInput2.SetValueUint64(n.model.NumberInputs().NumberInputValue2())
 	n.numberInput2.SetEditable(n.model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput2, n.model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput2, image.Pt(width, guigui.DefaultSize))
+	context.SetSize(&n.numberInput2, image.Pt(width, guigui.AutoSize), n)
 
 	n.numberInput3Text.SetValue("Number input (Range: [-100, 100], Step: 5)")
 	n.numberInput3.SetOnValueChangedInt64(func(value int64, committed bool) {
@@ -86,7 +86,7 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	n.numberInput3.SetValueInt64(int64(n.model.NumberInputs().NumberInputValue3()))
 	n.numberInput3.SetEditable(n.model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput3, n.model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput3, image.Pt(width, guigui.DefaultSize))
+	context.SetSize(&n.numberInput3, image.Pt(width, guigui.AutoSize), n)
 
 	n.sliderText.SetValue("Slider (Range: [-100, 100])")
 	n.slider.SetOnValueChangedInt64(func(value int64) {
@@ -96,13 +96,13 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	n.slider.SetMaximumValueInt64(100)
 	n.slider.SetValueInt64(int64(n.model.NumberInputs().NumberInputValue3()))
 	context.SetEnabled(&n.slider, n.model.NumberInputs().Enabled())
-	context.SetSize(&n.slider, image.Pt(width, guigui.DefaultSize))
+	context.SetSize(&n.slider, image.Pt(width, guigui.AutoSize), n)
 
 	n.slierWithoutRangeText.SetValue("Slider w/o range")
 	n.sliderWithoutRange.SetOnValueChangedInt64(func(value int64) {
 	})
 	context.SetEnabled(&n.sliderWithoutRange, n.model.NumberInputs().Enabled())
-	context.SetSize(&n.sliderWithoutRange, image.Pt(width, guigui.DefaultSize))
+	context.SetSize(&n.sliderWithoutRange, image.Pt(width, guigui.AutoSize), n)
 
 	n.numberInputForm.SetItems([]basicwidget.FormItem{
 		{

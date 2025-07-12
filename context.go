@@ -64,6 +64,8 @@ type Context struct {
 	defaultColorWarnOnce       sync.Once
 	locales                    []language.Tag
 	allLocales                 []language.Tag
+
+	tmpWidgetStates []*widgetState
 }
 
 func (c *Context) Scale() float64 {
@@ -217,41 +219,58 @@ func (c *Context) SetPosition(widget Widget, position image.Point) {
 	// Rerendering happens at (*.app).requestRedrawIfTreeChanged if necessary.
 }
 
-const DefaultSize = -1
+const AutoSize = -1
 
-func (c *Context) SetSize(widget Widget, size image.Point) {
-	if widget.widgetState().sizePlus1 == size.Add(image.Pt(1, 1)) {
+func (c *Context) SetSize(widget Widget, size image.Point, specifierWidget Widget) {
+	w := widget.widgetState()
+	if size == image.Pt(AutoSize, AutoSize) {
+		delete(w.sizes, specifierWidget.widgetState())
+		return
+	}
+	if w.sizes[specifierWidget.widgetState()] == size {
 		return
 	}
 	c.clearVisibleBoundsCacheForWidget(widget)
-	widget.widgetState().sizePlus1 = size.Add(image.Pt(1, 1))
-}
-
-func (c *Context) LogicalSize(widget Widget) image.Point {
-	widgetState := widget.widgetState()
-	var s image.Point
-	if widgetState.sizePlus1.X == 0 {
-		s.X = DefaultSize
-	} else {
-		s.X = widgetState.sizePlus1.X - 1
+	if w.sizes == nil {
+		w.sizes = map[*widgetState]image.Point{}
 	}
-	if widgetState.sizePlus1.Y == 0 {
-		s.Y = DefaultSize
-	} else {
-		s.Y = widgetState.sizePlus1.Y - 1
-	}
-	return s
+	w.sizes[specifierWidget.widgetState()] = size
 }
 
 func (c *Context) ActualSize(widget Widget) image.Point {
 	widgetState := widget.widgetState()
-	s := widgetState.sizePlus1.Sub(image.Pt(1, 1))
-	if s.X == DefaultSize || s.Y == DefaultSize {
+	w := widgetState
+	for {
+		c.tmpWidgetStates = append(c.tmpWidgetStates, w)
+		if w.parent == nil {
+			break
+		}
+		w = w.parent.widgetState()
+	}
+	s := image.Pt(AutoSize, AutoSize)
+	// TODO: Now the widget closest to the root is preferred. Does this order make sense? (#163)
+	for i := len(c.tmpWidgetStates) - 1; i >= 0; i-- {
+		size, ok := widgetState.sizes[c.tmpWidgetStates[i]]
+		if !ok {
+			continue
+		}
+		if s.X == AutoSize {
+			s.X = size.X
+		}
+		if s.Y == AutoSize {
+			s.Y = size.Y
+		}
+		if s.X != AutoSize && s.Y != AutoSize {
+			break
+		}
+	}
+	c.tmpWidgetStates = slices.Delete(c.tmpWidgetStates, 0, len(c.tmpWidgetStates))
+	if s.X == AutoSize || s.Y == AutoSize {
 		defaultSize := widget.DefaultSize(c)
-		if s.X == DefaultSize {
+		if s.X == AutoSize {
 			s.X = defaultSize.X
 		}
-		if s.Y == DefaultSize {
+		if s.Y == AutoSize {
 			s.Y = defaultSize.Y
 		}
 	}

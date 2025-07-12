@@ -84,8 +84,8 @@ type widgetState struct {
 	root    bool
 	builtAt int64
 
-	position  image.Point
-	sizePlus1 image.Point
+	position image.Point
+	sizes    map[*widgetState]image.Point
 
 	parent   Widget
 	children []Widget

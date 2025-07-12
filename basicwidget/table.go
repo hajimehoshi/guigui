@@ -85,7 +85,7 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 	t.list.SetStyle(ListStyleNormal)
 	t.list.SetStripeVisible(true)
 
-	context.SetSize(&t.list, context.ActualSize(t))
+	context.SetSize(&t.list, context.ActualSize(t), t)
 
 	t.updateTableItems()
 
@@ -106,7 +106,7 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 	for i := range t.tableItemWidgets {
 		item := &t.tableItemWidgets[i]
 		item.table = t
-		context.SetSize(item, image.Pt(w, guigui.DefaultSize))
+		context.SetSize(item, image.Pt(w, guigui.AutoSize), t)
 	}
 
 	pt := context.Bounds(&t.list).Min
@@ -209,8 +209,7 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chi
 	x := b.Min.X
 	for i, content := range t.item.Contents {
 		if content != nil {
-			s := context.LogicalSize(content)
-			context.SetSize(content, image.Pt(t.table.columnWidthsInPixels[i], s.Y))
+			context.SetSize(content, image.Pt(t.table.columnWidthsInPixels[i], guigui.AutoSize), t)
 			appender.AppendChildWidgetWithPosition(content, image.Pt(x, b.Min.Y))
 		}
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)

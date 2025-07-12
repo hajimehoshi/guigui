@@ -21,7 +21,7 @@ func (c *ChildWidgetAppender) AppendChildWidgetWithPosition(widget Widget, posit
 
 func (c *ChildWidgetAppender) AppendChildWidgetWithBounds(widget Widget, bounds image.Rectangle) {
 	c.app.context.SetPosition(widget, bounds.Min)
-	c.app.context.SetSize(widget, bounds.Size())
+	c.app.context.SetSize(widget, bounds.Size(), c.widget)
 	c.appendChildWidget(widget)
 }
 

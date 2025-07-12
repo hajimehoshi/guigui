@@ -91,7 +91,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	}
 	{
 		bounds := gl.CellBounds(0, 1)
-		context.SetSize(&r.tasksPanelContent, image.Pt(bounds.Dx(), guigui.DefaultSize))
+		context.SetSize(&r.tasksPanelContent, image.Pt(bounds.Dx(), guigui.AutoSize), r)
 		appender.AppendChildWidgetWithBounds(&r.tasksPanel, bounds)
 	}
 

@@ -200,7 +200,7 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	textBounds = textBounds.Add(image.Pt(0, int(0.5*context.Scale())))
 
 	// Set the content size before adjustScrollOffset, as the size affects the adjustment.
-	context.SetSize(&t.text, textBounds.Size())
+	context.SetSize(&t.text, textBounds.Size(), t)
 	t.adjustScrollOffsetIfNeeded(context)
 	offsetX, offsetY := t.scrollOverlay.Offset()
 	textBounds.Min = textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))

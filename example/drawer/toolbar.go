@@ -27,7 +27,7 @@ func (t *Toolbar) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 	t.panel.SetBorder(basicwidget.PanelBorder{
 		Bottom: true,
 	})
-	context.SetSize(&t.content, context.ActualSize(t))
+	context.SetSize(&t.content, context.ActualSize(t), t)
 	t.panel.SetContent(&t.content)
 	appender.AppendChildWidgetWithBounds(&t.panel, context.Bounds(t))
 

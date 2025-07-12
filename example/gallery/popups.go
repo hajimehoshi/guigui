@@ -98,7 +98,7 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		Min: simplePopupPosition,
 		Max: simplePopupPosition.Add(contentSize),
 	}
-	context.SetSize(&p.simplePopupContent, simplePopupBounds.Size())
+	context.SetSize(&p.simplePopupContent, simplePopupBounds.Size(), p)
 	appender.AppendChildWidgetWithBounds(&p.simplePopup, simplePopupBounds)
 
 	p.contextMenuPopup.SetItemsByStrings([]string{"Item 1", "Item 2", "Item 3"})

@@ -64,7 +64,7 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	l.items = slices.Delete(l.items, 0, len(l.items))
 	l.items = l.model.lists.AppendListItems(l.items)
 	l.list.SetItems(l.items)
-	context.SetSize(&l.list, image.Pt(guigui.DefaultSize, 6*basicwidget.UnitSize(context)))
+	context.SetSize(&l.list, image.Pt(guigui.AutoSize, 6*basicwidget.UnitSize(context)), l)
 	context.SetEnabled(&l.list, l.model.Lists().Enabled())
 
 	l.listForm.SetItems([]basicwidget.FormItem{

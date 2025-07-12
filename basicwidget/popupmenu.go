@@ -53,7 +53,7 @@ func (p *PopupMenu[T]) Build(context *guigui.Context, appender *guigui.ChildWidg
 	p.popup.SetContent(&p.list)
 	p.popup.SetCloseByClickingOutside(true)
 	bounds := p.contentBounds(context)
-	context.SetSize(&p.list, bounds.Size())
+	context.SetSize(&p.list, bounds.Size(), p)
 	appender.AppendChildWidgetWithBounds(&p.popup, bounds)
 
 	return nil

@@ -20,7 +20,7 @@ func (r *RightPanel) Build(context *guigui.Context, appender *guigui.ChildWidget
 	r.panel.SetBorder(basicwidget.PanelBorder{
 		Start: true,
 	})
-	context.SetSize(&r.content, context.ActualSize(r))
+	context.SetSize(&r.content, context.ActualSize(r), r)
 	r.panel.SetContent(&r.content)
 
 	appender.AppendChildWidgetWithBounds(&r.panel, context.Bounds(r))
