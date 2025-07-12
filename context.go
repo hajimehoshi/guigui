@@ -220,26 +220,25 @@ func (c *Context) SetPosition(widget Widget, position image.Point) {
 const DefaultSize = -1
 
 func (c *Context) SetSize(widget Widget, size image.Point) {
-	if widget.widgetState().widthPlus1 == size.X+1 && widget.widgetState().heightPlus1 == size.Y+1 {
+	if widget.widgetState().sizePlus1 == size.Add(image.Pt(1, 1)) {
 		return
 	}
 	c.clearVisibleBoundsCacheForWidget(widget)
-	widget.widgetState().widthPlus1 = size.X + 1
-	widget.widgetState().heightPlus1 = size.Y + 1
+	widget.widgetState().sizePlus1 = size.Add(image.Pt(1, 1))
 }
 
 func (c *Context) LogicalSize(widget Widget) image.Point {
 	widgetState := widget.widgetState()
 	var s image.Point
-	if widgetState.widthPlus1 == 0 {
+	if widgetState.sizePlus1.X == 0 {
 		s.X = DefaultSize
 	} else {
-		s.X = widgetState.widthPlus1 - 1
+		s.X = widgetState.sizePlus1.X - 1
 	}
-	if widgetState.heightPlus1 == 0 {
+	if widgetState.sizePlus1.Y == 0 {
 		s.Y = DefaultSize
 	} else {
-		s.Y = widgetState.heightPlus1 - 1
+		s.Y = widgetState.sizePlus1.Y - 1
 	}
 	return s
 }
@@ -247,19 +246,19 @@ func (c *Context) LogicalSize(widget Widget) image.Point {
 func (c *Context) ActualSize(widget Widget) image.Point {
 	widgetState := widget.widgetState()
 	var defaultSize image.Point
-	if widgetState.widthPlus1 == 0 || widgetState.heightPlus1 == 0 {
+	if widgetState.sizePlus1.X == 0 || widgetState.sizePlus1.Y == 0 {
 		defaultSize = widget.DefaultSize(c)
 	}
 	var s image.Point
-	if widgetState.widthPlus1 == 0 {
+	if widgetState.sizePlus1.X == 0 {
 		s.X = defaultSize.X
 	} else {
-		s.X = widgetState.widthPlus1 - 1
+		s.X = widgetState.sizePlus1.X - 1
 	}
-	if widgetState.heightPlus1 == 0 {
+	if widgetState.sizePlus1.Y == 0 {
 		s.Y = defaultSize.Y
 	} else {
-		s.Y = widgetState.heightPlus1 - 1
+		s.Y = widgetState.sizePlus1.Y - 1
 	}
 	return s
 }
