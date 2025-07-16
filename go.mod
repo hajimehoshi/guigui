@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/ebitengine/purego v0.9.0-alpha.9
-	github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.8.0.20250715144725-96d4c2ba61bf
+	github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.9
 	github.com/hajimehoshi/oklab v0.1.0
 	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade
 	github.com/kisielk/errcheck v1.9.0
