@@ -63,6 +63,7 @@ func (f *Form) calcItemBounds(context *guigui.Context, width int) {
 	f.primaryBounds = slices.Delete(f.primaryBounds, 0, len(f.primaryBounds))
 	f.secondaryBounds = slices.Delete(f.secondaryBounds, 0, len(f.secondaryBounds))
 
+	position := context.Position(f)
 	paddingS := formItemPadding(context)
 
 	var y int
@@ -84,10 +85,9 @@ func (f *Form) calcItemBounds(context *guigui.Context, width int) {
 			secondaryS = context.ActualSize(item.SecondaryWidget)
 		}
 		baseH := max(primaryS.Y, secondaryS.Y, minFormItemHeight(context))
-		p := context.Position(f)
 		f.itemBounds[i] = image.Rectangle{
-			Min: p.Add(image.Pt(paddingS.X, y)),
-			Max: p.Add(image.Pt(width-paddingS.X, y+baseH)),
+			Min: position.Add(image.Pt(paddingS.X, y)),
+			Max: position.Add(image.Pt(width-paddingS.X, y+baseH)),
 		}
 
 		maxPaddingY := paddingS.Y + int((float64(UnitSize(context))-LineHeight(context))/2)
