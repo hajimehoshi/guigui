@@ -112,10 +112,6 @@ type widgetState struct {
 	_ noCopy
 }
 
-func (w *widgetState) setOnFocusChanged(f func(focused bool)) {
-	w.onFocusChanged = f
-}
-
 func (w *widgetState) isInTree(now int64) bool {
 	return w.builtAt == now
 }
