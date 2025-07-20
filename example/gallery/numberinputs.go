@@ -154,9 +154,9 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(n).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(n.numberInputForm.DefaultSize(context).Y),
+			layout.FixedSize(n.numberInputForm.DefaultSizeInContainer(context, context.Bounds(n).Dx()-u).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(n.configForm.DefaultSize(context).Y),
+			layout.FixedSize(n.configForm.DefaultSizeInContainer(context, context.Bounds(n).Dx()-u).Y),
 		},
 		RowGap: u / 2,
 	}

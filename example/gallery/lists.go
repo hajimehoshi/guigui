@@ -127,9 +127,9 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(l).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(l.listForm.DefaultSize(context).Y),
+			layout.FixedSize(l.listForm.DefaultSizeInContainer(context, context.Bounds(l).Dx()-u).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(l.configForm.DefaultSize(context).Y),
+			layout.FixedSize(l.configForm.DefaultSizeInContainer(context, context.Bounds(l).Dx()-u).Y),
 		},
 		RowGap: u / 2,
 	}

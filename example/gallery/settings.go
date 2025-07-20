@@ -181,7 +181,7 @@ func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 				if row >= 1 {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(s.form.DefaultSize(context).Y)
+				return layout.FixedSize(s.form.DefaultSizeInContainer(context, context.Bounds(s).Dx()-u).Y)
 			}),
 		},
 		RowGap: u / 2,

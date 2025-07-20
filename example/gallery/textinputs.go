@@ -235,9 +235,9 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(t.textInputForm.DefaultSize(context).Y),
+			layout.FixedSize(t.textInputForm.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(t.configForm.DefaultSize(context).Y),
+			layout.FixedSize(t.configForm.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
 		},
 		RowGap: u / 2,
 	}

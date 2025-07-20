@@ -75,7 +75,7 @@ func (b *Basic) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 				if row >= 1 {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(b.form.DefaultSize(context).Y)
+				return layout.FixedSize(b.form.DefaultSizeInContainer(context, context.Bounds(b).Dx()-u).Y)
 			}),
 		},
 		RowGap: u / 2,

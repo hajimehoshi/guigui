@@ -73,7 +73,7 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 				if row >= len(p.forms) {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(p.forms[row].DefaultSize(context).Y)
+				return layout.FixedSize(p.forms[row].DefaultSizeInContainer(context, context.Bounds(p).Dx()-u).Y)
 			}),
 		},
 		RowGap: u / 2,

@@ -192,7 +192,7 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FlexibleSize(1),
-			layout.FixedSize(t.form.DefaultSize(context).Y),
+			layout.FixedSize(t.form.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
 		},
 		RowGap: u / 2,
 	}

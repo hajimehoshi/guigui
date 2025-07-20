@@ -155,7 +155,7 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		Heights: []layout.Size{
 			layout.FixedSize(12 * u),
 			layout.FlexibleSize(1),
-			layout.FixedSize(t.configForm.DefaultSize(context).Y),
+			layout.FixedSize(t.configForm.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
 		},
 	}
 
