@@ -24,6 +24,7 @@ type Form struct {
 
 	items []FormItem
 
+	itemBounds      []image.Rectangle
 	primaryBounds   []image.Rectangle
 	secondaryBounds []image.Rectangle
 }
@@ -38,7 +39,7 @@ func (f *Form) SetItems(items []FormItem) {
 }
 
 func (f *Form) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	f.calcItemBounds(context)
+	f.calcItemBounds(context, context.Bounds(f).Dx())
 
 	for i, item := range f.items {
 		if item.PrimaryWidget != nil {
@@ -57,7 +58,8 @@ func (f *Form) isItemOmitted(context *guigui.Context, item FormItem) bool {
 		(item.SecondaryWidget == nil || !context.IsVisible(item.SecondaryWidget))
 }
 
-func (f *Form) calcItemBounds(context *guigui.Context) {
+func (f *Form) calcItemBounds(context *guigui.Context, width int) {
+	f.itemBounds = slices.Delete(f.itemBounds, 0, len(f.itemBounds))
 	f.primaryBounds = slices.Delete(f.primaryBounds, 0, len(f.primaryBounds))
 	f.secondaryBounds = slices.Delete(f.secondaryBounds, 0, len(f.secondaryBounds))
 
@@ -65,6 +67,7 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 
 	var y int
 	for i, item := range f.items {
+		f.itemBounds = append(f.itemBounds, image.Rectangle{})
 		f.primaryBounds = append(f.primaryBounds, image.Rectangle{})
 		f.secondaryBounds = append(f.secondaryBounds, image.Rectangle{})
 
@@ -81,15 +84,15 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 			secondaryS = context.ActualSize(item.SecondaryWidget)
 		}
 		baseH := max(primaryS.Y, secondaryS.Y, minFormItemHeight(context))
-		baseBounds := context.Bounds(f)
-		baseBounds.Min.X += paddingS.X
-		baseBounds.Max.X -= paddingS.X
-		baseBounds.Min.Y += y
-		baseBounds.Max.Y = baseBounds.Min.Y + baseH
+		p := context.Position(f)
+		f.itemBounds[i] = image.Rectangle{
+			Min: p.Add(image.Pt(paddingS.X, y)),
+			Max: p.Add(image.Pt(width-paddingS.X, y+baseH)),
+		}
 
 		maxPaddingY := paddingS.Y + int((float64(UnitSize(context))-LineHeight(context))/2)
 		if item.PrimaryWidget != nil {
-			bounds := baseBounds
+			bounds := f.itemBounds[i]
 			bounds.Max.X = bounds.Min.X + primaryS.X
 			pY := min((baseH+2*paddingS.Y-primaryS.Y)/2, maxPaddingY)
 			bounds.Min.Y += pY
@@ -97,7 +100,7 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 			f.primaryBounds[i] = bounds
 		}
 		if item.SecondaryWidget != nil {
-			bounds := baseBounds
+			bounds := f.itemBounds[i]
 			bounds.Min.X = bounds.Max.X - secondaryS.X
 			pY := min((baseH+2*paddingS.Y-secondaryS.Y)/2, maxPaddingY)
 			bounds.Min.Y += pY
@@ -117,28 +120,16 @@ func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
 	bounds.Max.Y = bounds.Min.Y + f.DefaultSize(context).Y
 	draw.DrawRoundedRect(context, dst, bounds, bgClr, RoundedCornerRadius(context))
 
+	// Render borders between items.
 	if len(f.items) > 0 {
 		paddingS := formItemPadding(context)
-		y := bounds.Min.Y
-		for _, item := range f.items[:len(f.items)-1] {
-			var primaryH int
-			var secondaryH int
-			if item.PrimaryWidget != nil {
-				primaryH = context.ActualSize(item.PrimaryWidget).Y
-			}
-			if item.SecondaryWidget != nil {
-				secondaryH = context.ActualSize(item.SecondaryWidget).Y
-			}
-			h := max(primaryH, secondaryH, minFormItemHeight(context))
-			y += h + paddingS.Y
-
+		for i := range f.items[:len(f.items)-1] {
+			y := f.itemBounds[i].Max.Y + paddingS.Y
 			x0 := float32(bounds.Min.X + paddingS.X)
 			x1 := float32(bounds.Max.X - paddingS.X)
 			yy := float32(y) + float32(paddingS.Y)
 			width := 1 * float32(context.Scale())
 			vector.StrokeLine(dst, x0, yy, x1, yy, width, borderClr, false)
-
-			y += paddingS.Y
 		}
 	}
 
@@ -146,6 +137,9 @@ func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (f *Form) DefaultSize(context *guigui.Context) image.Point {
+	// DefaultSize should return the default size rather than an actual size.
+	// Do not use itemBounds, primaryBounds, or secondaryBounds here.
+
 	paddingS := formItemPadding(context)
 	gapX := UnitSize(context)
 
