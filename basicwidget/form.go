@@ -72,45 +72,40 @@ func (f *Form) calcItemBounds(context *guigui.Context) {
 			continue
 		}
 
-		var primaryH int
-		var secondaryH int
+		var primaryS image.Point
+		var secondaryS image.Point
 		if item.PrimaryWidget != nil {
-			primaryH = context.ActualSize(item.PrimaryWidget).Y
+			primaryS = context.ActualSize(item.PrimaryWidget)
 		}
 		if item.SecondaryWidget != nil {
-			secondaryH = context.ActualSize(item.SecondaryWidget).Y
+			secondaryS = context.ActualSize(item.SecondaryWidget)
 		}
-		h := max(primaryH, secondaryH, minFormItemHeight(context))
+		baseH := max(primaryS.Y, secondaryS.Y, minFormItemHeight(context))
 		baseBounds := context.Bounds(f)
 		baseBounds.Min.X += paddingS.X
 		baseBounds.Max.X -= paddingS.X
 		baseBounds.Min.Y += y
-		baseBounds.Max.Y = baseBounds.Min.Y + h
+		baseBounds.Max.Y = baseBounds.Min.Y + baseH
 
+		maxPaddingY := paddingS.Y + int((float64(UnitSize(context))-LineHeight(context))/2)
 		if item.PrimaryWidget != nil {
 			bounds := baseBounds
-			ws := context.ActualSize(item.PrimaryWidget)
-			bounds.Max.X = bounds.Min.X + ws.X
-			pY := (h + 2*paddingS.Y - ws.Y) / 2
-			pY = min(pY, paddingS.Y+int((float64(UnitSize(context))-LineHeight(context))/2))
+			bounds.Max.X = bounds.Min.X + primaryS.X
+			pY := min((baseH+2*paddingS.Y-primaryS.Y)/2, maxPaddingY)
 			bounds.Min.Y += pY
 			bounds.Max.Y += pY
 			f.primaryBounds[i] = bounds
 		}
 		if item.SecondaryWidget != nil {
 			bounds := baseBounds
-			ws := context.ActualSize(item.SecondaryWidget)
-			bounds.Min.X = bounds.Max.X - ws.X
-			pY := (h + 2*paddingS.Y - ws.Y) / 2
-			if ws.Y < UnitSize(context)+2*paddingS.Y {
-				pY = min(pY, (UnitSize(context)+2*paddingS.Y-ws.Y)/2)
-			}
+			bounds.Min.X = bounds.Max.X - secondaryS.X
+			pY := min((baseH+2*paddingS.Y-secondaryS.Y)/2, maxPaddingY)
 			bounds.Min.Y += pY
 			bounds.Max.Y += pY
 			f.secondaryBounds[i] = bounds
 		}
 
-		y += h + 2*paddingS.Y
+		y += baseH + 2*paddingS.Y
 	}
 }
 
