@@ -22,7 +22,6 @@ const (
 	ListStyleNormal ListStyle = iota
 	ListStyleSidebar
 	ListStyleMenu
-	listStyleTable
 )
 
 type baseListItem[T comparable] struct {
@@ -61,6 +60,7 @@ type baseList[T comparable] struct {
 	startPressingLeft       bool
 	headerHeight            int
 	footerHeight            int
+	contentWidthPlus1       int
 
 	cachedDefaultWidth         int
 	cachedDefaultContentHeight int
@@ -107,11 +107,23 @@ func (b *baseList[T]) SetFooterHeight(height int) {
 	guigui.RequestRedraw(b)
 }
 
+func (b *baseList[T]) SetContentWidth(width int) {
+	if b.contentWidthPlus1 == width+1 {
+		return
+	}
+	b.contentWidthPlus1 = width + 1
+	guigui.RequestRedraw(b)
+}
+
 func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
+	w := context.ActualSize(b).X
+	if b.contentWidthPlus1 > 0 {
+		w = b.contentWidthPlus1 - 1
+	}
 	h := b.defaultHeight(context)
 	h -= b.headerHeight
 	h -= b.footerHeight
-	return image.Pt(context.ActualSize(b).X, h)
+	return image.Pt(w, h)
 }
 
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -131,8 +143,8 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	p := context.Position(b)
-	_, offsetY := b.scrollOverlay.Offset()
-	p.X += listItemPadding(context)
+	offsetX, offsetY := b.scrollOverlay.Offset()
+	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
@@ -273,6 +285,10 @@ func (b *baseList[T]) SetStyle(style ListStyle) {
 	guigui.RequestRedraw(b)
 }
 
+func (b *baseList[T]) ScrollOffset() (float64, float64) {
+	return b.scrollOverlay.Offset()
+}
+
 func (b *baseList[T]) calcDropDstIndex(context *guigui.Context) int {
 	_, y := ebiten.CursorPosition()
 	for i := range b.abstractList.ItemCount() {
@@ -395,8 +411,14 @@ func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 }
 
 func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Rectangle {
-	_, offsetY := b.scrollOverlay.Offset()
+	offsetX, offsetY := b.scrollOverlay.Offset()
 	bounds := context.Bounds(b)
+	bounds.Min.X += int(offsetX)
+	if b.contentWidthPlus1 > 0 {
+		bounds.Max.X = bounds.Min.X + b.contentWidthPlus1 - 1
+	} else {
+		bounds.Max.X += int(offsetX)
+	}
 	bounds.Min.X += listItemPadding(context)
 	bounds.Max.X -= listItemPadding(context)
 	bounds.Min.Y += b.itemYFromIndex(context, index)
@@ -496,7 +518,9 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			s := float64(2*RoundedCornerRadius(context)) / float64(img.Bounds().Dy())
 			op.GeoM.Scale(s, s)
 			bounds := b.itemBounds(context, hoveredItemIndex)
-			op.GeoM.Translate(float64(bounds.Min.X-2*RoundedCornerRadius(context)), float64(bounds.Min.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
+			p := bounds.Min
+			p.X = context.Position(b).X + listItemPadding(context)
+			op.GeoM.Translate(float64(p.X-2*RoundedCornerRadius(context)), float64(p.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
 			op.ColorScale.ScaleAlpha(0.5)
 			op.Filter = ebiten.FilterLinear
 			dst.DrawImage(img, op)
@@ -506,8 +530,11 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	// Draw a dragging guideline.
 	if b.dragDstIndexPlus1 > 0 {
 		p := context.Position(b)
+		offsetX, _ := b.scrollOverlay.Offset()
 		x0 := float32(p.X) + float32(RoundedCornerRadius(context))
-		x1 := float32(p.X+context.ActualSize(b).X) - float32(RoundedCornerRadius(context))
+		x0 += float32(offsetX)
+		x1 := x0 + float32(b.contentSize(context).X)
+		x1 -= 2 * float32(RoundedCornerRadius(context))
 		y := float32(p.Y)
 		y += float32(b.itemYFromIndex(context, b.dragDstIndexPlus1-1))
 		_, offsetY := b.scrollOverlay.Offset()

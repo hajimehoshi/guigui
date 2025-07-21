@@ -106,14 +106,24 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 	for i, width := range t.columnWidthsInPixels {
 		t.columnWidthsInPixels[i] = max(t.columns[i].MinWidth, width)
 	}
+	var contentWidth int
+	if len(t.columnWidthsInPixels) > 0 {
+		for _, width := range t.columnWidthsInPixels {
+			contentWidth += width
+		}
+		contentWidth += (len(t.columnWidthsInPixels) + 1) * tableColumnGap(context)
+	}
+	t.list.SetContentWidth(contentWidth)
 
 	for i := range t.tableItemWidgets {
 		item := &t.tableItemWidgets[i]
 		item.table = t
-		context.SetSize(item, image.Pt(w, guigui.AutoSize), t)
+		context.SetSize(item, image.Pt(guigui.AutoSize, guigui.AutoSize), t)
 	}
 
+	offsetX, _ := t.list.ScrollOffset()
 	pt := context.Bounds(&t.list).Min
+	pt.X += int(offsetX)
 	pt.X += listItemPadding(context)
 	for i := range t.columnTexts {
 		appender.AppendChildWidgetWithBounds(&t.columnTexts[i], image.Rectangle{
@@ -222,13 +232,14 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chi
 }
 
 func (t *tableItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
-	w := 12 * UnitSize(context)
-	var h int
+	var w, h int
 	for _, content := range t.item.Contents {
 		if content == nil {
 			continue
 		}
-		h = max(h, context.ActualSize(content).Y)
+		s := context.ActualSize(content)
+		w += s.X + tableColumnGap(context)
+		h = max(h, s.Y)
 	}
 	h = max(h, int(LineHeight(context)))
 	return image.Pt(w, h)
@@ -260,6 +271,8 @@ func (t *tableHeader[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	u := UnitSize(context)
 	b := context.Bounds(t)
 	x := b.Min.X + listItemPadding(context)
+	offsetX, _ := t.table.list.ScrollOffset()
+	x += int(offsetX)
 	for _, width := range t.table.columnWidthsInPixels[:len(t.table.columnWidthsInPixels)-1] {
 		x += width
 		x0 := float32(x + tableColumnGap(context)/2)
