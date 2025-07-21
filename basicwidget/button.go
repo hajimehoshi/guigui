@@ -105,7 +105,7 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 
 	imgSize := b.iconSize(context)
 
-	tw := b.text.TextSize(context, context.ActualSize(b).X).X
+	tw := b.text.DefaultSizeInContainer(context, context.ActualSize(b).X).X
 	if b.textColor != nil {
 		b.text.SetColor(b.textColor)
 	} else {
@@ -178,7 +178,7 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 		if forceBold {
 			textAndImageW += b.text.boldTextSize(context, 0).X
 		} else {
-			textAndImageW += b.text.TextSize(context, 0).X
+			textAndImageW += b.text.DefaultSizeInContainer(context, 0).X
 		}
 	}
 	if b.icon.HasImage() {
