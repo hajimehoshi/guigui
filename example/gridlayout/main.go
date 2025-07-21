@@ -62,7 +62,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
 				if row == 0 {
-					return layout.FixedSize(context.ActualSize(&r.configForm).Y)
+					return layout.FixedSize(r.configForm.DefaultSizeInContainer(context, context.Bounds(r).Dx()-u).Y)
 				}
 				return layout.FixedSize(0)
 			}),
