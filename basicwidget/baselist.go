@@ -22,6 +22,7 @@ const (
 	ListStyleNormal ListStyle = iota
 	ListStyleSidebar
 	ListStyleMenu
+	listStyleTable
 )
 
 type baseListItem[T comparable] struct {
