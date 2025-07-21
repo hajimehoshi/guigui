@@ -92,23 +92,18 @@ func (l *List[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 
 	appender.AppendChildWidgetWithPosition(&l.list, context.Position(l))
 
-	setWidth := l.list.style != ListStyleMenu
-	var w int
-	if setWidth {
-		w = context.ActualSize(l).X - 2*listItemPadding(context)
-	} else {
-		w = guigui.AutoSize
+	itemSize := image.Pt(guigui.AutoSize, guigui.AutoSize)
+	if l.list.style != ListStyleMenu {
+		itemSize.X = context.ActualSize(l).X - 2*listItemPadding(context)
+	}
+	if l.listItemHeightPlus1 > 0 {
+		itemSize.Y = l.listItemHeightPlus1 - 1
 	}
 	for i := range l.listItemWidgets {
 		item := &l.listItemWidgets[i]
 		item.text.SetBold(item.item.Header || l.list.style == ListStyleSidebar && l.SelectedItemIndex() == i)
 		item.text.SetColor(l.ItemTextColor(context, i))
-
-		if l.listItemHeightPlus1 > 0 {
-			context.SetSize(item, image.Pt(w, l.listItemHeightPlus1-1), l)
-		} else {
-			context.SetSize(item, image.Pt(w, guigui.AutoSize), l)
-		}
+		context.SetSize(item, itemSize, l)
 	}
 
 	return nil
