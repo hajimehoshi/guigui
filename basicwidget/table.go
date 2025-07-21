@@ -35,6 +35,7 @@ type TableColumn struct {
 	HeaderText                string
 	HeaderTextHorizontalAlign HorizontalAlign
 	Width                     layout.Size
+	MinWidth                  int
 }
 
 type TableItem[T comparable] struct {
@@ -102,6 +103,9 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 		t.columnTexts[i].SetVerticalAlign(VerticalAlignMiddle)
 	}
 	layoututil.WidthsInPixels(t.columnWidthsInPixels, t.columnSizes, w, tableColumnGap(context))
+	for i, width := range t.columnWidthsInPixels {
+		t.columnWidthsInPixels[i] = max(t.columns[i].MinWidth, width)
+	}
 
 	for i := range t.tableItemWidgets {
 		item := &t.tableItemWidgets[i]

@@ -42,20 +42,24 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 			HeaderText:                "ID",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
+			MinWidth:                  2 * u,
 		},
 		{
 			HeaderText: "Name",
 			Width:      layout.FlexibleSize(2),
+			MinWidth:   4 * u,
 		},
 		{
 			HeaderText:                "Amount",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
+			MinWidth:                  2 * u,
 		},
 		{
 			HeaderText:                "Cost",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
 			Width:                     layout.FlexibleSize(1),
+			MinWidth:                  2 * u,
 		},
 	})
 	t.tableItems = slices.Delete(t.tableItems, 0, len(t.tableItems))
