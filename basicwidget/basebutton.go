@@ -29,6 +29,12 @@ type baseButton struct {
 	onRepeat func()
 }
 
+func (b *baseButton) ResetEventHandlers() {
+	b.onDown = nil
+	b.onUp = nil
+	b.onRepeat = nil
+}
+
 func (b *baseButton) SetOnDown(f func()) {
 	b.onDown = f
 }

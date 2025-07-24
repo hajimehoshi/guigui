@@ -126,6 +126,11 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	return image.Pt(w, h)
 }
 
+func (b *baseList[T]) BeforeBuild(context *guigui.Context) {
+	b.abstractList.ResetEventHandlers()
+	b.onItemsMoved = nil
+}
+
 func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 

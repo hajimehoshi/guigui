@@ -15,6 +15,9 @@ type DefaultWidget struct {
 
 var _ Widget = (*DefaultWidget)(nil)
 
+func (*DefaultWidget) BeforeBuild(context *Context) {
+}
+
 func (*DefaultWidget) Build(context *Context, appender *ChildWidgetAppender) error {
 	return nil
 }

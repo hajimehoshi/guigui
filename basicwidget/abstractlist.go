@@ -18,6 +18,10 @@ type abstractList[ID comparable, Item ider[ID]] struct {
 	onItemSelected func(index int)
 }
 
+func (a *abstractList[ID, Item]) ResetEventHandlers() {
+	a.onItemSelected = nil
+}
+
 func (a *abstractList[ID, Item]) SetOnItemSelected(f func(index int)) {
 	a.onItemSelected = f
 }

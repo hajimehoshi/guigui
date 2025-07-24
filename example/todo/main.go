@@ -121,6 +121,10 @@ func (t *taskWidget) SetText(text string) {
 	t.text.SetValue(text)
 }
 
+func (t *taskWidget) BeforeBuild(context *guigui.Context) {
+	t.onDoneButtonPressed = nil
+}
+
 func (t *taskWidget) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	t.doneButton.SetText("Done")
 	t.doneButton.SetOnUp(func() {
@@ -166,6 +170,10 @@ func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 
 func (t *tasksPanelContent) SetModel(model *Model) {
 	t.model = model
+}
+
+func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
+	t.onDeleted = nil
 }
 
 func (t *tasksPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {

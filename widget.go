@@ -10,6 +10,7 @@ import (
 )
 
 type Widget interface {
+	BeforeBuild(context *Context)
 	Build(context *Context, appender *ChildWidgetAppender) error
 	HandlePointingInput(context *Context) HandleInputResult
 	HandleButtonInput(context *Context) HandleInputResult

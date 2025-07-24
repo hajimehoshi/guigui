@@ -160,6 +160,10 @@ func (n *NumberInput) CommitWithCurrentInputValue() {
 	n.textInput.CommitWithCurrentInputValue()
 }
 
+func (n *NumberInput) BeforeBuild(context *guigui.Context) {
+	n.abstractNumberInput.ResetEventHandlers()
+}
+
 func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
 		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)

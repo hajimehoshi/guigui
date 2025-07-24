@@ -350,6 +350,11 @@ func (a *app) build() error {
 
 	a.root.widgetState().builtAt = a.buildCount
 
+	_ = traverseWidget(a.root, func(widget Widget) error {
+		widget.BeforeBuild(&a.context)
+		return nil
+	})
+
 	var appender ChildWidgetAppender
 	if err := traverseWidget(a.root, func(widget Widget) error {
 		widgetState := widget.widgetState()

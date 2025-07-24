@@ -168,6 +168,10 @@ func (t *TextInput) isFocused(context *guigui.Context) bool {
 	return context.IsFocused(t) || context.IsFocused(&t.text)
 }
 
+func (t *TextInput) BeforeBuild(context *guigui.Context) {
+	t.onTextAndSelectionChanged = nil
+}
+
 func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if t.prevFocused != (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))

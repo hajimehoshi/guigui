@@ -284,6 +284,10 @@ func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
 	return false
 }
 
+func (s *ScrollOverlay) BeforeBuild(context *guigui.Context) {
+	s.onScroll = nil
+}
+
 func (s *ScrollOverlay) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	cs := context.ActualSize(s)
 	if s.lastSize != cs {

@@ -24,6 +24,13 @@ type abstractNumberInput struct {
 	onValueChangedUint64 func(value uint64, committed bool)
 }
 
+func (a *abstractNumberInput) ResetEventHandlers() {
+	a.onValueChangedString = nil
+	a.onValueChangedBigInt = nil
+	a.onValueChangedInt64 = nil
+	a.onValueChangedUint64 = nil
+}
+
 func (a *abstractNumberInput) SetOnValueChangedString(f func(value string, force bool)) {
 	a.onValueChangedString = f
 }

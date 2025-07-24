@@ -169,6 +169,11 @@ func (t *Text) resetAutoWrapCachedTextSize() {
 	t.cachedTextSizePlus1[newTextSizeCacheKey(true, true)] = image.Point{}
 }
 
+func (t *Text) BeforeBuild(context *guigui.Context) {
+	t.onKeyJustPressed = nil
+	t.onValueChanged = nil
+}
+
 func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if f := t.face(context, false); t.lastFace != f {
 		t.lastFace = f

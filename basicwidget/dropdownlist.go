@@ -49,6 +49,10 @@ func (d *DropdownList[T]) updateButtonContent() {
 	d.button.SetContent(&d.buttonContent)
 }
 
+func (d *DropdownList[T]) BeforeBuild(context *guigui.Context) {
+	d.onItemSelected = nil
+}
+
 func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	d.updateButtonContent()
 

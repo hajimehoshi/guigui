@@ -103,6 +103,10 @@ func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
 	p.onClosed = f
 }
 
+func (p *Popup) BeforeBuild(context *guigui.Context) {
+	p.onClosed = nil
+}
+
 func (p *Popup) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if (p.showing || p.hiding) && p.openingCount > 0 {
 		p.nextContentPosition = context.Position(p)

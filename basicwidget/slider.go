@@ -111,6 +111,11 @@ func (s *Slider) SetMaximumValueUint64(maximum uint64) {
 	s.abstractNumberInput.SetMaximumValueUint64(maximum)
 }
 
+func (s *Slider) BeforeBuild(context *guigui.Context) {
+	s.abstractNumberInput.ResetEventHandlers()
+	s.onValueChangedBigInt = nil
+}
+
 func (s *Slider) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	if hovered := s.isThumbHovered(context); s.prevThumbHovered != hovered {
 		s.prevThumbHovered = hovered

@@ -41,6 +41,10 @@ func (p *PopupMenu[T]) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, 
 	return p.popup.IsWidgetOrBackgroundHitAtCursor(context, widget)
 }
 
+func (p *PopupMenu[T]) BeforeBuild(context *guigui.Context) {
+	p.onItemSelected = nil
+}
+
 func (p *PopupMenu[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	p.list.SetStyle(ListStyleMenu)
 	p.list.list.SetOnItemSelected(func(index int) {
