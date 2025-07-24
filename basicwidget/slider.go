@@ -30,6 +30,8 @@ type Slider struct {
 }
 
 func (s *Slider) SetOnValueChangedBigInt(f func(value *big.Int)) {
+	// Manage the event handler in this widget instead of abstractNumberInput,
+	// as this widget must be rerendreed whenever the value is changed.
 	s.onValueChangedBigInt = f
 }
 
