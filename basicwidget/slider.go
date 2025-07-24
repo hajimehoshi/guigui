@@ -25,14 +25,16 @@ type Slider struct {
 	draggingStartX     int
 
 	prevThumbHovered bool
-
-	onValueChangedBigInt func(value *big.Int)
 }
 
 func (s *Slider) SetOnValueChangedBigInt(f func(value *big.Int)) {
-	// Manage the event handler in this widget instead of abstractNumberInput,
-	// as this widget must be rerendreed whenever the value is changed.
-	s.onValueChangedBigInt = f
+	if f == nil {
+		s.abstractNumberInput.SetOnValueChangedBigInt(nil)
+		return
+	}
+	s.abstractNumberInput.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
+		f(value)
+	})
 }
 
 func (s *Slider) SetOnValueChangedInt64(f func(value int64)) {
@@ -68,15 +70,27 @@ func (s *Slider) ValueUint64() uint64 {
 }
 
 func (s *Slider) SetValueBigInt(value *big.Int) {
+	changed := value.Cmp(s.abstractNumberInput.ValueBigInt()) != 0
 	s.abstractNumberInput.SetValueBigInt(value, true)
+	if changed {
+		guigui.RequestRedraw(s)
+	}
 }
 
 func (s *Slider) SetValueInt64(value int64) {
+	changed := value != s.abstractNumberInput.ValueInt64()
 	s.abstractNumberInput.SetValueInt64(value, true)
+	if changed {
+		guigui.RequestRedraw(s)
+	}
 }
 
 func (s *Slider) SetValueUint64(value uint64) {
+	changed := value != s.abstractNumberInput.ValueUint64()
 	s.abstractNumberInput.SetValueUint64(value, true)
+	if changed {
+		guigui.RequestRedraw(s)
+	}
 }
 
 func (s *Slider) MinimumValueBigInt() *big.Int {
@@ -113,7 +127,6 @@ func (s *Slider) SetMaximumValueUint64(maximum uint64) {
 
 func (s *Slider) BeforeBuild(context *guigui.Context) {
 	s.abstractNumberInput.ResetEventHandlers()
-	s.onValueChangedBigInt = nil
 }
 
 func (s *Slider) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
@@ -125,13 +138,6 @@ func (s *Slider) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 }
 
 func (s *Slider) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
-	s.abstractNumberInput.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
-		if s.onValueChangedBigInt != nil {
-			s.onValueChangedBigInt(value)
-		}
-		guigui.RequestRedraw(s)
-	})
-
 	max := s.abstractNumberInput.MaximumValueBigInt()
 	min := s.abstractNumberInput.MinimumValueBigInt()
 	if max == nil || min == nil {
@@ -197,7 +203,11 @@ func (s *Slider) setValue(context *guigui.Context, originValue *big.Int, originX
 	v.Mul(&v, (&big.Int{}).SetInt64(int64(c.X-originX)))
 	v.Div(&v, (&big.Int{}).SetInt64(int64(s.barWidth(context))))
 	v.Add(&v, originValue)
+	changed := v.Cmp(s.abstractNumberInput.ValueBigInt()) != 0
 	s.abstractNumberInput.SetValueBigInt(&v, true)
+	if changed {
+		guigui.RequestRedraw(s)
+	}
 }
 
 func (s *Slider) barWidth(context *guigui.Context) int {
