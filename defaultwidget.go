@@ -15,10 +15,6 @@ type DefaultWidget struct {
 
 var _ Widget = (*DefaultWidget)(nil)
 
-func (d *DefaultWidget) SetOnFocusChanged(f func(focused bool)) {
-	d.widgetState().onFocusChanged = f
-}
-
 func (*DefaultWidget) Build(context *Context, appender *ChildWidgetAppender) error {
 	return nil
 }

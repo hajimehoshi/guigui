@@ -107,8 +107,6 @@ type widgetState struct {
 	hasVisibleBoundsCache bool
 	visibleBoundsCache    image.Rectangle
 
-	onFocusChanged func(focused bool)
-
 	_ noCopy
 }
 
