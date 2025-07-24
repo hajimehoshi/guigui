@@ -89,13 +89,9 @@ func findWordBoundaries(text string, idx int) (start, end int) {
 type Text struct {
 	guigui.DefaultWidget
 
-	field        textinput.Field
-	nextText     string
-	nextTextSet  bool
-	nextStart    int
-	nextStartSet bool
-	nextEnd      int
-	nextEndSet   bool
+	field       textinput.Field
+	nextText    string
+	nextTextSet bool
 
 	hAlign      HorizontalAlign
 	vAlign      VerticalAlign
