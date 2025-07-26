@@ -57,10 +57,17 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.background)
+	appender.AppendChildWidget(&r.textInput)
+	appender.AppendChildWidget(&r.createButton)
+	appender.AppendChildWidget(&r.tasksPanel)
+}
+
+func (r *Root) Build(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
 
-	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
+	context.SetBounds(&r.background, context.Bounds(r), r)
 
 	r.textInput.SetOnKeyJustPressed(func(key ebiten.Key) bool {
 		if key == ebiten.KeyEnter {
@@ -100,13 +107,13 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			},
 			ColumnGap: u / 2,
 		}
-		appender.AppendChildWidgetWithBounds(&r.textInput, gl.CellBounds(0, 0))
-		appender.AppendChildWidgetWithBounds(&r.createButton, gl.CellBounds(1, 0))
+		context.SetBounds(&r.textInput, gl.CellBounds(0, 0), r)
+		context.SetBounds(&r.createButton, gl.CellBounds(1, 0), r)
 	}
 	{
 		bounds := gl.CellBounds(0, 1)
 		context.SetSize(&r.tasksPanelContent, image.Pt(bounds.Dx(), guigui.AutoSize), r)
-		appender.AppendChildWidgetWithBounds(&r.tasksPanel, bounds)
+		context.SetBounds(&r.tasksPanel, bounds, r)
 	}
 
 	return nil
@@ -139,7 +146,12 @@ func (t *taskWidget) BeforeBuild(context *guigui.Context) {
 	t.onDoneButtonPressed = nil
 }
 
-func (t *taskWidget) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.doneButton)
+	appender.AppendChildWidget(&t.text)
+}
+
+func (t *taskWidget) Build(context *guigui.Context) error {
 	t.doneButton.SetText("Done")
 	t.doneButton.SetOnUp(func() {
 		if t.onDoneButtonPressed != nil {
@@ -158,8 +170,8 @@ func (t *taskWidget) Build(context *guigui.Context, appender *guigui.ChildWidget
 		},
 		ColumnGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&t.doneButton, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&t.text, gl.CellBounds(1, 0))
+	context.SetBounds(&t.doneButton, gl.CellBounds(0, 0), t)
+	context.SetBounds(&t.text, gl.CellBounds(1, 0), t)
 
 	return nil
 }
@@ -184,7 +196,13 @@ func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
 	t.onDeleted = nil
 }
 
-func (t *tasksPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	for i := range t.taskWidgets {
+		appender.AppendChildWidget(&t.taskWidgets[i])
+	}
+}
+
+func (t *tasksPanelContent) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	if model.TaskCount() > len(t.taskWidgets) {
@@ -218,7 +236,7 @@ func (t *tasksPanelContent) Build(context *guigui.Context, appender *guigui.Chil
 	}
 	for i := range t.taskWidgets {
 		bounds := gl.CellBounds(0, i)
-		appender.AppendChildWidgetWithBounds(&t.taskWidgets[i], bounds)
+		context.SetBounds(&t.taskWidgets[i], bounds, t)
 	}
 
 	return nil

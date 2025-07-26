@@ -85,12 +85,16 @@ func (l *List[T]) updateListItems() {
 	l.list.SetItems(l.baseListItems)
 }
 
-func (l *List[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (l *List[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&l.list)
+}
+
+func (l *List[T]) Build(context *guigui.Context) error {
 	context.SetSize(&l.list, context.ActualSize(l), l)
 
 	l.updateListItems()
 
-	appender.AppendChildWidgetWithPosition(&l.list, context.Position(l))
+	context.SetPosition(&l.list, context.Position(l))
 
 	itemSize := image.Pt(guigui.AutoSize, guigui.AutoSize)
 	if l.list.style != ListStyleMenu {
@@ -218,7 +222,14 @@ func (l *listItemWidget[T]) setStyle(style ListStyle) {
 	l.style = style
 }
 
-func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (l *listItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	if l.item.Content != nil {
+		appender.AppendChildWidget(l.item.Content)
+	}
+	appender.AppendChildWidget(&l.text)
+}
+
+func (l *listItemWidget[T]) Build(context *guigui.Context) error {
 	if l.item.Content != nil {
 		s := image.Pt(guigui.AutoSize, guigui.AutoSize)
 		if l.style != ListStyleMenu {
@@ -228,7 +239,7 @@ func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chil
 			s.Y = l.heightPlus1 - 1
 		}
 		context.SetSize(l.item.Content, s, l)
-		appender.AppendChildWidgetWithPosition(l.item.Content, context.Bounds(l).Min)
+		context.SetPosition(l.item.Content, context.Bounds(l).Min)
 	}
 
 	l.text.SetValue(l.item.Text)
@@ -241,7 +252,7 @@ func (l *listItemWidget[T]) Build(context *guigui.Context, appender *guigui.Chil
 		s.Y = l.heightPlus1 - 1
 	}
 	context.SetSize(&l.text, s, l)
-	appender.AppendChildWidgetWithPosition(&l.text, context.Bounds(l).Min)
+	context.SetPosition(&l.text, context.Bounds(l).Min)
 
 	return nil
 }

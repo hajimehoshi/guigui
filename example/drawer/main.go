@@ -44,8 +44,16 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
+func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.background)
+	appender.AppendChildWidget(&r.toolbar)
+	appender.AppendChildWidget(&r.leftPanel)
+	appender.AppendChildWidget(&r.contentPanel)
+	appender.AppendChildWidget(&r.rightPanel)
+}
+
+func (r *Root) Build(context *guigui.Context) error {
+	context.SetBounds(&r.background, context.Bounds(r), r)
 
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),
@@ -54,7 +62,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			layout.FlexibleSize(1),
 		},
 	}
-	appender.AppendChildWidgetWithBounds(&r.toolbar, gl.CellBounds(0, 0))
+	context.SetBounds(&r.toolbar, gl.CellBounds(0, 0), r)
 
 	contentGL := layout.GridLayout{
 		Bounds: gl.CellBounds(0, 1),
@@ -66,11 +74,11 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	}
 	leftPanelB := contentGL.CellBounds(0, 0)
 	leftPanelB.Min.X = leftPanelB.Max.X - r.model.DefaultPanelWidth(context)
-	appender.AppendChildWidgetWithBounds(&r.leftPanel, leftPanelB)
-	appender.AppendChildWidgetWithBounds(&r.contentPanel, contentGL.CellBounds(1, 0))
+	context.SetBounds(&r.leftPanel, leftPanelB, r)
+	context.SetBounds(&r.contentPanel, contentGL.CellBounds(1, 0), r)
 	rightPanelB := contentGL.CellBounds(2, 0)
 	rightPanelB.Max.X = rightPanelB.Min.X + r.model.DefaultPanelWidth(context)
-	appender.AppendChildWidgetWithBounds(&r.rightPanel, rightPanelB)
+	context.SetBounds(&r.rightPanel, rightPanelB, r)
 
 	return nil
 }

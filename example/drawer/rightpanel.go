@@ -15,7 +15,11 @@ type RightPanel struct {
 	content rightPanelContent
 }
 
-func (r *RightPanel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (r *RightPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.panel)
+}
+
+func (r *RightPanel) Build(context *guigui.Context) error {
 	r.panel.SetStyle(basicwidget.PanelStyleSide)
 	r.panel.SetBorder(basicwidget.PanelBorder{
 		Start: true,
@@ -23,7 +27,7 @@ func (r *RightPanel) Build(context *guigui.Context, appender *guigui.ChildWidget
 	context.SetSize(&r.content, context.ActualSize(r), r)
 	r.panel.SetContent(&r.content)
 
-	appender.AppendChildWidgetWithBounds(&r.panel, context.Bounds(r))
+	context.SetBounds(&r.panel, context.Bounds(r), r)
 	return nil
 }
 
@@ -33,11 +37,15 @@ type rightPanelContent struct {
 	text basicwidget.Text
 }
 
-func (r *rightPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (r *rightPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.text)
+}
+
+func (r *rightPanelContent) Build(context *guigui.Context) error {
 	r.text.SetValue("Right panel: " + dummyText)
 	r.text.SetAutoWrap(true)
 	r.text.SetSelectable(true)
 	u := basicwidget.UnitSize(context)
-	appender.AppendChildWidgetWithBounds(&r.text, context.Bounds(r).Inset(u/2))
+	context.SetBounds(&r.text, context.Bounds(r).Inset(u/2), r)
 	return nil
 }

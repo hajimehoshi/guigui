@@ -22,7 +22,10 @@ func (*DefaultWidget) Model(key any) any {
 func (*DefaultWidget) BeforeBuild(context *Context) {
 }
 
-func (*DefaultWidget) Build(context *Context, appender *ChildWidgetAppender) error {
+func (*DefaultWidget) AppendChildWidgets(context *Context, appender *ChildWidgetAppender) {
+}
+
+func (*DefaultWidget) Build(context *Context) error {
 	return nil
 }
 

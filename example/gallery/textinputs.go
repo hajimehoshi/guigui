@@ -37,7 +37,12 @@ type TextInputs struct {
 	enabledToggle                   basicwidget.Toggle
 }
 
-func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *TextInputs) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.textInputForm)
+	appender.AppendChildWidget(&t.configForm)
+}
+
+func (t *TextInputs) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	imgAlignStart, err := theImageCache.GetMonochrome("format_align_left", context.ColorMode())
@@ -237,8 +242,8 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&t.textInputForm, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&t.configForm, gl.CellBounds(0, 2))
+	context.SetBounds(&t.textInputForm, gl.CellBounds(0, 0), t)
+	context.SetBounds(&t.configForm, gl.CellBounds(0, 2), t)
 	return nil
 }
 
@@ -254,7 +259,11 @@ func (c *inlineTextInputContainer) SetHorizontalAlign(align basicwidget.Horizont
 	c.textInput.SetHorizontalAlign(align)
 }
 
-func (c *inlineTextInputContainer) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (c *inlineTextInputContainer) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&c.textInput)
+}
+
+func (c *inlineTextInputContainer) Build(context *guigui.Context) error {
 	c.textInput.SetStyle(basicwidget.TextInputStyleInline)
 	if c.textInput.DefaultSize(context).X > context.ActualSize(c).X {
 		context.SetSize(&c.textInput, image.Pt(context.ActualSize(c).X, guigui.AutoSize), c)
@@ -270,7 +279,7 @@ func (c *inlineTextInputContainer) Build(context *guigui.Context, appender *guig
 	case basicwidget.HorizontalAlignEnd:
 		pos.X += context.ActualSize(c).X - context.ActualSize(&c.textInput).X
 	}
-	appender.AppendChildWidgetWithPosition(&c.textInput, pos)
+	context.SetPosition(&c.textInput, pos)
 	return nil
 }
 

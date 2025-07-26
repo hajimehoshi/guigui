@@ -59,7 +59,7 @@ func (t *Toggle) BeforeBuild(context *guigui.Context) {
 	t.onValueChanged = nil
 }
 
-func (t *Toggle) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Toggle) Build(context *guigui.Context) error {
 	if hovered := t.isHovered(context); t.prevHovered != hovered {
 		t.prevHovered = hovered
 		guigui.RequestRedraw(t)

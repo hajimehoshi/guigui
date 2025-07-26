@@ -88,8 +88,17 @@ func (b *Button) BeforeBuild(context *guigui.Context) {
 	b.button.ResetEventHandlers()
 }
 
-func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	appender.AppendChildWidgetWithBounds(&b.button, context.Bounds(b))
+func (b *Button) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&b.button)
+	if b.content != nil {
+		appender.AppendChildWidget(b.content)
+	}
+	appender.AppendChildWidget(&b.text)
+	appender.AppendChildWidget(&b.icon)
+}
+
+func (b *Button) Build(context *guigui.Context) error {
+	context.SetBounds(&b.button, context.Bounds(b), b)
 
 	s := context.ActualSize(b)
 
@@ -101,10 +110,10 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		} else {
 			contentP.Y -= int(0.5 * context.Scale())
 		}
-		appender.AppendChildWidgetWithBounds(b.content, image.Rectangle{
+		context.SetBounds(b.content, image.Rectangle{
 			Min: contentP,
 			Max: contentP.Add(s),
-		})
+		}, b)
 	}
 
 	imgSize := b.iconSize(context)
@@ -138,10 +147,10 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	} else {
 		textP.Y -= int(0.5 * context.Scale())
 	}
-	appender.AppendChildWidgetWithBounds(&b.text, image.Rectangle{
+	context.SetBounds(&b.text, image.Rectangle{
 		Min: textP,
 		Max: textP.Add(image.Pt(tw, s.Y)),
-	})
+	}, b)
 
 	imgP := context.Position(b)
 	if b.text.Value() != "" {
@@ -162,10 +171,10 @@ func (b *Button) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	} else {
 		imgP.Y -= int(0.5 * context.Scale())
 	}
-	appender.AppendChildWidgetWithBounds(&b.icon, image.Rectangle{
+	context.SetBounds(&b.icon, image.Rectangle{
 		Min: imgP,
 		Max: imgP.Add(imgSize),
-	})
+	}, b)
 
 	return nil
 }

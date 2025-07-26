@@ -81,7 +81,15 @@ func (t *Table[T]) updateTableItems() {
 	t.list.SetItems(t.baseListItems)
 }
 
-func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Table[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.list)
+	for i := range t.columnTexts {
+		appender.AppendChildWidget(&t.columnTexts[i])
+	}
+	appender.AppendChildWidget(&t.tableHeader)
+}
+
+func (t *Table[T]) Build(context *guigui.Context) error {
 	t.list.SetHeaderHeight(tableHeaderHeight(context))
 	t.list.SetStyle(ListStyleNormal)
 	t.list.SetStripeVisible(true)
@@ -90,7 +98,7 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 
 	t.updateTableItems()
 
-	appender.AppendChildWidgetWithPosition(&t.list, context.Position(t))
+	context.SetPosition(&t.list, context.Position(t))
 
 	w := context.ActualSize(t).X - 2*listItemPadding(context)
 	t.columnWidthsInPixels = adjustSliceSize(t.columnWidthsInPixels, len(t.columns))
@@ -126,15 +134,15 @@ func (t *Table[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 	pt.X += int(offsetX)
 	pt.X += listItemPadding(context)
 	for i := range t.columnTexts {
-		appender.AppendChildWidgetWithBounds(&t.columnTexts[i], image.Rectangle{
+		context.SetBounds(&t.columnTexts[i], image.Rectangle{
 			Min: pt,
 			Max: pt.Add(image.Pt(t.columnWidthsInPixels[i], tableHeaderHeight(context))),
-		})
+		}, t)
 		pt.X += t.columnWidthsInPixels[i] + tableColumnGap(context)
 	}
 
 	t.tableHeader.table = t
-	appender.AppendChildWidgetWithBounds(&t.tableHeader, context.Bounds(t))
+	context.SetBounds(&t.tableHeader, context.Bounds(t), t)
 
 	return nil
 }
@@ -218,13 +226,21 @@ func (t *tableItemWidget[T]) setListItem(listItem TableItem[T]) {
 	t.item = listItem
 }
 
-func (t *tableItemWidget[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *tableItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	for _, content := range t.item.Contents {
+		if content != nil {
+			appender.AppendChildWidget(content)
+		}
+	}
+}
+
+func (t *tableItemWidget[T]) Build(context *guigui.Context) error {
 	b := context.Bounds(t)
 	x := b.Min.X
 	for i, content := range t.item.Contents {
 		if content != nil {
 			context.SetSize(content, image.Pt(t.table.columnWidthsInPixels[i], guigui.AutoSize), t)
-			appender.AppendChildWidgetWithPosition(content, image.Pt(x, b.Min.Y))
+			context.SetPosition(content, image.Pt(x, b.Min.Y))
 		}
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
 	}

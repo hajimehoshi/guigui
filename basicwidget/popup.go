@@ -107,7 +107,16 @@ func (p *Popup) BeforeBuild(context *guigui.Context) {
 	p.onClosed = nil
 }
 
-func (p *Popup) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	if p.openingRate() > 0 {
+		appender.AppendChildWidget(&p.background)
+		appender.AppendChildWidget(&p.shadow)
+		appender.AppendChildWidget(&p.content)
+		appender.AppendChildWidget(&p.frame)
+	}
+}
+
+func (p *Popup) Build(context *guigui.Context) error {
 	if (p.showing || p.hiding) && p.openingCount > 0 {
 		p.nextContentPosition = context.Position(p)
 		p.hasNextContentPosition = true
@@ -130,10 +139,10 @@ func (p *Popup) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	context.SetOpacity(&p.frame, p.openingRate())
 
 	if p.openingRate() > 0 {
-		appender.AppendChildWidgetWithBounds(&p.background, context.AppBounds())
-		appender.AppendChildWidgetWithBounds(&p.shadow, context.AppBounds())
-		appender.AppendChildWidgetWithBounds(&p.content, p.ContentBounds(context))
-		appender.AppendChildWidgetWithBounds(&p.frame, context.AppBounds())
+		context.SetBounds(&p.background, context.AppBounds(), p)
+		context.SetBounds(&p.shadow, context.AppBounds(), p)
+		context.SetBounds(&p.content, p.ContentBounds(context), p)
+		context.SetBounds(&p.frame, context.AppBounds(), p)
 	}
 
 	return nil
@@ -258,9 +267,15 @@ func (p *popupContent) setContent(widget guigui.Widget) {
 	p.content = widget
 }
 
-func (p *popupContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (p *popupContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	if p.content != nil {
-		appender.AppendChildWidgetWithPosition(p.content, context.Position(p))
+		appender.AppendChildWidget(p.content)
+	}
+}
+
+func (p *popupContent) Build(context *guigui.Context) error {
+	if p.content != nil {
+		context.SetPosition(p.content, context.Position(p))
 	}
 	return nil
 }

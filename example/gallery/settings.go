@@ -27,7 +27,11 @@ type Settings struct {
 
 var hongKongChinese = language.MustParse("zh-HK")
 
-func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (s *Settings) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&s.form)
+}
+
+func (s *Settings) Build(context *guigui.Context) error {
 	lightModeImg, err := theImageCache.GetMonochrome("light_mode", context.ColorMode())
 	if err != nil {
 		return err
@@ -186,7 +190,7 @@ func (s *Settings) Build(context *guigui.Context, appender *guigui.ChildWidgetAp
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&s.form, gl.CellBounds(0, 0))
+	context.SetBounds(&s.form, gl.CellBounds(0, 0), s)
 
 	return nil
 }
@@ -198,16 +202,21 @@ type textWithSubText struct {
 	subText basicwidget.Text
 }
 
-func (t *textWithSubText) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *textWithSubText) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.text)
+	appender.AppendChildWidget(&t.subText)
+}
+
+func (t *textWithSubText) Build(context *guigui.Context) error {
 	pt := context.Position(t)
-	appender.AppendChildWidgetWithPosition(&t.text, pt)
+	context.SetPosition(&t.text, pt)
 
 	pt.Y += context.ActualSize(&t.text).Y
 	t.subText.SetScale(0.875)
 	t.subText.SetMultiline(true)
 	t.subText.SetAutoWrap(true)
 	t.subText.SetOpacity(0.675)
-	appender.AppendChildWidgetWithPosition(&t.subText, pt)
+	context.SetPosition(&t.subText, pt)
 
 	return nil
 }

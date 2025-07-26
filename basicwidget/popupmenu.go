@@ -45,7 +45,11 @@ func (p *PopupMenu[T]) BeforeBuild(context *guigui.Context) {
 	p.onItemSelected = nil
 }
 
-func (p *PopupMenu[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&p.popup)
+}
+
+func (p *PopupMenu[T]) Build(context *guigui.Context) error {
 	p.list.SetStyle(ListStyleMenu)
 	p.list.list.SetOnItemSelected(func(index int) {
 		p.popup.Close()
@@ -58,7 +62,7 @@ func (p *PopupMenu[T]) Build(context *guigui.Context, appender *guigui.ChildWidg
 	p.popup.SetCloseByClickingOutside(true)
 	bounds := p.contentBounds(context)
 	context.SetSize(&p.list, bounds.Size(), p)
-	appender.AppendChildWidgetWithBounds(&p.popup, bounds)
+	context.SetBounds(&p.popup, bounds, p)
 
 	return nil
 }

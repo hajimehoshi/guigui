@@ -285,6 +285,11 @@ func (c *Context) Bounds(widget Widget) image.Rectangle {
 	}
 }
 
+func (c *Context) SetBounds(widget Widget, bounds image.Rectangle, specifierWidget Widget) {
+	c.SetPosition(widget, bounds.Min)
+	c.SetSize(widget, bounds.Size(), specifierWidget)
+}
+
 func (c *Context) VisibleBounds(widget Widget) image.Rectangle {
 	state := widget.widgetState()
 	if state.hasVisibleBoundsCache {

@@ -15,11 +15,15 @@ type ContentPanel struct {
 	content contentPanelContent
 }
 
-func (c *ContentPanel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&c.panel)
+}
+
+func (c *ContentPanel) Build(context *guigui.Context) error {
 	context.SetSize(&c.content, context.ActualSize(c), c)
 	c.panel.SetContent(&c.content)
 
-	appender.AppendChildWidgetWithBounds(&c.panel, context.Bounds(c))
+	context.SetBounds(&c.panel, context.Bounds(c), c)
 	return nil
 }
 
@@ -29,11 +33,15 @@ type contentPanelContent struct {
 	text basicwidget.Text
 }
 
-func (c *contentPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (c *contentPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&c.text)
+}
+
+func (c *contentPanelContent) Build(context *guigui.Context) error {
 	c.text.SetValue("Content panel: " + dummyText)
 	c.text.SetAutoWrap(true)
 	c.text.SetSelectable(true)
 	u := basicwidget.UnitSize(context)
-	appender.AppendChildWidgetWithBounds(&c.text, context.Bounds(c).Inset(u/2))
+	context.SetBounds(&c.text, context.Bounds(c).Inset(u/2), c)
 	return nil
 }

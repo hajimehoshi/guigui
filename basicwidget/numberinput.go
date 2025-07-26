@@ -164,7 +164,13 @@ func (n *NumberInput) BeforeBuild(context *guigui.Context) {
 	n.abstractNumberInput.ResetEventHandlers()
 }
 
-func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (n *NumberInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&n.textInput)
+	appender.AppendChildWidget(&n.upButton)
+	appender.AppendChildWidget(&n.downButton)
+}
+
+func (n *NumberInput) Build(context *guigui.Context) error {
 	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
 		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)
 		n.nextValue = nil
@@ -189,7 +195,7 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 			n.nextValue = nil
 		}
 	})
-	appender.AppendChildWidgetWithBounds(&n.textInput, context.Bounds(n))
+	context.SetBounds(&n.textInput, context.Bounds(n), n)
 
 	imgUp, err := theResourceImages.Get("keyboard_arrow_up", context.ColorMode())
 	if err != nil {
@@ -212,7 +218,7 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 	context.SetEnabled(&n.upButton, n.IsEditable() && n.abstractNumberInput.CanIncrement())
 
 	b := context.Bounds(n)
-	appender.AppendChildWidgetWithBounds(&n.upButton, image.Rectangle{
+	context.SetBounds(&n.upButton, image.Rectangle{
 		Min: image.Point{
 			X: b.Max.X - UnitSize(context)*3/4,
 			Y: b.Min.Y,
@@ -221,7 +227,7 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 			X: b.Max.X,
 			Y: b.Min.Y + b.Dy()/2,
 		},
-	})
+	}, n)
 
 	n.downButton.SetIcon(imgDown)
 	n.downButton.setSharpenCorners(draw.SharpenCorners{
@@ -234,13 +240,13 @@ func (n *NumberInput) Build(context *guigui.Context, appender *guigui.ChildWidge
 	})
 	context.SetEnabled(&n.downButton, n.IsEditable() && n.abstractNumberInput.CanDecrement())
 
-	appender.AppendChildWidgetWithBounds(&n.downButton, image.Rectangle{
+	context.SetBounds(&n.downButton, image.Rectangle{
 		Min: image.Point{
 			X: b.Max.X - UnitSize(context)*3/4,
 			Y: b.Min.Y + b.Dy()/2,
 		},
 		Max: b.Max,
-	})
+	}, n)
 
 	return nil
 }

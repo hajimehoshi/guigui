@@ -351,6 +351,7 @@ func (a *app) build() error {
 	a.root.widgetState().builtAt = a.buildCount
 
 	_ = traverseWidget(a.root, func(widget Widget) error {
+		// TODO: Rename this? Now this is used only to reset callbacks.
 		widget.BeforeBuild(&a.context)
 		return nil
 	})
@@ -370,7 +371,9 @@ func (a *app) build() error {
 		widgetState.children = slices.Delete(widgetState.children, 0, len(widgetState.children))
 		appender.app = a
 		appender.widget = widget
-		if err := widget.Build(&a.context, &appender); err != nil {
+		widget.AppendChildWidgets(&a.context, &appender)
+
+		if err := widget.Build(&a.context); err != nil {
 			return err
 		}
 

@@ -131,7 +131,23 @@ func (b *baseList[T]) BeforeBuild(context *guigui.Context) {
 	b.onItemsMoved = nil
 }
 
-func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&b.scrollOverlay)
+
+	for i := range b.abstractList.ItemCount() {
+		item, _ := b.abstractList.ItemByIndex(i)
+		if b.checkmarkIndexPlus1 == i+1 {
+			appender.AppendChildWidget(&b.checkmark)
+		}
+		appender.AppendChildWidget(item.Content)
+	}
+
+	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
+		appender.AppendChildWidget(&b.listFrame)
+	}
+}
+
+func (b *baseList[T]) Build(context *guigui.Context) error {
 	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
@@ -143,7 +159,7 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 	bounds := context.Bounds(b)
 	bounds.Min.Y += b.headerHeight
 	bounds.Max.Y -= b.footerHeight
-	appender.AppendChildWidgetWithBounds(&b.scrollOverlay, bounds)
+	context.SetBounds(&b.scrollOverlay, bounds, b)
 
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
@@ -169,10 +185,10 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 			itemH := context.ActualSize(item.Content).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
-			appender.AppendChildWidgetWithBounds(&b.checkmark, image.Rectangle{
+			context.SetBounds(&b.checkmark, image.Rectangle{
 				Min: imgP,
 				Max: imgP.Add(image.Pt(imgSize, imgSize)),
-			})
+			}, b)
 		}
 
 		itemP := p
@@ -181,13 +197,13 @@ func (b *baseList[T]) Build(context *guigui.Context, appender *guigui.ChildWidge
 		}
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 
-		appender.AppendChildWidgetWithPosition(item.Content, itemP)
+		context.SetPosition(item.Content, itemP)
 		p.Y += context.ActualSize(item.Content).Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
 		b.listFrame.list = b
-		appender.AppendChildWidgetWithBounds(&b.listFrame, context.Bounds(b))
+		context.SetBounds(&b.listFrame, context.Bounds(b), b)
 	}
 
 	return nil

@@ -15,7 +15,11 @@ type LeftPanel struct {
 	content leftPanelContent
 }
 
-func (l *LeftPanel) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (l *LeftPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&l.panel)
+}
+
+func (l *LeftPanel) Build(context *guigui.Context) error {
 	l.panel.SetStyle(basicwidget.PanelStyleSide)
 	l.panel.SetBorder(basicwidget.PanelBorder{
 		End: true,
@@ -23,7 +27,7 @@ func (l *LeftPanel) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	context.SetSize(&l.content, context.ActualSize(l), l)
 	l.panel.SetContent(&l.content)
 
-	appender.AppendChildWidgetWithBounds(&l.panel, context.Bounds(l))
+	context.SetBounds(&l.panel, context.Bounds(l), l)
 	return nil
 }
 
@@ -33,11 +37,15 @@ type leftPanelContent struct {
 	text basicwidget.Text
 }
 
-func (l *leftPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (l *leftPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&l.text)
+}
+
+func (l *leftPanelContent) Build(context *guigui.Context) error {
 	l.text.SetValue("Left panel: " + dummyText)
 	l.text.SetAutoWrap(true)
 	l.text.SetSelectable(true)
 	u := basicwidget.UnitSize(context)
-	appender.AppendChildWidgetWithBounds(&l.text, context.Bounds(l).Inset(u/2))
+	context.SetBounds(&l.text, context.Bounds(l).Inset(u/2), l)
 	return nil
 }

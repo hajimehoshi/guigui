@@ -63,10 +63,35 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.background)
+	appender.AppendChildWidget(&r.sidebar)
+	switch r.model.Mode() {
+	case "settings":
+		appender.AppendChildWidget(&r.settings)
+	case "basic":
+		appender.AppendChildWidget(&r.basic)
+	case "buttons":
+		appender.AppendChildWidget(&r.buttons)
+	case "texts":
+		appender.AppendChildWidget(&r.texts)
+	case "textinputs":
+		appender.AppendChildWidget(&r.textInputs)
+	case "numberinputs":
+		appender.AppendChildWidget(&r.numberInputs)
+	case "lists":
+		appender.AppendChildWidget(&r.lists)
+	case "tables":
+		appender.AppendChildWidget(&r.tables)
+	case "popups":
+		appender.AppendChildWidget(&r.popups)
+	}
+}
+
+func (r *Root) Build(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
 
-	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
+	context.SetBounds(&r.background, context.Bounds(r), r)
 
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),
@@ -75,27 +100,27 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			layout.FlexibleSize(1),
 		},
 	}
-	appender.AppendChildWidgetWithBounds(&r.sidebar, gl.CellBounds(0, 0))
+	context.SetBounds(&r.sidebar, gl.CellBounds(0, 0), r)
 	bounds := gl.CellBounds(1, 0)
 	switch r.model.Mode() {
 	case "settings":
-		appender.AppendChildWidgetWithBounds(&r.settings, bounds)
+		context.SetBounds(&r.settings, bounds, r)
 	case "basic":
-		appender.AppendChildWidgetWithBounds(&r.basic, bounds)
+		context.SetBounds(&r.basic, bounds, r)
 	case "buttons":
-		appender.AppendChildWidgetWithBounds(&r.buttons, bounds)
+		context.SetBounds(&r.buttons, bounds, r)
 	case "texts":
-		appender.AppendChildWidgetWithBounds(&r.texts, bounds)
+		context.SetBounds(&r.texts, bounds, r)
 	case "textinputs":
-		appender.AppendChildWidgetWithBounds(&r.textInputs, bounds)
+		context.SetBounds(&r.textInputs, bounds, r)
 	case "numberinputs":
-		appender.AppendChildWidgetWithBounds(&r.numberInputs, bounds)
+		context.SetBounds(&r.numberInputs, bounds, r)
 	case "lists":
-		appender.AppendChildWidgetWithBounds(&r.lists, bounds)
+		context.SetBounds(&r.lists, bounds, r)
 	case "tables":
-		appender.AppendChildWidgetWithBounds(&r.tables, bounds)
+		context.SetBounds(&r.tables, bounds, r)
 	case "popups":
-		appender.AppendChildWidgetWithBounds(&r.popups, bounds)
+		context.SetBounds(&r.popups, bounds, r)
 	}
 
 	return nil

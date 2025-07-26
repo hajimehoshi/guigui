@@ -53,7 +53,12 @@ func (d *DropdownList[T]) BeforeBuild(context *guigui.Context) {
 	d.onItemSelected = nil
 }
 
-func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&d.button)
+	appender.AppendChildWidget(&d.popupMenu)
+}
+
+func (d *DropdownList[T]) Build(context *guigui.Context) error {
 	d.updateButtonContent()
 
 	d.button.SetOnDown(func() {
@@ -62,7 +67,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 	d.button.setKeepPressed(d.popupMenu.IsOpen())
 	d.button.SetIconAlign(IconAlignEnd)
 
-	appender.AppendChildWidgetWithPosition(&d.button, context.Position(d))
+	context.SetPosition(&d.button, context.Position(d))
 
 	d.popupMenu.SetOnItemSelected(func(index int) {
 		if d.onItemSelected != nil {
@@ -80,7 +85,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context, appender *guigui.ChildW
 	pt.Y += int((float64(context.ActualSize(d).Y) - LineHeight(context)) / 2)
 	pt.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
 	pt.Y = max(pt.Y, 0)
-	appender.AppendChildWidgetWithPosition(&d.popupMenu, pt)
+	context.SetPosition(&d.popupMenu, pt)
 
 	return nil
 }
@@ -147,7 +152,15 @@ type dropdownListButtonContent struct {
 	image   Image
 }
 
-func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (d *dropdownListButtonContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	if d.content != nil {
+		appender.AppendChildWidget(d.content)
+	}
+	appender.AppendChildWidget(&d.text)
+	appender.AppendChildWidget(&d.image)
+}
+
+func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
 	paddingStartX := buttonEdgeAndTextPadding(context)
 
 	bounds := context.Bounds(d)
@@ -158,7 +171,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *gui
 			X: bounds.Min.X + paddingStartX,
 			Y: bounds.Min.Y + (bounds.Dy()-contentSize.Y)/2,
 		}
-		appender.AppendChildWidgetWithPosition(d.content, contentP)
+		context.SetPosition(d.content, contentP)
 	}
 
 	textSize := d.text.DefaultSize(context)
@@ -166,7 +179,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *gui
 		X: bounds.Min.X + paddingStartX,
 		Y: bounds.Min.Y + (bounds.Dy()-textSize.Y)/2,
 	}
-	appender.AppendChildWidgetWithPosition(&d.text, textP)
+	context.SetPosition(&d.text, textP)
 
 	img, err := theResourceImages.Get("unfold_more", context.ColorMode())
 	if err != nil {
@@ -183,7 +196,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context, appender *gui
 		Min: imgP,
 		Max: imgP.Add(image.Pt(iconSize, iconSize)),
 	}
-	appender.AppendChildWidgetWithBounds(&d.image, imgBounds)
+	context.SetBounds(&d.image, imgBounds, d)
 
 	return nil
 }

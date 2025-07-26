@@ -288,7 +288,7 @@ func (s *ScrollOverlay) BeforeBuild(context *guigui.Context) {
 	s.onScroll = nil
 }
 
-func (s *ScrollOverlay) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (s *ScrollOverlay) Build(context *guigui.Context) error {
 	cs := context.ActualSize(s)
 	if s.lastSize != cs {
 		s.adjustOffset(context)

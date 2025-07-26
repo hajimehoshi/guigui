@@ -129,7 +129,7 @@ func (s *Slider) BeforeBuild(context *guigui.Context) {
 	s.abstractNumberInput.ResetEventHandlers()
 }
 
-func (s *Slider) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (s *Slider) Build(context *guigui.Context) error {
 	if hovered := s.isThumbHovered(context); s.prevThumbHovered != hovered {
 		s.prevThumbHovered = hovered
 		guigui.RequestRedraw(s)

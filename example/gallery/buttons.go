@@ -35,7 +35,12 @@ type Buttons struct {
 	enabledToggle basicwidget.Toggle
 }
 
-func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (b *Buttons) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&b.buttonsForm)
+	appender.AppendChildWidget(&b.configForm)
+}
+
+func (b *Buttons) Build(context *guigui.Context) error {
 	model := context.Model(b, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
@@ -156,8 +161,8 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&b.buttonsForm, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&b.configForm, gl.CellBounds(0, 2))
+	context.SetBounds(&b.buttonsForm, gl.CellBounds(0, 0), b)
+	context.SetBounds(&b.configForm, gl.CellBounds(0, 2), b)
 
 	return nil
 }

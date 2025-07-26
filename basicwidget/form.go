@@ -38,15 +38,26 @@ func (f *Form) SetItems(items []FormItem) {
 	f.items = append(f.items, items...)
 }
 
-func (f *Form) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	for _, item := range f.items {
+		if item.PrimaryWidget != nil {
+			appender.AppendChildWidget(item.PrimaryWidget)
+		}
+		if item.SecondaryWidget != nil {
+			appender.AppendChildWidget(item.SecondaryWidget)
+		}
+	}
+}
+
+func (f *Form) Build(context *guigui.Context) error {
 	f.calcItemBounds(context, context.Bounds(f).Dx())
 
 	for i, item := range f.items {
 		if item.PrimaryWidget != nil {
-			appender.AppendChildWidgetWithPosition(item.PrimaryWidget, f.primaryBounds[i].Min)
+			context.SetPosition(item.PrimaryWidget, f.primaryBounds[i].Min)
 		}
 		if item.SecondaryWidget != nil {
-			appender.AppendChildWidgetWithPosition(item.SecondaryWidget, f.secondaryBounds[i].Min)
+			context.SetPosition(item.SecondaryWidget, f.secondaryBounds[i].Min)
 		}
 	}
 

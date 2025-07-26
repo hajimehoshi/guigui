@@ -27,8 +27,16 @@ type Root struct {
 	counter int
 }
 
-func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
+func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.background)
+	appender.AppendChildWidget(&r.counterText)
+	appender.AppendChildWidget(&r.resetButton)
+	appender.AppendChildWidget(&r.decButton)
+	appender.AppendChildWidget(&r.incButton)
+}
+
+func (r *Root) Build(context *guigui.Context) error {
+	context.SetBounds(&r.background, context.Bounds(r), r)
 
 	r.counterText.SetSelectable(true)
 	r.counterText.SetBold(true)
@@ -62,7 +70,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		},
 		RowGap: u,
 	}
-	appender.AppendChildWidgetWithBounds(&r.counterText, gl.CellBounds(0, 0))
+	context.SetBounds(&r.counterText, gl.CellBounds(0, 0), r)
 	{
 		gl := layout.GridLayout{
 			Bounds: gl.CellBounds(0, 1),
@@ -74,9 +82,9 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 			},
 			ColumnGap: u / 2,
 		}
-		appender.AppendChildWidgetWithBounds(&r.resetButton, gl.CellBounds(0, 0))
-		appender.AppendChildWidgetWithBounds(&r.decButton, gl.CellBounds(2, 0))
-		appender.AppendChildWidgetWithBounds(&r.incButton, gl.CellBounds(3, 0))
+		context.SetBounds(&r.resetButton, gl.CellBounds(0, 0), r)
+		context.SetBounds(&r.decButton, gl.CellBounds(2, 0), r)
+		context.SetBounds(&r.incButton, gl.CellBounds(3, 0), r)
 	}
 
 	return nil

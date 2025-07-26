@@ -30,7 +30,12 @@ type Tables struct {
 	tableItemWidgets []guigui.Widget
 }
 
-func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Tables) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.table)
+	appender.AppendChildWidget(&t.configForm)
+}
+
+func (t *Tables) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
@@ -160,7 +165,7 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		},
 	}
 
-	appender.AppendChildWidgetWithBounds(&t.table, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&t.configForm, gl.CellBounds(0, 2))
+	context.SetBounds(&t.table, gl.CellBounds(0, 0), t)
+	context.SetBounds(&t.configForm, gl.CellBounds(0, 2), t)
 	return nil
 }

@@ -27,7 +27,11 @@ type Basic struct {
 	list            basicwidget.List[int]
 }
 
-func (b *Basic) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (b *Basic) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&b.form)
+}
+
+func (b *Basic) Build(context *guigui.Context) error {
 	b.buttonText.SetValue("Button")
 	b.button.SetText("Click me!")
 	b.toggleText.SetValue("Toggle")
@@ -80,7 +84,7 @@ func (b *Basic) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&b.form, gl.CellBounds(0, 0))
+	context.SetBounds(&b.form, gl.CellBounds(0, 0), b)
 
 	return nil
 }

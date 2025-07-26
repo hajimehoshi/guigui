@@ -34,7 +34,12 @@ type Lists struct {
 	items []basicwidget.ListItem[int]
 }
 
-func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (l *Lists) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&l.listForm)
+	appender.AppendChildWidget(&l.configForm)
+}
+
+func (l *Lists) Build(context *guigui.Context) error {
 	model := context.Model(l, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
@@ -130,8 +135,8 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&l.listForm, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&l.configForm, gl.CellBounds(0, 2))
+	context.SetBounds(&l.listForm, gl.CellBounds(0, 0), l)
+	context.SetBounds(&l.configForm, gl.CellBounds(0, 2), l)
 
 	return nil
 }

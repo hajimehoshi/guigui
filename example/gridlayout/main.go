@@ -32,8 +32,18 @@ type Root struct {
 	buttons    [16]guigui.Widget
 }
 
-func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
+func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&r.background)
+	appender.AppendChildWidget(&r.configForm)
+	for i := range r.buttons {
+		if r.buttons[i] != nil {
+			appender.AppendChildWidget(r.buttons[i])
+		}
+	}
+}
+
+func (r *Root) Build(context *guigui.Context) error {
+	context.SetBounds(&r.background, context.Bounds(r), r)
 
 	r.fillText.SetValue("Fill Widgets into Grid Cells")
 	r.fillToggle.SetValue(r.fill)
@@ -70,7 +80,7 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 		},
 		RowGap: int(u / 2),
 	}
-	appender.AppendChildWidgetWithBounds(&r.configForm, gl.CellBounds(0, 0))
+	context.SetBounds(&r.configForm, gl.CellBounds(0, 0), r)
 
 	for i := range r.buttons {
 		if r.buttons[i] == nil {
@@ -115,16 +125,16 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 				bounds := gl.CellBounds(i, j)
 				widget := r.buttons[4*j+i]
 				if r.fill {
-					appender.AppendChildWidgetWithBounds(widget, bounds)
+					context.SetBounds(widget, bounds, r)
 				} else {
 					pt := bounds.Min
 					s := widget.DefaultSize(context)
 					pt.X += (bounds.Dx() - s.X) / 2
 					pt.Y += (bounds.Dy() - s.Y) / 2
-					appender.AppendChildWidgetWithBounds(widget, image.Rectangle{
+					context.SetBounds(widget, image.Rectangle{
 						Min: pt,
 						Max: pt.Add(s),
-					})
+					}, r)
 				}
 			}
 		}

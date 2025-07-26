@@ -85,7 +85,13 @@ func (s *SegmentedControl[T]) ResetEventHandlers() {
 	s.abstractList.ResetEventHandlers()
 }
 
-func (s *SegmentedControl[T]) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (s *SegmentedControl[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	for i := range s.buttons {
+		appender.AppendChildWidget(&s.buttons[i])
+	}
+}
+
+func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
 	s.buttons = adjustSliceSize(s.buttons, s.abstractList.ItemCount())
 
 	sizes := make([]layout.Size, s.abstractList.ItemCount())
@@ -158,9 +164,9 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context, appender *guigui.Ch
 	for i := range s.buttons {
 		switch s.direction {
 		case SegmentedControlDirectionHorizontal:
-			appender.AppendChildWidgetWithBounds(&s.buttons[i], g.CellBounds(i, 0))
+			context.SetBounds(&s.buttons[i], g.CellBounds(i, 0), s)
 		case SegmentedControlDirectionVertical:
-			appender.AppendChildWidgetWithBounds(&s.buttons[i], g.CellBounds(0, i))
+			context.SetBounds(&s.buttons[i], g.CellBounds(0, i), s)
 		}
 	}
 

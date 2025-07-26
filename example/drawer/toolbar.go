@@ -18,14 +18,18 @@ type Toolbar struct {
 	content toolbarContent
 }
 
-func (t *Toolbar) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.panel)
+}
+
+func (t *Toolbar) Build(context *guigui.Context) error {
 	t.panel.SetStyle(basicwidget.PanelStyleSide)
 	t.panel.SetBorder(basicwidget.PanelBorder{
 		Bottom: true,
 	})
 	context.SetSize(&t.content, context.ActualSize(t), t)
 	t.panel.SetContent(&t.content)
-	appender.AppendChildWidgetWithBounds(&t.panel, context.Bounds(t))
+	context.SetBounds(&t.panel, context.Bounds(t), t)
 
 	return nil
 }
@@ -41,7 +45,12 @@ type toolbarContent struct {
 	rightPanelButton basicwidget.Button
 }
 
-func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *toolbarContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.leftPanelButton)
+	appender.AppendChildWidget(&t.rightPanelButton)
+}
+
+func (t *toolbarContent) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
@@ -85,8 +94,8 @@ func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWi
 	t.rightPanelButton.SetOnDown(func() {
 		model.SetRightPanelOpen(!model.IsRightPanelOpen())
 	})
-	appender.AppendChildWidgetWithBounds(&t.leftPanelButton, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&t.rightPanelButton, gl.CellBounds(2, 0))
+	context.SetBounds(&t.leftPanelButton, gl.CellBounds(0, 0), t)
+	context.SetBounds(&t.rightPanelButton, gl.CellBounds(2, 0), t)
 
 	return nil
 }

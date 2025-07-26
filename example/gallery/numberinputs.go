@@ -35,7 +35,12 @@ type NumberInputs struct {
 	enabledToggle  basicwidget.Toggle
 }
 
-func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (n *NumberInputs) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&n.numberInputForm)
+	appender.AppendChildWidget(&n.configForm)
+}
+
+func (n *NumberInputs) Build(context *guigui.Context) error {
 	model := context.Model(n, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
@@ -156,8 +161,8 @@ func (n *NumberInputs) Build(context *guigui.Context, appender *guigui.ChildWidg
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&n.numberInputForm, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&n.configForm, gl.CellBounds(0, 2))
+	context.SetBounds(&n.numberInputForm, gl.CellBounds(0, 0), n)
+	context.SetBounds(&n.configForm, gl.CellBounds(0, 2), n)
 
 	return nil
 }

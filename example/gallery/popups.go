@@ -33,7 +33,15 @@ type Popups struct {
 	contextMenuPopup basicwidget.PopupMenu[int]
 }
 
-func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (p *Popups) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	for i := range p.forms {
+		appender.AppendChildWidget(&p.forms[i])
+	}
+	appender.AppendChildWidget(&p.simplePopup)
+	appender.AppendChildWidget(&p.contextMenuPopup)
+}
+
+func (p *Popups) Build(context *guigui.Context) error {
 	p.blurBackgroundText.SetValue("Blur background")
 	p.closeByClickingOutsideText.SetValue("Close by clicking outside")
 	p.showButton.SetText("Show")
@@ -79,7 +87,7 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		RowGap: u / 2,
 	}
 	for i := range p.forms {
-		appender.AppendChildWidgetWithBounds(&p.forms[i], gl.CellBounds(0, i))
+		context.SetBounds(&p.forms[i], gl.CellBounds(0, i), p)
 	}
 
 	p.simplePopupContent.popup = &p.simplePopup
@@ -99,11 +107,10 @@ func (p *Popups) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 		Max: simplePopupPosition.Add(contentSize),
 	}
 	context.SetSize(&p.simplePopupContent, simplePopupBounds.Size(), p)
-	appender.AppendChildWidgetWithBounds(&p.simplePopup, simplePopupBounds)
+	context.SetBounds(&p.simplePopup, simplePopupBounds, p)
 
 	p.contextMenuPopup.SetItemsByStrings([]string{"Item 1", "Item 2", "Item 3"})
 	// A context menu's position is updated at HandlePointingInput.
-	appender.AppendChildWidget(&p.contextMenuPopup)
 
 	return nil
 }
@@ -129,7 +136,12 @@ type simplePopupContent struct {
 	closeButton basicwidget.Button
 }
 
-func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (s *simplePopupContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&s.titleText)
+	appender.AppendChildWidget(&s.closeButton)
+}
+
+func (s *simplePopupContent) Build(context *guigui.Context) error {
 	u := basicwidget.UnitSize(context)
 
 	s.titleText.SetValue("Hello!")
@@ -152,7 +164,7 @@ func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.Chi
 			}),
 		},
 	}
-	appender.AppendChildWidgetWithBounds(&s.titleText, gl.CellBounds(0, 0))
+	context.SetBounds(&s.titleText, gl.CellBounds(0, 0), s)
 	{
 		gl := layout.GridLayout{
 			Bounds: gl.CellBounds(0, 1),
@@ -161,7 +173,7 @@ func (s *simplePopupContent) Build(context *guigui.Context, appender *guigui.Chi
 				layout.FixedSize(s.closeButton.DefaultSize(context).X),
 			},
 		}
-		appender.AppendChildWidgetWithBounds(&s.closeButton, gl.CellBounds(1, 0))
+		context.SetBounds(&s.closeButton, gl.CellBounds(1, 0), s)
 	}
 
 	return nil

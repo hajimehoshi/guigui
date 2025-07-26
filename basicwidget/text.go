@@ -174,7 +174,13 @@ func (t *Text) BeforeBuild(context *guigui.Context) {
 	t.onValueChanged = nil
 }
 
-func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Text) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	if t.selectable || t.editable {
+		appender.AppendChildWidget(&t.cursor)
+	}
+}
+
+func (t *Text) Build(context *guigui.Context) error {
 	if f := t.face(context, false); t.lastFace != f {
 		t.lastFace = f
 		t.resetCachedTextSize()
@@ -212,7 +218,7 @@ func (t *Text) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	if t.selectable || t.editable {
 		t.cursor.text = t
 		b := t.cursorBounds(context)
-		appender.AppendChildWidgetWithBounds(&t.cursor, b)
+		context.SetBounds(&t.cursor, b, t)
 	}
 
 	return nil

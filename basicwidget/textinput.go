@@ -172,7 +172,21 @@ func (t *TextInput) BeforeBuild(context *guigui.Context) {
 	t.onTextAndSelectionChanged = nil
 }
 
-func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *TextInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.background)
+	appender.AppendChildWidget(&t.text)
+	if t.icon.HasImage() {
+		appender.AppendChildWidget(&t.iconBackground)
+		appender.AppendChildWidget(&t.icon)
+	}
+	appender.AppendChildWidget(&t.frame)
+	appender.AppendChildWidget(&t.scrollOverlay)
+	if t.style != TextInputStyleInline && (context.IsFocused(t) || context.IsFocused(&t.text)) {
+		appender.AppendChildWidget(&t.focus)
+	}
+}
+
+func (t *TextInput) Build(context *guigui.Context) error {
 	if t.prevFocused != (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))
 		guigui.RequestRedraw(t)
@@ -183,7 +197,7 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	t.scrollOverlay.SetContentSize(context, t.scrollContentSize(context))
 
 	t.background.textInput = t
-	appender.AppendChildWidgetWithBounds(&t.background, context.Bounds(t))
+	context.SetBounds(&t.background, context.Bounds(t), t)
 
 	t.text.SetEditable(!t.readonly)
 	t.text.SetSelectable(true)
@@ -208,7 +222,7 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 	t.adjustScrollOffsetIfNeeded(context)
 	offsetX, offsetY := t.scrollOverlay.Offset()
 	textBounds.Min = textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
-	appender.AppendChildWidgetWithPosition(&t.text, textBounds.Min)
+	context.SetPosition(&t.text, textBounds.Min)
 	if draw.OverlapsWithRoundedCorner(context.Bounds(t), RoundedCornerRadius(context), textBounds) {
 		// CustomDraw might be too generic and overkill for this case.
 		context.SetCustomDraw(&t.text, func(dst, widgetImage *ebiten.Image, op *ebiten.DrawImageOptions) {
@@ -237,20 +251,20 @@ func (t *TextInput) Build(context *guigui.Context, appender *guigui.ChildWidgetA
 		imgBgBounds := b
 		imgBgBounds.Max.X = imgBounds.Max.X + UnitSize(context)/4
 
-		appender.AppendChildWidgetWithBounds(&t.iconBackground, imgBgBounds)
-		appender.AppendChildWidgetWithBounds(&t.icon, imgBounds)
+		context.SetBounds(&t.iconBackground, imgBgBounds, t)
+		context.SetBounds(&t.icon, imgBounds, t)
 	}
 
-	appender.AppendChildWidgetWithBounds(&t.frame, context.Bounds(t))
+	context.SetBounds(&t.frame, context.Bounds(t), t)
 
 	context.SetVisible(&t.scrollOverlay, t.text.IsMultiline())
-	appender.AppendChildWidgetWithBounds(&t.scrollOverlay, context.Bounds(t))
+	context.SetBounds(&t.scrollOverlay, context.Bounds(t), t)
 
 	if t.style != TextInputStyleInline && (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.focus.textInput = t
 		w := textInputFocusBorderWidth(context)
 		p := context.Position(t).Add(image.Pt(-w, -w))
-		appender.AppendChildWidgetWithPosition(&t.focus, p)
+		context.SetPosition(&t.focus, p)
 	}
 
 	return nil

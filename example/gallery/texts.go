@@ -30,7 +30,12 @@ type Texts struct {
 	sampleText                      basicwidget.Text
 }
 
-func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+func (t *Texts) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	appender.AppendChildWidget(&t.sampleText)
+	appender.AppendChildWidget(&t.form)
+}
+
+func (t *Texts) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	imgAlignStart, err := theImageCache.GetMonochrome("format_align_left", context.ColorMode())
@@ -192,8 +197,8 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		},
 		RowGap: u / 2,
 	}
-	appender.AppendChildWidgetWithBounds(&t.sampleText, gl.CellBounds(0, 0))
-	appender.AppendChildWidgetWithBounds(&t.form, gl.CellBounds(0, 1))
+	context.SetBounds(&t.sampleText, gl.CellBounds(0, 0), t)
+	context.SetBounds(&t.form, gl.CellBounds(0, 1), t)
 
 	return nil
 }
