@@ -35,15 +35,11 @@ type TextInputs struct {
 	editableToggle                  basicwidget.Toggle
 	enabledText                     basicwidget.Text
 	enabledToggle                   basicwidget.Toggle
-
-	model *Model
-}
-
-func (t *TextInputs) SetModel(model *Model) {
-	t.model = model
 }
 
 func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(t, modelKeyModel).(*Model)
+
 	imgAlignStart, err := theImageCache.GetMonochrome("format_align_left", context.ColorMode())
 	if err != nil {
 		return err
@@ -81,44 +77,44 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 	t.singleLineText.SetValue("Single line")
 	t.singleLineTextInput.SetOnValueChanged(func(text string, committed bool) {
 		if committed {
-			t.model.TextInputs().SetSingleLineText(text)
+			model.TextInputs().SetSingleLineText(text)
 		}
 	})
-	t.singleLineTextInput.SetValue(t.model.TextInputs().SingleLineText())
-	t.singleLineTextInput.SetHorizontalAlign(t.model.TextInputs().HorizontalAlign())
-	t.singleLineTextInput.SetVerticalAlign(t.model.TextInputs().VerticalAlign())
-	t.singleLineTextInput.SetEditable(t.model.TextInputs().Editable())
-	context.SetEnabled(&t.singleLineTextInput, t.model.TextInputs().Enabled())
+	t.singleLineTextInput.SetValue(model.TextInputs().SingleLineText())
+	t.singleLineTextInput.SetHorizontalAlign(model.TextInputs().HorizontalAlign())
+	t.singleLineTextInput.SetVerticalAlign(model.TextInputs().VerticalAlign())
+	t.singleLineTextInput.SetEditable(model.TextInputs().Editable())
+	context.SetEnabled(&t.singleLineTextInput, model.TextInputs().Enabled())
 	context.SetSize(&t.singleLineTextInput, image.Pt(width, guigui.AutoSize), t)
 
 	t.singleLineWithIconText.SetValue("Single line with icon")
-	t.singleLineWithIconTextInput.SetHorizontalAlign(t.model.TextInputs().HorizontalAlign())
-	t.singleLineWithIconTextInput.SetVerticalAlign(t.model.TextInputs().VerticalAlign())
-	t.singleLineWithIconTextInput.SetEditable(t.model.TextInputs().Editable())
+	t.singleLineWithIconTextInput.SetHorizontalAlign(model.TextInputs().HorizontalAlign())
+	t.singleLineWithIconTextInput.SetVerticalAlign(model.TextInputs().VerticalAlign())
+	t.singleLineWithIconTextInput.SetEditable(model.TextInputs().Editable())
 	t.singleLineWithIconTextInput.SetIcon(imgSearch)
-	context.SetEnabled(&t.singleLineWithIconTextInput, t.model.TextInputs().Enabled())
+	context.SetEnabled(&t.singleLineWithIconTextInput, model.TextInputs().Enabled())
 	context.SetSize(&t.singleLineWithIconTextInput, image.Pt(width, guigui.AutoSize), t)
 
 	t.multilineText.SetValue("Multiline")
 	t.multilineTextInput.SetOnValueChanged(func(text string, committed bool) {
 		if committed {
-			t.model.TextInputs().SetMultilineText(text)
+			model.TextInputs().SetMultilineText(text)
 		}
 	})
-	t.multilineTextInput.SetValue(t.model.TextInputs().MultilineText())
+	t.multilineTextInput.SetValue(model.TextInputs().MultilineText())
 	t.multilineTextInput.SetMultiline(true)
-	t.multilineTextInput.SetHorizontalAlign(t.model.TextInputs().HorizontalAlign())
-	t.multilineTextInput.SetVerticalAlign(t.model.TextInputs().VerticalAlign())
-	t.multilineTextInput.SetAutoWrap(t.model.TextInputs().AutoWrap())
-	t.multilineTextInput.SetEditable(t.model.TextInputs().Editable())
-	context.SetEnabled(&t.multilineTextInput, t.model.TextInputs().Enabled())
+	t.multilineTextInput.SetHorizontalAlign(model.TextInputs().HorizontalAlign())
+	t.multilineTextInput.SetVerticalAlign(model.TextInputs().VerticalAlign())
+	t.multilineTextInput.SetAutoWrap(model.TextInputs().AutoWrap())
+	t.multilineTextInput.SetEditable(model.TextInputs().Editable())
+	context.SetEnabled(&t.multilineTextInput, model.TextInputs().Enabled())
 	context.SetSize(&t.multilineTextInput, image.Pt(width, 4*u), t)
 
 	t.inlineText.SetValue("Inline")
-	t.inlineTextInput.SetHorizontalAlign(t.model.TextInputs().HorizontalAlign())
-	t.inlineTextInput.textInput.SetVerticalAlign(t.model.TextInputs().VerticalAlign())
-	t.inlineTextInput.textInput.SetEditable(t.model.TextInputs().Editable())
-	context.SetEnabled(&t.inlineTextInput, t.model.TextInputs().Enabled())
+	t.inlineTextInput.SetHorizontalAlign(model.TextInputs().HorizontalAlign())
+	t.inlineTextInput.textInput.SetVerticalAlign(model.TextInputs().VerticalAlign())
+	t.inlineTextInput.textInput.SetEditable(model.TextInputs().Editable())
+	context.SetEnabled(&t.inlineTextInput, model.TextInputs().Enabled())
 	context.SetSize(&t.inlineTextInput, image.Pt(width, guigui.AutoSize), t)
 
 	t.textInputForm.SetItems([]basicwidget.FormItem{
@@ -159,12 +155,12 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 	t.horizontalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.horizontalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
-			t.model.TextInputs().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
+			model.TextInputs().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
 			return
 		}
-		t.model.TextInputs().SetHorizontalAlign(item.ID)
+		model.TextInputs().SetHorizontalAlign(item.ID)
 	})
-	t.horizontalAlignSegmentedControl.SelectItemByID(t.model.TextInputs().HorizontalAlign())
+	t.horizontalAlignSegmentedControl.SelectItemByID(model.TextInputs().HorizontalAlign())
 
 	t.verticalAlignText.SetValue("Vertical align")
 	t.verticalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.VerticalAlign]{
@@ -184,30 +180,30 @@ func (t *TextInputs) Build(context *guigui.Context, appender *guigui.ChildWidget
 	t.verticalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.verticalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
-			t.model.TextInputs().SetVerticalAlign(basicwidget.VerticalAlignTop)
+			model.TextInputs().SetVerticalAlign(basicwidget.VerticalAlignTop)
 			return
 		}
-		t.model.TextInputs().SetVerticalAlign(item.ID)
+		model.TextInputs().SetVerticalAlign(item.ID)
 	})
-	t.verticalAlignSegmentedControl.SelectItemByID(t.model.TextInputs().VerticalAlign())
+	t.verticalAlignSegmentedControl.SelectItemByID(model.TextInputs().VerticalAlign())
 
 	t.autoWrapText.SetValue("Auto wrap")
 	t.autoWrapToggle.SetOnValueChanged(func(value bool) {
-		t.model.TextInputs().SetAutoWrap(value)
+		model.TextInputs().SetAutoWrap(value)
 	})
-	t.autoWrapToggle.SetValue(t.model.TextInputs().AutoWrap())
+	t.autoWrapToggle.SetValue(model.TextInputs().AutoWrap())
 
 	t.editableText.SetValue("Editable")
 	t.editableToggle.SetOnValueChanged(func(value bool) {
-		t.model.TextInputs().SetEditable(value)
+		model.TextInputs().SetEditable(value)
 	})
-	t.editableToggle.SetValue(t.model.TextInputs().Editable())
+	t.editableToggle.SetValue(model.TextInputs().Editable())
 
 	t.enabledText.SetValue("Enabled")
 	t.enabledToggle.SetOnValueChanged(func(value bool) {
-		t.model.TextInputs().SetEnabled(value)
+		model.TextInputs().SetEnabled(value)
 	})
-	t.enabledToggle.SetValue(t.model.TextInputs().Enabled())
+	t.enabledToggle.SetValue(model.TextInputs().Enabled())
 
 	t.configForm.SetItems([]basicwidget.FormItem{
 		{

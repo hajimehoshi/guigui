@@ -31,41 +31,38 @@ type Lists struct {
 	enabledText      basicwidget.Text
 	enabledToggle    basicwidget.Toggle
 
-	model *Model
 	items []basicwidget.ListItem[int]
 }
 
-func (l *Lists) SetModel(model *Model) {
-	l.model = model
-}
-
 func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(l, modelKeyModel).(*Model)
+
 	u := basicwidget.UnitSize(context)
 
 	// Lists
 	l.listText.SetValue("Text list")
 
-	l.list.SetStripeVisible(l.model.Lists().IsStripeVisible())
-	if l.model.Lists().IsHeaderVisible() {
+	l.list.SetStripeVisible(model.Lists().IsStripeVisible())
+	if model.Lists().IsHeaderVisible() {
 		l.list.SetHeaderHeight(u)
 	} else {
 		l.list.SetHeaderHeight(0)
 	}
-	if l.model.Lists().IsFooterVisible() {
+	if model.Lists().IsFooterVisible() {
 		l.list.SetFooterHeight(u)
 	} else {
 		l.list.SetFooterHeight(0)
 	}
 	l.list.SetOnItemsMoved(func(from, count, to int) {
-		idx := l.model.Lists().MoveListItems(from, count, to)
+		idx := model.Lists().MoveListItems(from, count, to)
 		l.list.SelectItemByIndex(idx)
 	})
 
 	l.items = slices.Delete(l.items, 0, len(l.items))
-	l.items = l.model.lists.AppendListItems(l.items)
+	l.items = model.lists.AppendListItems(l.items)
 	l.list.SetItems(l.items)
 	context.SetSize(&l.list, image.Pt(guigui.AutoSize, 6*basicwidget.UnitSize(context)), l)
-	context.SetEnabled(&l.list, l.model.Lists().Enabled())
+	context.SetEnabled(&l.list, model.Lists().Enabled())
 
 	l.listForm.SetItems([]basicwidget.FormItem{
 		{
@@ -77,29 +74,29 @@ func (l *Lists) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	// Configurations
 	l.showStripeText.SetValue("Show stripe")
 	l.showStripeToggle.SetOnValueChanged(func(value bool) {
-		l.model.Lists().SetStripeVisible(value)
+		model.Lists().SetStripeVisible(value)
 	})
-	l.showStripeToggle.SetValue(l.model.Lists().IsStripeVisible())
+	l.showStripeToggle.SetValue(model.Lists().IsStripeVisible())
 	l.showHeaderText.SetValue("Show header")
 	l.showHeaderToggle.SetOnValueChanged(func(value bool) {
-		l.model.Lists().SetHeaderVisible(value)
+		model.Lists().SetHeaderVisible(value)
 	})
-	l.showHeaderToggle.SetValue(l.model.Lists().IsHeaderVisible())
+	l.showHeaderToggle.SetValue(model.Lists().IsHeaderVisible())
 	l.showFooterText.SetValue("Show footer")
 	l.showFooterToggle.SetOnValueChanged(func(value bool) {
-		l.model.Lists().SetFooterVisible(value)
+		model.Lists().SetFooterVisible(value)
 	})
-	l.showFooterToggle.SetValue(l.model.Lists().IsFooterVisible())
+	l.showFooterToggle.SetValue(model.Lists().IsFooterVisible())
 	l.movableText.SetValue("Enable to move items")
-	l.movableToggle.SetValue(l.model.Lists().Movable())
+	l.movableToggle.SetValue(model.Lists().Movable())
 	l.movableToggle.SetOnValueChanged(func(value bool) {
-		l.model.Lists().SetMovable(value)
+		model.Lists().SetMovable(value)
 	})
 	l.enabledText.SetValue("Enabled")
 	l.enabledToggle.SetOnValueChanged(func(value bool) {
-		l.model.Lists().SetEnabled(value)
+		model.Lists().SetEnabled(value)
 	})
-	l.enabledToggle.SetValue(l.model.Lists().Enabled())
+	l.enabledToggle.SetValue(model.Lists().Enabled())
 
 	l.configForm.SetItems([]basicwidget.FormItem{
 		{

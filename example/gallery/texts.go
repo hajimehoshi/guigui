@@ -28,15 +28,11 @@ type Texts struct {
 	editableText                    basicwidget.Text
 	editableToggle                  basicwidget.Toggle
 	sampleText                      basicwidget.Text
-
-	model *Model
-}
-
-func (t *Texts) SetModel(model *Model) {
-	t.model = model
 }
 
 func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(t, modelKeyModel).(*Model)
+
 	imgAlignStart, err := theImageCache.GetMonochrome("format_align_left", context.ColorMode())
 	if err != nil {
 		return err
@@ -80,12 +76,12 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	t.horizontalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.horizontalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
-			t.model.Texts().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
+			model.Texts().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
 			return
 		}
-		t.model.Texts().SetHorizontalAlign(item.ID)
+		model.Texts().SetHorizontalAlign(item.ID)
 	})
-	t.horizontalAlignSegmentedControl.SelectItemByID(t.model.Texts().HorizontalAlign())
+	t.horizontalAlignSegmentedControl.SelectItemByID(model.Texts().HorizontalAlign())
 
 	t.verticalAlignText.SetValue("Vertical align")
 	t.verticalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.VerticalAlign]{
@@ -105,36 +101,36 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	t.verticalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.verticalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
-			t.model.Texts().SetVerticalAlign(basicwidget.VerticalAlignTop)
+			model.Texts().SetVerticalAlign(basicwidget.VerticalAlignTop)
 			return
 		}
-		t.model.Texts().SetVerticalAlign(item.ID)
+		model.Texts().SetVerticalAlign(item.ID)
 	})
-	t.verticalAlignSegmentedControl.SelectItemByID(t.model.Texts().VerticalAlign())
+	t.verticalAlignSegmentedControl.SelectItemByID(model.Texts().VerticalAlign())
 
 	t.autoWrapText.SetValue("Auto wrap")
 	t.autoWrapToggle.SetOnValueChanged(func(value bool) {
-		t.model.Texts().SetAutoWrap(value)
+		model.Texts().SetAutoWrap(value)
 	})
-	t.autoWrapToggle.SetValue(t.model.Texts().AutoWrap())
+	t.autoWrapToggle.SetValue(model.Texts().AutoWrap())
 
 	t.boldText.SetValue("Bold")
 	t.boldToggle.SetOnValueChanged(func(value bool) {
-		t.model.Texts().SetBold(value)
+		model.Texts().SetBold(value)
 	})
-	t.boldToggle.SetValue(t.model.Texts().Bold())
+	t.boldToggle.SetValue(model.Texts().Bold())
 
 	t.selectableText.SetValue("Selectable")
 	t.selectableToggle.SetOnValueChanged(func(checked bool) {
-		t.model.Texts().SetSelectable(checked)
+		model.Texts().SetSelectable(checked)
 	})
-	t.selectableToggle.SetValue(t.model.Texts().Selectable())
+	t.selectableToggle.SetValue(model.Texts().Selectable())
 
 	t.editableText.SetValue("Editable")
 	t.editableToggle.SetOnValueChanged(func(value bool) {
-		t.model.Texts().SetEditable(value)
+		model.Texts().SetEditable(value)
 	})
-	t.editableToggle.SetValue(t.model.Texts().Editable())
+	t.editableToggle.SetValue(model.Texts().Editable())
 
 	t.form.SetItems([]basicwidget.FormItem{
 		{
@@ -164,15 +160,15 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 	})
 
 	t.sampleText.SetMultiline(true)
-	t.sampleText.SetHorizontalAlign(t.model.Texts().HorizontalAlign())
-	t.sampleText.SetVerticalAlign(t.model.Texts().VerticalAlign())
-	t.sampleText.SetAutoWrap(t.model.Texts().AutoWrap())
-	t.sampleText.SetBold(t.model.Texts().Bold())
-	t.sampleText.SetSelectable(t.model.Texts().Selectable())
-	t.sampleText.SetEditable(t.model.Texts().Editable())
+	t.sampleText.SetHorizontalAlign(model.Texts().HorizontalAlign())
+	t.sampleText.SetVerticalAlign(model.Texts().VerticalAlign())
+	t.sampleText.SetAutoWrap(model.Texts().AutoWrap())
+	t.sampleText.SetBold(model.Texts().Bold())
+	t.sampleText.SetSelectable(model.Texts().Selectable())
+	t.sampleText.SetEditable(model.Texts().Editable())
 	t.sampleText.SetOnValueChanged(func(text string, committed bool) {
 		if committed {
-			t.model.Texts().SetText(text)
+			model.Texts().SetText(text)
 		}
 	})
 	t.sampleText.SetOnKeyJustPressed(func(key ebiten.Key) bool {
@@ -185,7 +181,7 @@ func (t *Texts) Build(context *guigui.Context, appender *guigui.ChildWidgetAppen
 		}
 		return false
 	})
-	t.sampleText.SetValue(t.model.Texts().Text())
+	t.sampleText.SetValue(model.Texts().Text())
 
 	u := basicwidget.UnitSize(context)
 	gl := layout.GridLayout{

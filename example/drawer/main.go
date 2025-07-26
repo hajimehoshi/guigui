@@ -15,6 +15,12 @@ import (
 	"github.com/hajimehoshi/guigui/layout"
 )
 
+type modelKey int
+
+const (
+	modelKeyModel modelKey = iota
+)
+
 const dummyText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 type Root struct {
@@ -29,10 +35,17 @@ type Root struct {
 	model Model
 }
 
+func (r *Root) Model(key any) any {
+	switch key {
+	case modelKeyModel:
+		return &r.model
+	default:
+		return nil
+	}
+}
+
 func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
-
-	r.toolbar.SetModel(&r.model)
 
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),

@@ -18,6 +18,12 @@ import (
 	"github.com/hajimehoshi/guigui/layout"
 )
 
+type modelKey int
+
+const (
+	modelKeyModel modelKey = iota
+)
+
 type Root struct {
 	guigui.DefaultWidget
 
@@ -48,18 +54,19 @@ func (r *Root) updateFontFaceSources(context *guigui.Context) {
 	basicwidget.SetFaceSources(r.faceSourceEntries)
 }
 
+func (r *Root) Model(key any) any {
+	switch key {
+	case modelKeyModel:
+		return &r.model
+	default:
+		return nil
+	}
+}
+
 func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	r.updateFontFaceSources(context)
 
 	appender.AppendChildWidgetWithBounds(&r.background, context.Bounds(r))
-
-	r.sidebar.SetModel(&r.model)
-	r.buttons.SetModel(&r.model)
-	r.texts.SetModel(&r.model)
-	r.textInputs.SetModel(&r.model)
-	r.numberInputs.SetModel(&r.model)
-	r.lists.SetModel(&r.model)
-	r.tables.SetModel(&r.model)
 
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),

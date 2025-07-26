@@ -26,16 +26,13 @@ type Tables struct {
 	enabledText      basicwidget.Text
 	enabledToggle    basicwidget.Toggle
 
-	model            *Model
 	tableItems       []basicwidget.TableItem[int]
 	tableItemWidgets []guigui.Widget
 }
 
-func (t *Tables) SetModel(model *Model) {
-	t.model = model
-}
-
 func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(t, modelKeyModel).(*Model)
+
 	u := basicwidget.UnitSize(context)
 	t.table.SetColumns([]basicwidget.TableColumn{
 		{
@@ -67,19 +64,19 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 	// Prepare widgets for table items.
 	// Use slices.Grow and slices.Delete not to break the existing widgets.
 	n := 4
-	if newNum := n * t.model.Tables().TableItemCount(); len(t.tableItemWidgets) < newNum {
+	if newNum := n * model.Tables().TableItemCount(); len(t.tableItemWidgets) < newNum {
 		t.tableItemWidgets = slices.Grow(t.tableItemWidgets, newNum-len(t.tableItemWidgets))[:newNum]
 	} else {
 		t.tableItemWidgets = slices.Delete(t.tableItemWidgets, newNum, len(t.tableItemWidgets))
 	}
-	for i := range t.model.Tables().TableItemCount() {
+	for i := range model.Tables().TableItemCount() {
 		for j := range n {
 			if t.tableItemWidgets[n*i+j] == nil {
 				t.tableItemWidgets[n*i+j] = &basicwidget.Text{}
 			}
 		}
 	}
-	for i, item := range t.model.Tables().TableItems() {
+	for i, item := range model.Tables().TableItems() {
 		text := t.tableItemWidgets[n*i].(*basicwidget.Text)
 		text.SetValue(strconv.Itoa(item.ID))
 		text.SetHorizontalAlign(basicwidget.HorizontalAlignRight)
@@ -100,44 +97,44 @@ func (t *Tables) Build(context *guigui.Context, appender *guigui.ChildWidgetAppe
 
 		t.tableItems = append(t.tableItems, basicwidget.TableItem[int]{
 			Contents: t.tableItemWidgets[n*i : n*(i+1)],
-			Movable:  t.model.Tables().Movable(),
+			Movable:  model.Tables().Movable(),
 			ID:       item.ID,
 		})
 	}
 	t.table.SetItems(t.tableItems)
 	// Set the text colors after setting the items, or ItemTextColor will not work correctly.
-	for i := range t.model.Tables().TableItemCount() {
+	for i := range model.Tables().TableItemCount() {
 		for j := range n {
 			text := t.tableItemWidgets[n*i+j].(*basicwidget.Text)
 			text.SetColor(t.table.ItemTextColor(context, i))
 		}
 	}
-	if t.model.Tables().IsFooterVisible() {
+	if model.Tables().IsFooterVisible() {
 		t.table.SetFooterHeight(u)
 	} else {
 		t.table.SetFooterHeight(0)
 	}
-	context.SetEnabled(&t.table, t.model.Tables().Enabled())
+	context.SetEnabled(&t.table, model.Tables().Enabled())
 	t.table.SetOnItemsMoved(func(from, count, to int) {
-		idx := t.model.Tables().MoveTableItems(from, count, to)
+		idx := model.Tables().MoveTableItems(from, count, to)
 		t.table.SelectItemByIndex(idx)
 	})
 
 	// Configurations
 	t.showFooterText.SetValue("Show footer")
 	t.showFooterToggle.SetOnValueChanged(func(value bool) {
-		t.model.Tables().SetFooterVisible(value)
+		model.Tables().SetFooterVisible(value)
 	})
 	t.movableText.SetValue("Enable to move items")
-	t.movableToggle.SetValue(t.model.Tables().Movable())
+	t.movableToggle.SetValue(model.Tables().Movable())
 	t.movableToggle.SetOnValueChanged(func(value bool) {
-		t.model.Tables().SetMovable(value)
+		model.Tables().SetMovable(value)
 	})
 	t.enabledText.SetValue("Enabled")
 	t.enabledToggle.SetOnValueChanged(func(value bool) {
-		t.model.Tables().SetEnabled(value)
+		model.Tables().SetEnabled(value)
 	})
-	t.enabledToggle.SetValue(t.model.Tables().Enabled())
+	t.enabledToggle.SetValue(model.Tables().Enabled())
 
 	t.configForm.SetItems([]basicwidget.FormItem{
 		{

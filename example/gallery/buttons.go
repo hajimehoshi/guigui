@@ -33,20 +33,16 @@ type Buttons struct {
 	configForm    basicwidget.Form
 	enabledText   basicwidget.Text
 	enabledToggle basicwidget.Toggle
-
-	model *Model
-}
-
-func (b *Buttons) SetModel(model *Model) {
-	b.model = model
 }
 
 func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(b, modelKeyModel).(*Model)
+
 	u := basicwidget.UnitSize(context)
 
 	b.buttonText.SetValue("Button")
 	b.button.SetText("Button")
-	context.SetEnabled(&b.button, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.button, model.Buttons().Enabled())
 
 	b.textIconButton1Text.SetValue("Button w/ text and icon (1)")
 	b.textIconButton1.SetText("Button")
@@ -55,14 +51,14 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		return err
 	}
 	b.textIconButton1.SetIcon(img)
-	context.SetEnabled(&b.textIconButton1, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.textIconButton1, model.Buttons().Enabled())
 	context.SetSize(&b.textIconButton1, image.Pt(6*u, guigui.AutoSize), b)
 
 	b.textIconButton2Text.SetValue("Button w/ text and icon (2)")
 	b.textIconButton2.SetText("Button")
 	b.textIconButton2.SetIcon(img)
 	b.textIconButton2.SetIconAlign(basicwidget.IconAlignEnd)
-	context.SetEnabled(&b.textIconButton2, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.textIconButton2, model.Buttons().Enabled())
 	context.SetSize(&b.textIconButton2, image.Pt(6*u, guigui.AutoSize), b)
 
 	b.imageButtonText.SetValue("Image button")
@@ -71,7 +67,7 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		return err
 	}
 	b.imageButton.SetIcon(img)
-	context.SetEnabled(&b.imageButton, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.imageButton, model.Buttons().Enabled())
 	context.SetSize(&b.imageButton, image.Pt(2*u, 2*u), b)
 
 	b.segmentedControlHText.SetValue("Segmented control (Horizontal)")
@@ -87,7 +83,7 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		},
 	})
 	b.segmentedControlH.SetDirection(basicwidget.SegmentedControlDirectionHorizontal)
-	context.SetEnabled(&b.segmentedControlH, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.segmentedControlH, model.Buttons().Enabled())
 
 	b.segmentedControlVText.SetValue("Segmented control (Vertical)")
 	b.segmentedControlV.SetItems([]basicwidget.SegmentedControlItem[int]{
@@ -102,10 +98,10 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 		},
 	})
 	b.segmentedControlV.SetDirection(basicwidget.SegmentedControlDirectionVertical)
-	context.SetEnabled(&b.segmentedControlV, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.segmentedControlV, model.Buttons().Enabled())
 
 	b.toggleText.SetValue("Toggle")
-	context.SetEnabled(&b.toggle, b.model.Buttons().Enabled())
+	context.SetEnabled(&b.toggle, model.Buttons().Enabled())
 
 	b.buttonsForm.SetItems([]basicwidget.FormItem{
 		{
@@ -140,9 +136,9 @@ func (b *Buttons) Build(context *guigui.Context, appender *guigui.ChildWidgetApp
 
 	b.enabledText.SetValue("Enabled")
 	b.enabledToggle.SetOnValueChanged(func(enabled bool) {
-		b.model.Buttons().SetEnabled(enabled)
+		model.Buttons().SetEnabled(enabled)
 	})
-	b.enabledToggle.SetValue(b.model.Buttons().Enabled())
+	b.enabledToggle.SetValue(model.Buttons().Enabled())
 
 	b.configForm.SetItems([]basicwidget.FormItem{
 		{

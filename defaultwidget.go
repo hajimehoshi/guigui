@@ -15,6 +15,10 @@ type DefaultWidget struct {
 
 var _ Widget = (*DefaultWidget)(nil)
 
+func (*DefaultWidget) Model(key any) any {
+	return nil
+}
+
 func (*DefaultWidget) BeforeBuild(context *Context) {
 }
 
@@ -41,7 +45,7 @@ func (*DefaultWidget) CursorShape(context *Context) (ebiten.CursorShapeType, boo
 func (*DefaultWidget) Draw(context *Context, dst *ebiten.Image) {
 }
 
-func (d *DefaultWidget) ZDelta() int {
+func (*DefaultWidget) ZDelta() int {
 	return 0
 }
 
@@ -52,7 +56,7 @@ func (d *DefaultWidget) DefaultSize(context *Context) image.Point {
 	return image.Pt(int(144*context.Scale()), int(144*context.Scale()))
 }
 
-func (d *DefaultWidget) PassThrough() bool {
+func (*DefaultWidget) PassThrough() bool {
 	return false
 }
 

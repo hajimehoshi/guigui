@@ -18,6 +18,12 @@ import (
 	"github.com/hajimehoshi/guigui/layout"
 )
 
+type modelKey int
+
+const (
+	modelKeyModel modelKey = iota
+)
+
 type Root struct {
 	guigui.DefaultWidget
 
@@ -42,6 +48,15 @@ func (r *Root) updateFontFaceSources(context *guigui.Context) {
 	basicwidget.SetFaceSources(r.faceSourceEntries)
 }
 
+func (r *Root) Model(key any) any {
+	switch key {
+	case modelKeyModel:
+		return &r.model
+	default:
+		return nil
+	}
+}
+
 func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	r.updateFontFaceSources(context)
 
@@ -61,7 +76,6 @@ func (r *Root) Build(context *guigui.Context, appender *guigui.ChildWidgetAppend
 	})
 	context.SetEnabled(&r.createButton, r.model.CanAddTask(r.textInput.Value()))
 
-	r.tasksPanelContent.SetModel(&r.model)
 	r.tasksPanelContent.SetOnDeleted(func(id int) {
 		r.model.DeleteTaskByID(id)
 	})
@@ -160,16 +174,10 @@ type tasksPanelContent struct {
 	taskWidgets []taskWidget
 
 	onDeleted func(id int)
-
-	model *Model
 }
 
 func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 	t.onDeleted = f
-}
-
-func (t *tasksPanelContent) SetModel(model *Model) {
-	t.model = model
 }
 
 func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
@@ -177,13 +185,15 @@ func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
 }
 
 func (t *tasksPanelContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
-	if t.model.TaskCount() > len(t.taskWidgets) {
-		t.taskWidgets = slices.Grow(t.taskWidgets, t.model.TaskCount()-len(t.taskWidgets))[:t.model.TaskCount()]
+	model := context.Model(t, modelKeyModel).(*Model)
+
+	if model.TaskCount() > len(t.taskWidgets) {
+		t.taskWidgets = slices.Grow(t.taskWidgets, model.TaskCount()-len(t.taskWidgets))[:model.TaskCount()]
 	} else {
-		t.taskWidgets = slices.Delete(t.taskWidgets, t.model.TaskCount(), len(t.taskWidgets))
+		t.taskWidgets = slices.Delete(t.taskWidgets, model.TaskCount(), len(t.taskWidgets))
 	}
-	for i := range t.model.TaskCount() {
-		task := t.model.TaskByIndex(i)
+	for i := range model.TaskCount() {
+		task := model.TaskByIndex(i)
 		t.taskWidgets[i].SetOnDoneButtonPressed(func() {
 			if t.onDeleted != nil {
 				t.onDeleted(task.ID)

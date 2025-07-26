@@ -459,3 +459,12 @@ func (c *Context) clearVisibleBoundsCacheForWidget(widget Widget) {
 		c.clearVisibleBoundsCacheForWidget(child)
 	}
 }
+
+func (c *Context) Model(widget Widget, key any) any {
+	for w := widget; w != nil; w = w.widgetState().parent {
+		if v := w.Model(key); v != nil {
+			return v
+		}
+	}
+	return nil
+}

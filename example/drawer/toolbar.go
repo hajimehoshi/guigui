@@ -18,10 +18,6 @@ type Toolbar struct {
 	content toolbarContent
 }
 
-func (t *Toolbar) SetModel(model *Model) {
-	t.content.model = model
-}
-
 func (t *Toolbar) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
 	t.panel.SetStyle(basicwidget.PanelStyleSide)
 	t.panel.SetBorder(basicwidget.PanelBorder{
@@ -43,11 +39,11 @@ type toolbarContent struct {
 
 	leftPanelButton  basicwidget.Button
 	rightPanelButton basicwidget.Button
-
-	model *Model
 }
 
 func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWidgetAppender) error {
+	model := context.Model(t, modelKeyModel).(*Model)
+
 	u := basicwidget.UnitSize(context)
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 4),
@@ -57,7 +53,7 @@ func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWi
 			layout.FixedSize(u * 3 / 2),
 		},
 	}
-	if t.model.IsLeftPanelOpen() {
+	if model.IsLeftPanelOpen() {
 		img, err := theImageCache.GetMonochrome("left_panel_close", context.ColorMode())
 		if err != nil {
 			return err
@@ -70,7 +66,7 @@ func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWi
 		}
 		t.leftPanelButton.SetIcon(img)
 	}
-	if t.model.IsRightPanelOpen() {
+	if model.IsRightPanelOpen() {
 		img, err := theImageCache.GetMonochrome("right_panel_close", context.ColorMode())
 		if err != nil {
 			return err
@@ -84,10 +80,10 @@ func (t *toolbarContent) Build(context *guigui.Context, appender *guigui.ChildWi
 		t.rightPanelButton.SetIcon(img)
 	}
 	t.leftPanelButton.SetOnDown(func() {
-		t.model.SetLeftPanelOpen(!t.model.IsLeftPanelOpen())
+		model.SetLeftPanelOpen(!model.IsLeftPanelOpen())
 	})
 	t.rightPanelButton.SetOnDown(func() {
-		t.model.SetRightPanelOpen(!t.model.IsRightPanelOpen())
+		model.SetRightPanelOpen(!model.IsRightPanelOpen())
 	})
 	appender.AppendChildWidgetWithBounds(&t.leftPanelButton, gl.CellBounds(0, 0))
 	appender.AppendChildWidgetWithBounds(&t.rightPanelButton, gl.CellBounds(2, 0))
