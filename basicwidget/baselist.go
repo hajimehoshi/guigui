@@ -132,8 +132,6 @@ func (b *baseList[T]) BeforeBuild(context *guigui.Context) {
 }
 
 func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&b.scrollOverlay)
-
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
@@ -141,10 +139,10 @@ func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guig
 		}
 		appender.AppendChildWidget(item.Content)
 	}
-
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
 		appender.AppendChildWidget(&b.listFrame)
 	}
+	appender.AppendChildWidget(&b.scrollOverlay)
 }
 
 func (b *baseList[T]) Build(context *guigui.Context) error {
