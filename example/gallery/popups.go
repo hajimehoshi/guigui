@@ -39,7 +39,6 @@ func (p *Popups) AppendChildWidgets(context *guigui.Context, appender *guigui.Ch
 	}
 	appender.AppendChildWidget(&p.simplePopup)
 	appender.AppendChildWidget(&p.contextMenuPopup)
-	p.simplePopup.SetContent(&p.simplePopupContent)
 }
 
 func (p *Popups) Build(context *guigui.Context) error {
@@ -92,6 +91,7 @@ func (p *Popups) Build(context *guigui.Context) error {
 	}
 
 	p.simplePopupContent.popup = &p.simplePopup
+	p.simplePopup.SetContent(&p.simplePopupContent)
 	p.simplePopup.SetBackgroundBlurred(p.blurBackgroundToggle.Value())
 	p.simplePopup.SetCloseByClickingOutside(p.closeByClickingOutsideToggle.Value())
 	p.simplePopup.SetAnimationDuringFade(true)

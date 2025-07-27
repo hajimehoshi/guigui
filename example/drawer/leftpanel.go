@@ -17,7 +17,6 @@ type LeftPanel struct {
 
 func (l *LeftPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&l.panel)
-	l.panel.SetContent(&l.content)
 }
 
 func (l *LeftPanel) Build(context *guigui.Context) error {
@@ -26,6 +25,7 @@ func (l *LeftPanel) Build(context *guigui.Context) error {
 		End: true,
 	})
 	context.SetSize(&l.content, context.ActualSize(l), l)
+	l.panel.SetContent(&l.content)
 
 	context.SetBounds(&l.panel, context.Bounds(l), l)
 	return nil
