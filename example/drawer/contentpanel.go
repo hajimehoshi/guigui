@@ -17,12 +17,11 @@ type ContentPanel struct {
 
 func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&c.panel)
+	c.panel.SetContent(&c.content)
 }
 
 func (c *ContentPanel) Build(context *guigui.Context) error {
 	context.SetSize(&c.content, context.ActualSize(c), c)
-	c.panel.SetContent(&c.content)
-
 	context.SetBounds(&c.panel, context.Bounds(c), c)
 	return nil
 }

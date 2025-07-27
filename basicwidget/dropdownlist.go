@@ -46,7 +46,6 @@ func (d *DropdownList[T]) updateButtonContent() {
 		d.buttonContent.content = nil
 		d.buttonContent.text.SetValue("")
 	}
-	d.button.SetContent(&d.buttonContent)
 }
 
 func (d *DropdownList[T]) BeforeBuild(context *guigui.Context) {
@@ -55,6 +54,7 @@ func (d *DropdownList[T]) BeforeBuild(context *guigui.Context) {
 
 func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&d.button)
+	d.button.SetContent(&d.buttonContent)
 	appender.AppendChildWidget(&d.popupMenu)
 }
 

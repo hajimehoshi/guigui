@@ -20,6 +20,7 @@ type Toolbar struct {
 
 func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&t.panel)
+	t.panel.SetContent(&t.content)
 }
 
 func (t *Toolbar) Build(context *guigui.Context) error {
@@ -28,7 +29,6 @@ func (t *Toolbar) Build(context *guigui.Context) error {
 		Bottom: true,
 	})
 	context.SetSize(&t.content, context.ActualSize(t), t)
-	t.panel.SetContent(&t.content)
 	context.SetBounds(&t.panel, context.Bounds(t), t)
 
 	return nil

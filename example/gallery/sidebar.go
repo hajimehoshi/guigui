@@ -17,6 +17,7 @@ type Sidebar struct {
 
 func (s *Sidebar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&s.panel)
+	s.panel.SetContent(&s.panelContent)
 }
 
 func (s *Sidebar) Build(context *guigui.Context) error {
@@ -25,7 +26,6 @@ func (s *Sidebar) Build(context *guigui.Context) error {
 		End: true,
 	})
 	context.SetSize(&s.panelContent, context.ActualSize(s), s)
-	s.panel.SetContent(&s.panelContent)
 
 	context.SetBounds(&s.panel, context.Bounds(s), s)
 

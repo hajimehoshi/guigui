@@ -62,6 +62,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	appender.AppendChildWidget(&r.textInput)
 	appender.AppendChildWidget(&r.createButton)
 	appender.AppendChildWidget(&r.tasksPanel)
+	r.tasksPanel.SetContent(&r.tasksPanelContent)
 }
 
 func (r *Root) Build(context *guigui.Context) error {
@@ -86,7 +87,6 @@ func (r *Root) Build(context *guigui.Context) error {
 	r.tasksPanelContent.SetOnDeleted(func(id int) {
 		r.model.DeleteTaskByID(id)
 	})
-	r.tasksPanel.SetContent(&r.tasksPanelContent)
 	r.tasksPanel.SetAutoBorder(true)
 
 	u := basicwidget.UnitSize(context)
