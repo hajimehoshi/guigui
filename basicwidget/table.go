@@ -119,7 +119,7 @@ func (t *Table[T]) Build(context *guigui.Context) error {
 		for _, width := range t.columnWidthsInPixels {
 			contentWidth += width
 		}
-		contentWidth += (len(t.columnWidthsInPixels) + 1) * tableColumnGap(context)
+		contentWidth += (len(t.columnWidthsInPixels)-1)*tableColumnGap(context) + 2*listItemPadding(context)
 	}
 	t.list.SetContentWidth(contentWidth)
 
