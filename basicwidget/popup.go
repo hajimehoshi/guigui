@@ -108,12 +108,12 @@ func (p *Popup) BeforeBuild(context *guigui.Context) {
 }
 
 func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	if p.openingRate() > 0 {
-		appender.AppendChildWidget(&p.background)
-		appender.AppendChildWidget(&p.shadow)
-		appender.AppendChildWidget(&p.content)
-		appender.AppendChildWidget(&p.frame)
-	}
+	// Append children even if openingRate is 0, so that the Build methods of the children are invoked.
+	// The children's state might affect their size and position.
+	appender.AppendChildWidget(&p.background)
+	appender.AppendChildWidget(&p.shadow)
+	appender.AppendChildWidget(&p.content)
+	appender.AppendChildWidget(&p.frame)
 }
 
 func (p *Popup) Build(context *guigui.Context) error {
@@ -138,12 +138,10 @@ func (p *Popup) Build(context *guigui.Context) error {
 	context.SetOpacity(&p.content, p.openingRate())
 	context.SetOpacity(&p.frame, p.openingRate())
 
-	if p.openingRate() > 0 {
-		context.SetBounds(&p.background, context.AppBounds(), p)
-		context.SetBounds(&p.shadow, context.AppBounds(), p)
-		context.SetBounds(&p.content, p.ContentBounds(context), p)
-		context.SetBounds(&p.frame, context.AppBounds(), p)
-	}
+	context.SetBounds(&p.background, context.AppBounds(), p)
+	context.SetBounds(&p.shadow, context.AppBounds(), p)
+	context.SetBounds(&p.content, p.ContentBounds(context), p)
+	context.SetBounds(&p.frame, context.AppBounds(), p)
 
 	return nil
 }
