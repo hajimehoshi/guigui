@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"image"
 	"maps"
+	"reflect"
 	"runtime"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -91,10 +93,12 @@ type widgetState struct {
 	children []Widget
 	prev     widgetsAndVisibleBounds
 
-	hidden       bool
-	disabled     bool
-	transparency float64
-	customDraw   CustomDrawFunc
+	hidden        bool
+	disabled      bool
+	transparency  float64
+	customDraw    CustomDrawFunc
+	eventHandlers map[string]any
+	tmpArgs       []reflect.Value
 
 	offscreen *ebiten.Image
 
@@ -177,6 +181,43 @@ func requestRedraw(widgetState *widgetState) {
 			widgetState.dirtyAt = fmt.Sprintf("%s:%d", file, line)
 		}
 	}
+}
+
+func RegisterEventHandler(widget Widget, eventName string, handler any) {
+	widgetState := widget.widgetState()
+	if widgetState.eventHandlers == nil {
+		widgetState.eventHandlers = map[string]any{}
+	}
+	widgetState.eventHandlers[eventName] = handler
+}
+
+func IsEventHandlerRegistered(widget Widget, eventName string) bool {
+	widgetState := widget.widgetState()
+	if widgetState.eventHandlers == nil {
+		return false
+	}
+	_, ok := widgetState.eventHandlers[eventName]
+	return ok
+}
+
+func InvokeEventHandler(widget Widget, eventName string, args ...any) ([]any, bool) {
+	widgetState := widget.widgetState()
+	hanlder, ok := widgetState.eventHandlers[eventName]
+	if !ok {
+		return nil, false
+	}
+	f := reflect.ValueOf(hanlder)
+	widgetState.tmpArgs = slices.Delete(widgetState.tmpArgs, 0, len(widgetState.tmpArgs))
+	for _, arg := range args {
+		widgetState.tmpArgs = append(widgetState.tmpArgs, reflect.ValueOf(arg))
+	}
+	returns := f.Call(widgetState.tmpArgs)
+	widgetState.tmpArgs = slices.Delete(widgetState.tmpArgs, 0, len(widgetState.tmpArgs))
+	var v []any
+	for _, ret := range returns {
+		v = append(v, ret.Interface())
+	}
+	return v, true
 }
 
 // noCopy is a struct to warn that the struct should not be copied.

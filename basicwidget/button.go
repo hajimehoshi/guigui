@@ -84,10 +84,6 @@ func (b *Button) setKeepPressed(keep bool) {
 	b.button.setKeepPressed(keep)
 }
 
-func (b *Button) BeforeBuild(context *guigui.Context) {
-	b.button.ResetEventHandlers()
-}
-
 func (b *Button) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&b.button)
 	if b.content != nil {

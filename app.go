@@ -353,6 +353,7 @@ func (a *app) build() error {
 	_ = traverseWidget(a.root, func(widget Widget) error {
 		// TODO: Rename this? Now this is used only to reset callbacks.
 		widget.BeforeBuild(&a.context)
+		clear(widget.widgetState().eventHandlers)
 		return nil
 	})
 

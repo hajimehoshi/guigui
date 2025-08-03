@@ -14,6 +14,10 @@ import (
 	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
 )
 
+const (
+	toggleEventValueChanged = "valueChanged"
+)
+
 type Toggle struct {
 	guigui.DefaultWidget
 
@@ -23,12 +27,10 @@ type Toggle struct {
 	prevHovered  bool
 
 	count int
-
-	onValueChanged func(value bool)
 }
 
 func (t *Toggle) SetOnValueChanged(f func(value bool)) {
-	t.onValueChanged = f
+	guigui.RegisterEventHandler(t, toggleEventValueChanged, f)
 }
 
 func (t *Toggle) Value() bool {
@@ -46,18 +48,13 @@ func (t *Toggle) SetValue(value bool) {
 	}
 	guigui.RequestRedraw(t)
 
-	if t.onValueChanged != nil {
-		t.onValueChanged(value)
-	}
+	guigui.InvokeEventHandler(t, toggleEventValueChanged, value)
 }
 
 func toggleMaxCount() int {
 	return ebiten.TPS() / 12
 }
 
-func (t *Toggle) BeforeBuild(context *guigui.Context) {
-	t.onValueChanged = nil
-}
 
 func (t *Toggle) Build(context *guigui.Context) error {
 	if hovered := t.isHovered(context); t.prevHovered != hovered {

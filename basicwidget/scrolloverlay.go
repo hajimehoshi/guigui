@@ -14,6 +14,10 @@ import (
 	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
 )
 
+const (
+	scrollOverlayEventScroll = "scroll"
+)
+
 func scrollBarFadingInTime() int {
 	return ebiten.TPS() / 15
 }
@@ -64,12 +68,10 @@ type ScrollOverlay struct {
 	onceBuilt               bool
 
 	barCount int
-
-	onScroll func(offsetX, offsetY float64)
 }
 
 func (s *ScrollOverlay) SetOnScroll(f func(offsetX, offsetY float64)) {
-	s.onScroll = f
+	guigui.RegisterEventHandler(s, scrollOverlayEventScroll, f)
 }
 
 func (s *ScrollOverlay) Reset() {
@@ -185,9 +187,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 			}
 			s.adjustOffset(context)
 			if prevOffsetX != s.offsetX || prevOffsetY != s.offsetY {
-				if s.onScroll != nil {
-					s.onScroll(s.offsetX, s.offsetY)
-				}
+				guigui.InvokeEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
 				guigui.RequestRedraw(s)
 			}
 		}
@@ -210,9 +210,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 		s.offsetY += dy * 4 * context.Scale()
 		s.adjustOffset(context)
 		if prevOffsetX != s.offsetX || prevOffsetY != s.offsetY {
-			if s.onScroll != nil {
-				s.onScroll(s.offsetX, s.offsetY)
-			}
+			guigui.InvokeEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
 			guigui.RequestRedraw(s)
 			return guigui.HandleInputByWidget(s)
 		}
@@ -284,9 +282,6 @@ func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
 	return false
 }
 
-func (s *ScrollOverlay) BeforeBuild(context *guigui.Context) {
-	s.onScroll = nil
-}
 
 func (s *ScrollOverlay) Build(context *guigui.Context) error {
 	cs := context.ActualSize(s)

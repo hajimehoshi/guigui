@@ -131,20 +131,20 @@ type taskWidget struct {
 	doneButton basicwidget.Button
 	text       basicwidget.Text
 
-	onDoneButtonPressed func()
 }
 
+const (
+	taskWidgetEventDoneButtonPressed = "doneButtonPressed"
+)
+
 func (t *taskWidget) SetOnDoneButtonPressed(f func()) {
-	t.onDoneButtonPressed = f
+	guigui.RegisterEventHandler(t, taskWidgetEventDoneButtonPressed, f)
 }
 
 func (t *taskWidget) SetText(text string) {
 	t.text.SetValue(text)
 }
 
-func (t *taskWidget) BeforeBuild(context *guigui.Context) {
-	t.onDoneButtonPressed = nil
-}
 
 func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&t.doneButton)
@@ -154,9 +154,7 @@ func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigu
 func (t *taskWidget) Build(context *guigui.Context) error {
 	t.doneButton.SetText("Done")
 	t.doneButton.SetOnUp(func() {
-		if t.onDoneButtonPressed != nil {
-			t.onDoneButtonPressed()
-		}
+		guigui.InvokeEventHandler(t, taskWidgetEventDoneButtonPressed)
 	})
 
 	t.text.SetVerticalAlign(basicwidget.VerticalAlignMiddle)
@@ -185,16 +183,16 @@ type tasksPanelContent struct {
 
 	taskWidgets []taskWidget
 
-	onDeleted func(id int)
 }
+
+const (
+	tasksPanelContentEventDeleted = "deleted"
+)
 
 func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
-	t.onDeleted = f
+	guigui.RegisterEventHandler(t, tasksPanelContentEventDeleted, f)
 }
 
-func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
-	t.onDeleted = nil
-}
 
 func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	model := context.Model(t, modelKeyModel).(*Model)
@@ -213,9 +211,7 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 	for i := range model.TaskCount() {
 		task := model.TaskByIndex(i)
 		t.taskWidgets[i].SetOnDoneButtonPressed(func() {
-			if t.onDeleted != nil {
-				t.onDeleted(task.ID)
-			}
+			guigui.InvokeEventHandler(t, tasksPanelContentEventDeleted, task.ID)
 		})
 		t.taskWidgets[i].SetText(task.Text)
 	}

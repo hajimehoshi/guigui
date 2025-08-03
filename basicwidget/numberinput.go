@@ -46,15 +46,15 @@ func (n *NumberInput) SetEditable(editable bool) {
 }
 
 func (n *NumberInput) SetOnValueChangedBigInt(f func(value *big.Int, committed bool)) {
-	n.abstractNumberInput.SetOnValueChangedBigInt(f)
+	n.abstractNumberInput.SetOnValueChangedBigInt(n, f)
 }
 
 func (n *NumberInput) SetOnValueChangedInt64(f func(value int64, committed bool)) {
-	n.abstractNumberInput.SetOnValueChangedInt64(f)
+	n.abstractNumberInput.SetOnValueChangedInt64(n, f)
 }
 
 func (n *NumberInput) SetOnValueChangedUint64(f func(value uint64, committed bool)) {
-	n.abstractNumberInput.SetOnValueChangedUint64(f)
+	n.abstractNumberInput.SetOnValueChangedUint64(n, f)
 }
 
 func (n *NumberInput) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool)) {
@@ -101,15 +101,15 @@ func (n *NumberInput) SetValueUint64(value uint64) {
 }
 
 func (n *NumberInput) ForceSetValueBigInt(value *big.Int) {
-	n.abstractNumberInput.ForceSetValueBigInt(value, true)
+	n.abstractNumberInput.ForceSetValueBigInt(n, value, true)
 }
 
 func (n *NumberInput) ForceSetValueInt64(value int64) {
-	n.abstractNumberInput.ForceSetValueInt64(value, true)
+	n.abstractNumberInput.ForceSetValueInt64(n, value, true)
 }
 
 func (n *NumberInput) ForceSetValueUint64(value uint64) {
-	n.abstractNumberInput.ForceSetValueUint64(value, true)
+	n.abstractNumberInput.ForceSetValueUint64(n, value, true)
 }
 
 func (n *NumberInput) MinimumValueBigInt() *big.Int {
@@ -117,15 +117,15 @@ func (n *NumberInput) MinimumValueBigInt() *big.Int {
 }
 
 func (n *NumberInput) SetMinimumValueBigInt(minimum *big.Int) {
-	n.abstractNumberInput.SetMinimumValueBigInt(minimum)
+	n.abstractNumberInput.SetMinimumValueBigInt(n, minimum)
 }
 
 func (n *NumberInput) SetMinimumValueInt64(minimum int64) {
-	n.abstractNumberInput.SetMinimumValueInt64(minimum)
+	n.abstractNumberInput.SetMinimumValueInt64(n, minimum)
 }
 
 func (n *NumberInput) SetMinimumValueUint64(minimum uint64) {
-	n.abstractNumberInput.SetMinimumValueUint64(minimum)
+	n.abstractNumberInput.SetMinimumValueUint64(n, minimum)
 }
 
 func (n *NumberInput) MaximumValueBigInt() *big.Int {
@@ -133,15 +133,15 @@ func (n *NumberInput) MaximumValueBigInt() *big.Int {
 }
 
 func (n *NumberInput) SetMaximumValueBigInt(maximum *big.Int) {
-	n.abstractNumberInput.SetMaximumValueBigInt(maximum)
+	n.abstractNumberInput.SetMaximumValueBigInt(n, maximum)
 }
 
 func (n *NumberInput) SetMaximumValueInt64(maximum int64) {
-	n.abstractNumberInput.SetMaximumValueInt64(maximum)
+	n.abstractNumberInput.SetMaximumValueInt64(n, maximum)
 }
 
 func (n *NumberInput) SetMaximumValueUint64(maximum uint64) {
-	n.abstractNumberInput.SetMaximumValueUint64(maximum)
+	n.abstractNumberInput.SetMaximumValueUint64(n, maximum)
 }
 
 func (n *NumberInput) SetStepBigInt(step *big.Int) {
@@ -160,10 +160,6 @@ func (n *NumberInput) CommitWithCurrentInputValue() {
 	n.textInput.CommitWithCurrentInputValue()
 }
 
-func (n *NumberInput) BeforeBuild(context *guigui.Context) {
-	n.abstractNumberInput.ResetEventHandlers()
-}
-
 func (n *NumberInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&n.textInput)
 	appender.AppendChildWidget(&n.upButton)
@@ -172,11 +168,11 @@ func (n *NumberInput) AppendChildWidgets(context *guigui.Context, appender *guig
 
 func (n *NumberInput) Build(context *guigui.Context) error {
 	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
-		n.abstractNumberInput.SetValueBigInt(n.nextValue, true)
+		n.abstractNumberInput.SetValueBigInt(n, n.nextValue, true)
 		n.nextValue = nil
 	}
 
-	n.abstractNumberInput.SetOnValueChangedString(func(text string, force bool) {
+	n.abstractNumberInput.SetOnValueChangedString(n, func(text string, force bool) {
 		if force {
 			n.textInput.ForceSetValue(text)
 		} else {
@@ -190,7 +186,7 @@ func (n *NumberInput) Build(context *guigui.Context) error {
 	n.textInput.SetTabular(true)
 	n.textInput.setPaddingEnd(UnitSize(context) / 2)
 	n.textInput.SetOnValueChanged(func(text string, committed bool) {
-		n.abstractNumberInput.SetString(text, false, committed)
+		n.abstractNumberInput.SetString(n, text, false, committed)
 		if committed {
 			n.nextValue = nil
 		}
@@ -272,7 +268,7 @@ func (n *NumberInput) increment() {
 		return
 	}
 	n.CommitWithCurrentInputValue()
-	n.abstractNumberInput.Increment()
+	n.abstractNumberInput.Increment(n)
 }
 
 func (n *NumberInput) decrement() {
@@ -280,5 +276,5 @@ func (n *NumberInput) decrement() {
 		return
 	}
 	n.CommitWithCurrentInputValue()
-	n.abstractNumberInput.Decrement()
+	n.abstractNumberInput.Decrement(n)
 }

@@ -10,6 +10,10 @@ import (
 	"github.com/hajimehoshi/guigui"
 )
 
+const (
+	popupMenuEventItemSelected = "itemSelected"
+)
+
 type PopupMenuItem[T comparable] struct {
 	Text         string
 	TextColor    color.Color
@@ -25,12 +29,10 @@ type PopupMenu[T comparable] struct {
 
 	list  List[T]
 	popup Popup
-
-	onItemSelected func(index int)
 }
 
 func (p *PopupMenu[T]) SetOnItemSelected(f func(index int)) {
-	p.onItemSelected = f
+	guigui.RegisterEventHandler(p, popupMenuEventItemSelected, f)
 }
 
 func (p *PopupMenu[T]) SetCheckmarkIndex(index int) {
@@ -41,9 +43,6 @@ func (p *PopupMenu[T]) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, 
 	return p.popup.IsWidgetOrBackgroundHitAtCursor(context, widget)
 }
 
-func (p *PopupMenu[T]) BeforeBuild(context *guigui.Context) {
-	p.onItemSelected = nil
-}
 
 func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&p.popup)
@@ -53,9 +52,7 @@ func (p *PopupMenu[T]) Build(context *guigui.Context) error {
 	p.list.SetStyle(ListStyleMenu)
 	p.list.list.SetOnItemSelected(func(index int) {
 		p.popup.Close()
-		if p.onItemSelected != nil {
-			p.onItemSelected(index)
-		}
+		guigui.InvokeEventHandler(p, popupMenuEventItemSelected, index)
 	})
 
 	p.popup.SetContent(&p.list)

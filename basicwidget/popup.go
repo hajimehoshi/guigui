@@ -16,6 +16,10 @@ import (
 
 const popupZ = 16
 
+const (
+	popupEventClosed = "closed"
+)
+
 func easeOutQuad(t float64) float64 {
 	// https://greweb.me/2012/02/bezier-curve-based-easing-functions-from-concept-to-implementation
 	// easeOutQuad
@@ -54,8 +58,6 @@ type Popup struct {
 	nextContentPosition    image.Point
 	hasNextContentPosition bool
 	openAfterClose         bool
-
-	onClosed func(reason PopupClosedReason)
 }
 
 func (p *Popup) IsOpen() bool {
@@ -100,12 +102,9 @@ func (p *Popup) SetAnimationDuringFade(animateOnFading bool) {
 }
 
 func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
-	p.onClosed = f
+	guigui.RegisterEventHandler(p, popupEventClosed, f)
 }
 
-func (p *Popup) BeforeBuild(context *guigui.Context) {
-	p.onClosed = nil
-}
 
 func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	// Append children even if openingRate is 0, so that the Build methods of the children are invoked.
@@ -228,9 +227,7 @@ func (p *Popup) Tick(context *guigui.Context) error {
 		if p.openingCount == 0 {
 			context.SetFocused(p, false)
 			p.hiding = false
-			if p.onClosed != nil {
-				p.onClosed(p.closedReason)
-			}
+			guigui.InvokeEventHandler(p, popupEventClosed, p.closedReason)
 			p.closedReason = PopupClosedReasonNone
 			if p.openAfterClose {
 				if p.hasNextContentPosition {

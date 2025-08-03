@@ -50,7 +50,7 @@ func (s *SegmentedControl[T]) SetDirection(direction SegmentedControlDirection) 
 }
 
 func (s *SegmentedControl[T]) SetOnItemSelected(f func(index int)) {
-	s.abstractList.SetOnItemSelected(f)
+	s.abstractList.SetOnItemSelected(s, f)
 }
 
 func (s *SegmentedControl[T]) SetItems(items []SegmentedControlItem[T]) {
@@ -70,19 +70,15 @@ func (s *SegmentedControl[T]) ItemByIndex(index int) (SegmentedControlItem[T], b
 }
 
 func (s *SegmentedControl[T]) SelectItemByIndex(index int) {
-	if s.abstractList.SelectItemByIndex(index, false) {
+	if s.abstractList.SelectItemByIndex(s, index, false) {
 		guigui.RequestRedraw(s)
 	}
 }
 
 func (s *SegmentedControl[T]) SelectItemByID(id T) {
-	if s.abstractList.SelectItemByID(id, false) {
+	if s.abstractList.SelectItemByID(s, id, false) {
 		guigui.RequestRedraw(s)
 	}
-}
-
-func (s *SegmentedControl[T]) ResetEventHandlers() {
-	s.abstractList.ResetEventHandlers()
 }
 
 func (s *SegmentedControl[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {

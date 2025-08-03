@@ -10,6 +10,10 @@ import (
 	"github.com/hajimehoshi/guigui"
 )
 
+const (
+	dropdownListEventItemSelected = "itemSelected"
+)
+
 type DropdownListItem[T comparable] struct {
 	Text         string
 	TextColor    color.Color
@@ -26,12 +30,10 @@ type DropdownList[T comparable] struct {
 	button        Button
 	buttonContent dropdownListButtonContent
 	popupMenu     PopupMenu[T]
-
-	onItemSelected func(index int)
 }
 
 func (d *DropdownList[T]) SetOnItemSelected(f func(index int)) {
-	d.onItemSelected = f
+	guigui.RegisterEventHandler(d, dropdownListEventItemSelected, f)
 }
 
 func (d *DropdownList[T]) updateButtonContent() {
@@ -49,9 +51,6 @@ func (d *DropdownList[T]) updateButtonContent() {
 	d.button.SetContent(&d.buttonContent)
 }
 
-func (d *DropdownList[T]) BeforeBuild(context *guigui.Context) {
-	d.onItemSelected = nil
-}
 
 func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&d.button)
@@ -70,9 +69,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context) error {
 	context.SetPosition(&d.button, context.Position(d))
 
 	d.popupMenu.SetOnItemSelected(func(index int) {
-		if d.onItemSelected != nil {
-			d.onItemSelected(index)
-		}
+		guigui.InvokeEventHandler(d, dropdownListEventItemSelected, index)
 	})
 	if !d.popupMenu.IsOpen() {
 		d.popupMenu.SetCheckmarkIndex(d.SelectedItemIndex())
