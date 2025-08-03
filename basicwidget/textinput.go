@@ -40,22 +40,19 @@ type TextInput struct {
 	prevStart   int
 	prevEnd     int
 
+	onTextAndSelectionChanged func(text string, start, end int)
 }
 
-func (t *TextInput) SetOnValueChanged(f func(context *guigui.Context, text string, committed bool)) {
+func (t *TextInput) SetOnValueChanged(f func(text string, committed bool)) {
 	t.text.SetOnValueChanged(f)
 }
 
-func (t *TextInput) SetOnKeyJustPressed(f func(context *guigui.Context, key ebiten.Key) (handled bool)) {
+func (t *TextInput) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool)) {
 	t.text.SetOnKeyJustPressed(f)
 }
 
-const (
-	textInputEventTextAndSelectionChanged = "textAndSelectionChanged"
-)
-
-func (t *TextInput) SetOnTextAndSelectionChanged(f func(context *guigui.Context, text string, start, end int)) {
-	guigui.RegisterEventHandler(t, textInputEventTextAndSelectionChanged, f)
+func (t *TextInput) SetOnTextAndSelectionChanged(f func(text string, start, end int)) {
+	t.onTextAndSelectionChanged = f
 }
 
 func (t *TextInput) Value() string {
@@ -171,6 +168,9 @@ func (t *TextInput) isFocused(context *guigui.Context) bool {
 	return context.IsFocused(t) || context.IsFocused(&t.text)
 }
 
+func (t *TextInput) BeforeBuild(context *guigui.Context) {
+	t.onTextAndSelectionChanged = nil
+}
 
 func (t *TextInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&t.background)

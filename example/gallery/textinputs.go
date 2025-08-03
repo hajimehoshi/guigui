@@ -80,7 +80,7 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 	width := 12 * u
 
 	t.singleLineText.SetValue("Single line")
-	t.singleLineTextInput.SetOnValueChanged(func(context *guigui.Context, text string, committed bool) {
+	t.singleLineTextInput.SetOnValueChanged(func(text string, committed bool) {
 		if committed {
 			model.TextInputs().SetSingleLineText(text)
 		}
@@ -101,7 +101,7 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 	context.SetSize(&t.singleLineWithIconTextInput, image.Pt(width, guigui.AutoSize), t)
 
 	t.multilineText.SetValue("Multiline")
-	t.multilineTextInput.SetOnValueChanged(func(context *guigui.Context, text string, committed bool) {
+	t.multilineTextInput.SetOnValueChanged(func(text string, committed bool) {
 		if committed {
 			model.TextInputs().SetMultilineText(text)
 		}
@@ -157,7 +157,7 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 			ID:   basicwidget.HorizontalAlignEnd,
 		},
 	})
-	t.horizontalAlignSegmentedControl.SetOnItemSelected(func(context *guigui.Context, index int) {
+	t.horizontalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.horizontalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
 			model.TextInputs().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
@@ -182,7 +182,7 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 			ID:   basicwidget.VerticalAlignBottom,
 		},
 	})
-	t.verticalAlignSegmentedControl.SetOnItemSelected(func(context *guigui.Context, index int) {
+	t.verticalAlignSegmentedControl.SetOnItemSelected(func(index int) {
 		item, ok := t.verticalAlignSegmentedControl.ItemByIndex(index)
 		if !ok {
 			model.TextInputs().SetVerticalAlign(basicwidget.VerticalAlignTop)
@@ -193,19 +193,19 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 	t.verticalAlignSegmentedControl.SelectItemByID(model.TextInputs().VerticalAlign())
 
 	t.autoWrapText.SetValue("Auto wrap")
-	t.autoWrapToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
+	t.autoWrapToggle.SetOnValueChanged(func(value bool) {
 		model.TextInputs().SetAutoWrap(value)
 	})
 	t.autoWrapToggle.SetValue(model.TextInputs().AutoWrap())
 
 	t.editableText.SetValue("Editable")
-	t.editableToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
+	t.editableToggle.SetOnValueChanged(func(value bool) {
 		model.TextInputs().SetEditable(value)
 	})
 	t.editableToggle.SetValue(model.TextInputs().Editable())
 
 	t.enabledText.SetValue("Enabled")
-	t.enabledToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
+	t.enabledToggle.SetOnValueChanged(func(value bool) {
 		model.TextInputs().SetEnabled(value)
 	})
 	t.enabledToggle.SetValue(model.TextInputs().Enabled())

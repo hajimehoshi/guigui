@@ -32,15 +32,15 @@ type Button struct {
 	textColor color.Color
 }
 
-func (b *Button) SetOnDown(f func(context *guigui.Context)) {
+func (b *Button) SetOnDown(f func()) {
 	b.button.SetOnDown(f)
 }
 
-func (b *Button) SetOnUp(f func(context *guigui.Context)) {
+func (b *Button) SetOnUp(f func()) {
 	b.button.SetOnUp(f)
 }
 
-func (b *Button) setOnRepeat(f func(context *guigui.Context)) {
+func (b *Button) setOnRepeat(f func()) {
 	b.button.setOnRepeat(f)
 }
 
@@ -82,6 +82,10 @@ func (b *Button) setPairedButton(pair *Button) {
 
 func (b *Button) setKeepPressed(keep bool) {
 	b.button.setKeepPressed(keep)
+}
+
+func (b *Button) BeforeBuild(context *guigui.Context) {
+	b.button.ResetEventHandlers()
 }
 
 func (b *Button) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {

@@ -29,30 +29,30 @@ type Slider struct {
 
 func (s *Slider) SetOnValueChangedBigInt(f func(value *big.Int)) {
 	if f == nil {
-		s.abstractNumberInput.SetOnValueChangedBigInt(s, nil)
+		s.abstractNumberInput.SetOnValueChangedBigInt(nil)
 		return
 	}
-	s.abstractNumberInput.SetOnValueChangedBigInt(s, func(context *guigui.Context, value *big.Int, committed bool) {
+	s.abstractNumberInput.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
 		f(value)
 	})
 }
 
 func (s *Slider) SetOnValueChangedInt64(f func(value int64)) {
 	if f == nil {
-		s.abstractNumberInput.SetOnValueChangedInt64(s, nil)
+		s.abstractNumberInput.SetOnValueChangedInt64(nil)
 		return
 	}
-	s.abstractNumberInput.SetOnValueChangedInt64(s, func(context *guigui.Context, value int64, committed bool) {
+	s.abstractNumberInput.SetOnValueChangedInt64(func(value int64, committed bool) {
 		f(value)
 	})
 }
 
 func (s *Slider) SetOnValueChangedUint64(f func(value uint64)) {
 	if f == nil {
-		s.abstractNumberInput.SetOnValueChangedUint64(s, nil)
+		s.abstractNumberInput.SetOnValueChangedUint64(nil)
 		return
 	}
-	s.abstractNumberInput.SetOnValueChangedUint64(s, func(context *guigui.Context, value uint64, committed bool) {
+	s.abstractNumberInput.SetOnValueChangedUint64(func(value uint64, committed bool) {
 		f(value)
 	})
 }
@@ -71,7 +71,7 @@ func (s *Slider) ValueUint64() uint64 {
 
 func (s *Slider) SetValueBigInt(value *big.Int) {
 	changed := value.Cmp(s.abstractNumberInput.ValueBigInt()) != 0
-	s.abstractNumberInput.SetValueBigInt(s, value, true)
+	s.abstractNumberInput.SetValueBigInt(value, true)
 	if changed {
 		guigui.RequestRedraw(s)
 	}
@@ -79,7 +79,7 @@ func (s *Slider) SetValueBigInt(value *big.Int) {
 
 func (s *Slider) SetValueInt64(value int64) {
 	changed := value != s.abstractNumberInput.ValueInt64()
-	s.abstractNumberInput.SetValueInt64(s, value, true)
+	s.abstractNumberInput.SetValueInt64(value, true)
 	if changed {
 		guigui.RequestRedraw(s)
 	}
@@ -87,7 +87,7 @@ func (s *Slider) SetValueInt64(value int64) {
 
 func (s *Slider) SetValueUint64(value uint64) {
 	changed := value != s.abstractNumberInput.ValueUint64()
-	s.abstractNumberInput.SetValueUint64(s, value, true)
+	s.abstractNumberInput.SetValueUint64(value, true)
 	if changed {
 		guigui.RequestRedraw(s)
 	}
@@ -125,6 +125,9 @@ func (s *Slider) SetMaximumValueUint64(maximum uint64) {
 	s.abstractNumberInput.SetMaximumValueUint64(maximum)
 }
 
+func (s *Slider) BeforeBuild(context *guigui.Context) {
+	s.abstractNumberInput.ResetEventHandlers()
+}
 
 func (s *Slider) Build(context *guigui.Context) error {
 	if hovered := s.isThumbHovered(context); s.prevThumbHovered != hovered {
@@ -201,7 +204,7 @@ func (s *Slider) setValue(context *guigui.Context, originValue *big.Int, originX
 	v.Div(&v, (&big.Int{}).SetInt64(int64(s.barWidth(context))))
 	v.Add(&v, originValue)
 	changed := v.Cmp(s.abstractNumberInput.ValueBigInt()) != 0
-	s.abstractNumberInput.SetValueBigInt(s, &v, true)
+	s.abstractNumberInput.SetValueBigInt(&v, true)
 	if changed {
 		guigui.RequestRedraw(s)
 	}

@@ -45,7 +45,7 @@ func (p *Popups) Build(context *guigui.Context) error {
 	p.blurBackgroundText.SetValue("Blur background")
 	p.closeByClickingOutsideText.SetValue("Close by clicking outside")
 	p.showButton.SetText("Show")
-	p.showButton.SetOnUp(func(context *guigui.Context) {
+	p.showButton.SetOnUp(func() {
 		p.simplePopup.Open(context)
 	})
 
@@ -148,7 +148,7 @@ func (s *simplePopupContent) Build(context *guigui.Context) error {
 	s.titleText.SetBold(true)
 
 	s.closeButton.SetText("Close")
-	s.closeButton.SetOnUp(func(context *guigui.Context) {
+	s.closeButton.SetOnUp(func() {
 		s.popup.Close()
 	})
 

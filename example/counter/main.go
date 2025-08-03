@@ -46,18 +46,18 @@ func (r *Root) Build(context *guigui.Context) error {
 	r.counterText.SetValue(fmt.Sprintf("%d", r.counter))
 
 	r.resetButton.SetText("Reset")
-	r.resetButton.SetOnUp(func(context *guigui.Context) {
+	r.resetButton.SetOnUp(func() {
 		r.counter = 0
 	})
 	context.SetEnabled(&r.resetButton, r.counter != 0)
 
 	r.decButton.SetText("Decrement")
-	r.decButton.SetOnUp(func(context *guigui.Context) {
+	r.decButton.SetOnUp(func() {
 		r.counter--
 	})
 
 	r.incButton.SetText("Increment")
-	r.incButton.SetOnUp(func(context *guigui.Context) {
+	r.incButton.SetOnUp(func() {
 		r.counter++
 	})
 

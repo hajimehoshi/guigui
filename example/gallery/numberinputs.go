@@ -49,7 +49,7 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 	width := 12 * u
 
 	n.numberInput1Text.SetValue("Number input")
-	n.numberInput1.SetOnValueChangedBigInt(func(context *guigui.Context, value *big.Int, committed bool) {
+	n.numberInput1.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
 		if !committed {
 			return
 		}
@@ -61,7 +61,7 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 	context.SetSize(&n.numberInput1, image.Pt(width, guigui.AutoSize), n)
 
 	n.numberInput2Text.SetValue("Number input (uint64)")
-	n.numberInput2.SetOnValueChangedUint64(func(context *guigui.Context, value uint64, committed bool) {
+	n.numberInput2.SetOnValueChangedUint64(func(value uint64, committed bool) {
 		if !committed {
 			return
 		}
@@ -75,7 +75,7 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 	context.SetSize(&n.numberInput2, image.Pt(width, guigui.AutoSize), n)
 
 	n.numberInput3Text.SetValue("Number input (Range: [-100, 100], Step: 5)")
-	n.numberInput3.SetOnValueChangedInt64(func(context *guigui.Context, value int64, committed bool) {
+	n.numberInput3.SetOnValueChangedInt64(func(value int64, committed bool) {
 		if !committed {
 			return
 		}
@@ -130,13 +130,13 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 
 	// Configurations
 	n.editableText.SetValue("Editable (for number inputs)")
-	n.editableToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
+	n.editableToggle.SetOnValueChanged(func(value bool) {
 		model.NumberInputs().SetEditable(value)
 	})
 	n.editableToggle.SetValue(model.NumberInputs().Editable())
 
 	n.enabledText.SetValue("Enabled")
-	n.enabledToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
+	n.enabledToggle.SetOnValueChanged(func(value bool) {
 		model.NumberInputs().SetEnabled(value)
 	})
 	n.enabledToggle.SetValue(model.NumberInputs().Enabled())

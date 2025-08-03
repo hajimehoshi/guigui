@@ -11,7 +11,6 @@ import (
 	"maps"
 	"math"
 	"os"
-	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -85,8 +84,6 @@ type app struct {
 	lastScreenHeight float64
 
 	focusedWidgetState *widgetState
-
-	tmpArgs []reflect.Value
 
 	offscreen   *ebiten.Image
 	debugScreen *ebiten.Image
@@ -356,7 +353,6 @@ func (a *app) build() error {
 	_ = traverseWidget(a.root, func(widget Widget) error {
 		// TODO: Rename this? Now this is used only to reset callbacks.
 		widget.BeforeBuild(&a.context)
-		clear(widget.widgetState().eventHandlers)
 		return nil
 	})
 
@@ -383,8 +379,6 @@ func (a *app) build() error {
 
 		a.visitedZs[widgetState.z] = struct{}{}
 
-		a.invokeEventHandlers(widgetState)
-
 		return nil
 	}); err != nil {
 		return err
@@ -402,31 +396,6 @@ func (a *app) build() error {
 	})
 
 	return nil
-}
-
-func (a *app) invokeEventHandlers(widgetState *widgetState) {
-	for eventName, argsArr := range widgetState.eventHandlerArgs {
-		handler, ok := widgetState.eventHandlers[eventName]
-		if !ok {
-			continue
-		}
-		f := reflect.ValueOf(handler)
-		for _, args := range argsArr {
-			a.tmpArgs = slices.Delete(a.tmpArgs, 0, len(a.tmpArgs))
-			a.tmpArgs = append(a.tmpArgs, reflect.ValueOf(&a.context))
-			for _, arg := range args {
-				a.tmpArgs = append(a.tmpArgs, reflect.ValueOf(arg))
-			}
-			f.Call(a.tmpArgs)
-		}
-	}
-	a.tmpArgs = slices.Delete(a.tmpArgs, 0, len(a.tmpArgs))
-	for eventName, argsAttr := range widgetState.eventHandlerArgs {
-		for i := range argsAttr {
-			argsAttr[i] = slices.Delete(argsAttr[i], 0, len(argsAttr[i]))
-		}
-		widgetState.eventHandlerArgs[eventName] = slices.Delete(argsAttr, 0, len(argsAttr))
-	}
 }
 
 type handleInputType int
@@ -479,19 +448,14 @@ func (a *app) doHandleInputWidget(typ handleInputType, widget Widget, zToHandle 
 		return HandleInputResult{}
 	}
 
-	var result HandleInputResult
 	switch typ {
 	case handleInputTypePointing:
-		result = widget.HandlePointingInput(&a.context)
+		return widget.HandlePointingInput(&a.context)
 	case handleInputTypeButton:
-		result = widget.HandleButtonInput(&a.context)
+		return widget.HandleButtonInput(&a.context)
 	default:
 		panic(fmt.Sprintf("guigui: unknown handleInputType: %d", typ))
 	}
-
-	a.invokeEventHandlers(widgetState)
-
-	return result
 }
 
 func (a *app) cursorShape() bool {
@@ -521,8 +485,6 @@ func (a *app) updateWidget(widget Widget) error {
 	if err := widget.Tick(&a.context); err != nil {
 		return err
 	}
-
-	a.invokeEventHandlers(widgetState)
 
 	for _, child := range widgetState.children {
 		if err := a.updateWidget(child); err != nil {

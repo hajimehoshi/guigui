@@ -26,11 +26,6 @@ import (
 	"github.com/hajimehoshi/guigui/internal/clipboard"
 )
 
-const (
-	textEventValueChanged   = "valueChanged"
-	textEventKeyJustPressed = "keyJustPressed"
-)
-
 type HorizontalAlign int
 
 const (
@@ -136,6 +131,9 @@ type Text struct {
 	lastScale           float64
 	lastWidth           int
 
+	onValueChanged   func(text string, committed bool)
+	onKeyJustPressed func(key ebiten.Key) bool
+
 	tmpLocales []language.Tag
 }
 
@@ -152,12 +150,12 @@ func newTextSizeCacheKey(autoWrap, bold bool) textSizeCacheKey {
 	return key
 }
 
-func (t *Text) SetOnValueChanged(f func(context *guigui.Context, text string, committed bool)) {
-	guigui.RegisterEventHandler(t, textEventValueChanged, f)
+func (t *Text) SetOnValueChanged(f func(text string, committed bool)) {
+	t.onValueChanged = f
 }
 
-func (t *Text) SetOnKeyJustPressed(f func(context *guigui.Context, key ebiten.Key) (handled bool)) {
-	guigui.RegisterEventHandler(t, textEventKeyJustPressed, f)
+func (t *Text) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool)) {
+	t.onKeyJustPressed = f
 }
 
 func (t *Text) resetCachedTextSize() {
@@ -171,6 +169,10 @@ func (t *Text) resetAutoWrapCachedTextSize() {
 	t.cachedTextSizePlus1[newTextSizeCacheKey(true, true)] = image.Point{}
 }
 
+func (t *Text) BeforeBuild(context *guigui.Context) {
+	t.onKeyJustPressed = nil
+	t.onValueChanged = nil
+}
 
 func (t *Text) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	if t.selectable || t.editable {
@@ -280,7 +282,9 @@ func (t *Text) CommitWithCurrentInputValue() {
 		return
 	}
 	// Fire the event even if the text is not changed.
-	guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), true)
+	if t.onValueChanged != nil {
+		t.onValueChanged(t.field.Text(), true)
+	}
 }
 
 func (t *Text) setText(text string) bool {
@@ -319,7 +323,9 @@ func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) 
 	guigui.RequestRedraw(t)
 	if textChanged {
 		t.resetCachedTextSize()
-		guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), false)
+		if t.onValueChanged != nil {
+			t.onValueChanged(t.field.Text(), false)
+		}
 	}
 	return true
 }
@@ -656,9 +662,13 @@ func (t *Text) compositionSelectionToDraw(context *guigui.Context) (uStart, cSta
 
 func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {
 	// Handle a key input by user-setting callback, unless IME is working.
-	if t.field.UncommittedTextLengthInBytes() == 0 {
+	if t.field.UncommittedTextLengthInBytes() == 0 && t.onKeyJustPressed != nil {
+		var handled bool
 		for _, key := range inpututil.AppendJustPressedKeys(nil) {
-			guigui.InvokeEventHandler(t, textEventKeyJustPressed, key)
+			handled = handled || t.onKeyJustPressed(key)
+		}
+		if handled {
+			return guigui.HandleInputByWidget(t)
 		}
 	}
 
@@ -683,7 +693,9 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 			// Reset the cache size before adjust the scroll offset in order to get the correct text size.
 			t.resetCachedTextSize()
 			if t.field.Text() != origText {
-				guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), false)
+				if t.onValueChanged != nil {
+					t.onValueChanged(t.field.Text(), false)
+				}
 			}
 			return guigui.HandleInputByWidget(t)
 		}
@@ -925,7 +937,9 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 }
 
 func (t *Text) commit() {
-	guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), true)
+	if t.onValueChanged != nil {
+		t.onValueChanged(t.field.Text(), true)
+	}
 	t.nextText = ""
 	t.nextTextSet = false
 }

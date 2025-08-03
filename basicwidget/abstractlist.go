@@ -5,25 +5,25 @@ package basicwidget
 
 import (
 	"slices"
-
-	"github.com/hajimehoshi/guigui"
 )
 
 type ider[ID comparable] interface {
 	id() ID
 }
 
-const (
-	abstractListEventItemSelected = "itemSelected"
-)
-
 type abstractList[ID comparable, Item ider[ID]] struct {
 	items           []Item
 	selectedIndices []int
+
+	onItemSelected func(index int)
 }
 
-func (a *abstractList[ID, Item]) SetOnItemSelected(widget guigui.Widget, f func(context *guigui.Context, index int)) {
-	guigui.RegisterEventHandler(widget, abstractListEventItemSelected, f)
+func (a *abstractList[ID, Item]) ResetEventHandlers() {
+	a.onItemSelected = nil
+}
+
+func (a *abstractList[ID, Item]) SetOnItemSelected(f func(index int)) {
+	a.onItemSelected = f
 }
 
 func (a *abstractList[ID, Item]) SetItems(items []Item) {
@@ -43,7 +43,7 @@ func (a *abstractList[ID, Item]) ItemByIndex(index int) (Item, bool) {
 	return a.items[index], true
 }
 
-func (a *abstractList[ID, Item]) SelectItemByIndex(widget guigui.Widget, index int, forceFireEvents bool) bool {
+func (a *abstractList[ID, Item]) SelectItemByIndex(index int, forceFireEvents bool) bool {
 	if index < 0 || index >= len(a.items) {
 		if len(a.selectedIndices) == 0 {
 			return false
@@ -60,16 +60,18 @@ func (a *abstractList[ID, Item]) SelectItemByIndex(widget guigui.Widget, index i
 	a.selectedIndices = adjustSliceSize(a.selectedIndices, 1)
 	a.selectedIndices[0] = index
 	if !selected || forceFireEvents {
-		guigui.InvokeEventHandler(widget, abstractListEventItemSelected, index)
+		if a.onItemSelected != nil {
+			a.onItemSelected(index)
+		}
 	}
 	return true
 }
 
-func (a *abstractList[ID, Item]) SelectItemByID(widget guigui.Widget, id ID, forceFireEvents bool) bool {
+func (a *abstractList[ID, Item]) SelectItemByID(id ID, forceFireEvents bool) bool {
 	idx := slices.IndexFunc(a.items, func(item Item) bool {
 		return item.id() == id
 	})
-	return a.SelectItemByIndex(widget, idx, forceFireEvents)
+	return a.SelectItemByIndex(idx, forceFireEvents)
 }
 
 func (a *abstractList[ID, Item]) SelectedItem() (Item, bool) {

@@ -88,10 +88,10 @@ func (t *toolbarContent) Build(context *guigui.Context) error {
 		}
 		t.rightPanelButton.SetIcon(img)
 	}
-	t.leftPanelButton.SetOnDown(func(context *guigui.Context) {
+	t.leftPanelButton.SetOnDown(func() {
 		model.SetLeftPanelOpen(!model.IsLeftPanelOpen())
 	})
-	t.rightPanelButton.SetOnDown(func(context *guigui.Context) {
+	t.rightPanelButton.SetOnDown(func() {
 		model.SetRightPanelOpen(!model.IsRightPanelOpen())
 	})
 	context.SetBounds(&t.leftPanelButton, gl.CellBounds(0, 0), t)
