@@ -89,7 +89,7 @@ func (s *sidebarContent) Build(context *guigui.Context) error {
 	s.list.SetItems(items)
 	s.list.SelectItemByID(model.Mode())
 	s.list.SetItemHeight(basicwidget.UnitSize(context))
-	s.list.SetOnItemSelected(func(index int) {
+	s.list.SetOnItemSelected(func(context *guigui.Context, index int) {
 		item, ok := s.list.ItemByIndex(index)
 		if !ok {
 			model.SetMode("")

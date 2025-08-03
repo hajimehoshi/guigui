@@ -23,28 +23,24 @@ type baseButton struct {
 	prevHovered     bool
 	sharpenCorners  draw.SharpenCorners
 	pairedButton    *baseButton
-
-	onDown   func()
-	onUp     func()
-	onRepeat func()
 }
 
-func (b *baseButton) ResetEventHandlers() {
-	b.onDown = nil
-	b.onUp = nil
-	b.onRepeat = nil
+const (
+	baseButtonEventDown   = "down"
+	baseButtonEventUp     = "up"
+	baseButtonEventRepeat = "repeat"
+)
+
+func (b *baseButton) SetOnDown(f func(context *guigui.Context)) {
+	guigui.RegisterEventHandler(b, baseButtonEventDown, f)
 }
 
-func (b *baseButton) SetOnDown(f func()) {
-	b.onDown = f
+func (b *baseButton) SetOnUp(f func(context *guigui.Context)) {
+	guigui.RegisterEventHandler(b, baseButtonEventUp, f)
 }
 
-func (b *baseButton) SetOnUp(f func()) {
-	b.onUp = f
-}
-
-func (b *baseButton) setOnRepeat(f func()) {
-	b.onRepeat = f
+func (b *baseButton) setOnRepeat(f func(context *guigui.Context)) {
+	guigui.RegisterEventHandler(b, baseButtonEventRepeat, f)
 }
 
 func (b *baseButton) setPairedButton(pair *baseButton) {
@@ -74,27 +70,19 @@ func (b *baseButton) HandlePointingInput(context *guigui.Context) guigui.HandleI
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			context.SetFocused(b, true)
 			b.setPressed(true)
-			if b.onDown != nil {
-				b.onDown()
-			}
+			guigui.InvokeEventHandler(b, baseButtonEventDown)
 			if isMouseButtonRepeating(ebiten.MouseButtonLeft) {
-				if b.onRepeat != nil {
-					b.onRepeat()
-				}
+				guigui.InvokeEventHandler(b, baseButtonEventRepeat)
 			}
 			return guigui.HandleInputByWidget(b)
 		}
 		if (b.pressed || b.pairedButton != nil && b.pairedButton.pressed) && isMouseButtonRepeating(ebiten.MouseButtonLeft) {
-			if b.onRepeat != nil {
-				b.onRepeat()
-			}
+			guigui.InvokeEventHandler(b, baseButtonEventRepeat)
 			return guigui.HandleInputByWidget(b)
 		}
 		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && b.pressed {
 			b.setPressed(false)
-			if b.onUp != nil {
-				b.onUp()
-			}
+			guigui.InvokeEventHandler(b, baseButtonEventUp)
 			guigui.RequestRedraw(b)
 			return guigui.HandleInputByWidget(b)
 		}

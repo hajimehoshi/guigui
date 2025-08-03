@@ -58,7 +58,7 @@ func (l *Lists) Build(context *guigui.Context) error {
 	} else {
 		l.list.SetFooterHeight(0)
 	}
-	l.list.SetOnItemsMoved(func(from, count, to int) {
+	l.list.SetOnItemsMoved(func(context *guigui.Context, from, count, to int) {
 		idx := model.Lists().MoveListItems(from, count, to)
 		l.list.SelectItemByIndex(idx)
 	})
@@ -78,27 +78,27 @@ func (l *Lists) Build(context *guigui.Context) error {
 
 	// Configurations
 	l.showStripeText.SetValue("Show stripe")
-	l.showStripeToggle.SetOnValueChanged(func(value bool) {
+	l.showStripeToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
 		model.Lists().SetStripeVisible(value)
 	})
 	l.showStripeToggle.SetValue(model.Lists().IsStripeVisible())
 	l.showHeaderText.SetValue("Show header")
-	l.showHeaderToggle.SetOnValueChanged(func(value bool) {
+	l.showHeaderToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
 		model.Lists().SetHeaderVisible(value)
 	})
 	l.showHeaderToggle.SetValue(model.Lists().IsHeaderVisible())
 	l.showFooterText.SetValue("Show footer")
-	l.showFooterToggle.SetOnValueChanged(func(value bool) {
+	l.showFooterToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
 		model.Lists().SetFooterVisible(value)
 	})
 	l.showFooterToggle.SetValue(model.Lists().IsFooterVisible())
 	l.movableText.SetValue("Enable to move items")
 	l.movableToggle.SetValue(model.Lists().Movable())
-	l.movableToggle.SetOnValueChanged(func(value bool) {
+	l.movableToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
 		model.Lists().SetMovable(value)
 	})
 	l.enabledText.SetValue("Enabled")
-	l.enabledToggle.SetOnValueChanged(func(value bool) {
+	l.enabledToggle.SetOnValueChanged(func(context *guigui.Context, value bool) {
 		model.Lists().SetEnabled(value)
 	})
 	l.enabledToggle.SetValue(model.Lists().Enabled())

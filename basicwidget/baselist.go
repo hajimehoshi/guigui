@@ -22,6 +22,8 @@ const (
 	ListStyleNormal ListStyle = iota
 	ListStyleSidebar
 	ListStyleMenu
+
+	baseListEventItemsMoved = "itemsMoved"
 )
 
 type baseListItem[T comparable] struct {
@@ -64,20 +66,18 @@ type baseList[T comparable] struct {
 
 	cachedDefaultWidth         int
 	cachedDefaultContentHeight int
-
-	onItemsMoved func(from, count, to int)
 }
 
 func listItemPadding(context *guigui.Context) int {
 	return RoundedCornerRadius(context) + UnitSize(context)/4
 }
 
-func (b *baseList[T]) SetOnItemSelected(f func(index int)) {
-	b.abstractList.SetOnItemSelected(f)
+func (b *baseList[T]) SetOnItemSelected(f func(context *guigui.Context, index int)) {
+	b.abstractList.SetOnItemSelected(b, f)
 }
 
-func (b *baseList[T]) SetOnItemsMoved(f func(from, count, to int)) {
-	b.onItemsMoved = f
+func (b *baseList[T]) SetOnItemsMoved(f func(context *guigui.Context, from, count, to int)) {
+	guigui.RegisterEventHandler(b, baseListEventItemsMoved, f)
 }
 
 func (b *baseList[T]) SetCheckmarkIndex(index int) {
@@ -126,10 +126,6 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	return image.Pt(w, h)
 }
 
-func (b *baseList[T]) BeforeBuild(context *guigui.Context) {
-	b.abstractList.ResetEventHandlers()
-	b.onItemsMoved = nil
-}
 
 func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	for i := range b.abstractList.ItemCount() {
@@ -262,13 +258,13 @@ func (b *baseList[T]) SelectItemByIndex(index int) {
 }
 
 func (b *baseList[T]) selectItemByIndex(index int, forceFireEvents bool) {
-	if b.abstractList.SelectItemByIndex(index, forceFireEvents) {
+	if b.abstractList.SelectItemByIndex(b, index, forceFireEvents) {
 		guigui.RequestRedraw(b)
 	}
 }
 
 func (b *baseList[T]) SelectItemByID(id T) {
-	if b.abstractList.SelectItemByID(id, false) {
+	if b.abstractList.SelectItemByID(b, id, false) {
 		guigui.RequestRedraw(b)
 	}
 }
@@ -347,10 +343,8 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			return guigui.HandleInputByWidget(b)
 		}
 		if b.dragDstIndexPlus1 > 0 {
-			if b.onItemsMoved != nil {
-				// TODO: Implement multiple items drop.
-				b.onItemsMoved(b.dragSrcIndexPlus1-1, 1, b.dragDstIndexPlus1-1)
-			}
+			// TODO: Implement multiple items drop.
+			guigui.InvokeEventHandler(b, baseListEventItemsMoved, b.dragSrcIndexPlus1-1, 1, b.dragDstIndexPlus1-1)
 			b.dragDstIndexPlus1 = 0
 		}
 		b.dragSrcIndexPlus1 = 0

@@ -91,10 +91,12 @@ type widgetState struct {
 	children []Widget
 	prev     widgetsAndVisibleBounds
 
-	hidden       bool
-	disabled     bool
-	transparency float64
-	customDraw   CustomDrawFunc
+	hidden           bool
+	disabled         bool
+	transparency     float64
+	customDraw       CustomDrawFunc
+	eventHandlers    map[string]any
+	eventHandlerArgs map[string][][]any
 
 	offscreen *ebiten.Image
 
@@ -177,6 +179,21 @@ func requestRedraw(widgetState *widgetState) {
 			widgetState.dirtyAt = fmt.Sprintf("%s:%d", file, line)
 		}
 	}
+}
+
+func RegisterEventHandler(widget Widget, eventName string, handler any) {
+	if widget.widgetState().eventHandlers == nil {
+		widget.widgetState().eventHandlers = map[string]any{}
+	}
+	widget.widgetState().eventHandlers[eventName] = handler
+}
+
+func InvokeEventHandler(widget Widget, eventName string, args ...any) {
+	if widget.widgetState().eventHandlerArgs == nil {
+		widget.widgetState().eventHandlerArgs = map[string][][]any{}
+	}
+	argsArr := widget.widgetState().eventHandlerArgs[eventName]
+	widget.widgetState().eventHandlerArgs[eventName] = append(argsArr, args)
 }
 
 // noCopy is a struct to warn that the struct should not be copied.
