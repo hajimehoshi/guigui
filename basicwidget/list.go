@@ -33,7 +33,7 @@ type ListItem[T comparable] struct {
 	Unselectable bool
 	Border       bool
 	Movable      bool
-	ID           T
+	Value        T
 }
 
 func (l *ListItem[T]) selectable() bool {
@@ -169,15 +169,15 @@ func (l *List[T]) ItemsCount() int {
 }
 
 func (l *List[T]) ID(index int) any {
-	return l.listItemWidgets[index].item.ID
+	return l.listItemWidgets[index].item.Value
 }
 
 func (l *List[T]) SelectItemByIndex(index int) {
 	l.list.SelectItemByIndex(index)
 }
 
-func (l *List[T]) SelectItemByID(id T) {
-	l.list.SelectItemByID(id)
+func (l *List[T]) SelectItemByValue(value T) {
+	l.list.SelectItemByValue(value)
 }
 
 func (l *List[T]) JumpToItemIndex(index int) {
@@ -301,6 +301,6 @@ func (l *listItemWidget[T]) listItem() baseListItem[T] {
 		Content:    l,
 		Selectable: l.selectable(),
 		Movable:    l.item.Movable,
-		ID:         l.item.ID,
+		Value:      l.item.Value,
 	}
 }

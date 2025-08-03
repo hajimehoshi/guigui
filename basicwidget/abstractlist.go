@@ -13,29 +13,29 @@ const (
 	abstractListEventItemSelected = "itemSelected"
 )
 
-type ider[ID comparable] interface {
-	id() ID
+type valuer[Value comparable] interface {
+	value() Value
 }
 
-type abstractList[ID comparable, Item ider[ID]] struct {
+type abstractList[Value comparable, Item valuer[Value]] struct {
 	items           []Item
 	selectedIndices []int
 }
 
-func (a *abstractList[ID, Item]) SetOnItemSelected(widget guigui.Widget, f func(index int)) {
+func (a *abstractList[Value, Item]) SetOnItemSelected(widget guigui.Widget, f func(index int)) {
 	guigui.RegisterEventHandler(widget, abstractListEventItemSelected, f)
 }
 
-func (a *abstractList[ID, Item]) SetItems(items []Item) {
+func (a *abstractList[Value, Item]) SetItems(items []Item) {
 	a.items = adjustSliceSize(items, len(items))
 	copy(a.items, items)
 }
 
-func (a *abstractList[ID, Item]) ItemCount() int {
+func (a *abstractList[Value, Item]) ItemCount() int {
 	return len(a.items)
 }
 
-func (a *abstractList[ID, Item]) ItemByIndex(index int) (Item, bool) {
+func (a *abstractList[Value, Item]) ItemByIndex(index int) (Item, bool) {
 	if index < 0 || index >= len(a.items) {
 		var item Item
 		return item, false
@@ -43,7 +43,7 @@ func (a *abstractList[ID, Item]) ItemByIndex(index int) (Item, bool) {
 	return a.items[index], true
 }
 
-func (a *abstractList[ID, Item]) SelectItemByIndex(widget guigui.Widget, index int, forceFireEvents bool) bool {
+func (a *abstractList[Value, Item]) SelectItemByIndex(widget guigui.Widget, index int, forceFireEvents bool) bool {
 	if index < 0 || index >= len(a.items) {
 		if len(a.selectedIndices) == 0 {
 			return false
@@ -65,14 +65,14 @@ func (a *abstractList[ID, Item]) SelectItemByIndex(widget guigui.Widget, index i
 	return true
 }
 
-func (a *abstractList[ID, Item]) SelectItemByID(widget guigui.Widget, id ID, forceFireEvents bool) bool {
+func (a *abstractList[Value, Item]) SelectItemByValue(widget guigui.Widget, value Value, forceFireEvents bool) bool {
 	idx := slices.IndexFunc(a.items, func(item Item) bool {
-		return item.id() == id
+		return item.value() == value
 	})
 	return a.SelectItemByIndex(widget, idx, forceFireEvents)
 }
 
-func (a *abstractList[ID, Item]) SelectedItem() (Item, bool) {
+func (a *abstractList[Value, Item]) SelectedItem() (Item, bool) {
 	if len(a.selectedIndices) == 0 {
 		var item Item
 		return item, false
@@ -80,7 +80,7 @@ func (a *abstractList[ID, Item]) SelectedItem() (Item, bool) {
 	return a.items[a.selectedIndices[0]], true
 }
 
-func (a *abstractList[ID, Item]) SelectedItemIndex() int {
+func (a *abstractList[Value, Item]) SelectedItemIndex() int {
 	if len(a.selectedIndices) == 0 {
 		return -1
 	}

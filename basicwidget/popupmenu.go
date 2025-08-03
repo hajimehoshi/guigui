@@ -21,7 +21,7 @@ type PopupMenuItem[T comparable] struct {
 	Content      guigui.Widget
 	Unselectable bool
 	Border       bool
-	ID           T
+	Value        T
 }
 
 type PopupMenu[T comparable] struct {
@@ -42,7 +42,6 @@ func (p *PopupMenu[T]) SetCheckmarkIndex(index int) {
 func (p *PopupMenu[T]) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, widget guigui.Widget) bool {
 	return p.popup.IsWidgetOrBackgroundHitAtCursor(context, widget)
 }
-
 
 func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&p.popup)
@@ -115,7 +114,7 @@ func (p *PopupMenu[T]) SetItems(items []PopupMenuItem[T]) {
 			Content:      item.Content,
 			Unselectable: item.Unselectable,
 			Border:       item.Border,
-			ID:           item.ID,
+			Value:        item.Value,
 		})
 	}
 	p.list.SetItems(listItems)
@@ -137,7 +136,7 @@ func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
 		Content:      listItem.Content,
 		Unselectable: listItem.Unselectable,
 		Border:       listItem.Border,
-		ID:           listItem.ID,
+		Value:        listItem.Value,
 	}, true
 }
 
@@ -153,7 +152,7 @@ func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
 		Content:      listItem.Content,
 		Unselectable: listItem.Unselectable,
 		Border:       listItem.Border,
-		ID:           listItem.ID,
+		Value:        listItem.Value,
 	}, true
 }
 
@@ -165,8 +164,8 @@ func (p *PopupMenu[T]) SelectItemByIndex(index int) {
 	p.list.SelectItemByIndex(index)
 }
 
-func (p *PopupMenu[T]) SelectItemByID(id T) {
-	p.list.SelectItemByID(id)
+func (p *PopupMenu[T]) SelectItemByValue(value T) {
+	p.list.SelectItemByValue(value)
 }
 
 func (p *PopupMenu[T]) ItemTextColor(context *guigui.Context, index int) color.Color {

@@ -42,7 +42,7 @@ type TableItem[T comparable] struct {
 	Contents     []guigui.Widget
 	Unselectable bool
 	Movable      bool
-	ID           T
+	Value        T
 }
 
 func (t *TableItem[T]) selectable() bool {
@@ -196,15 +196,15 @@ func (t *Table[T]) ItemsCount() int {
 }
 
 func (t *Table[T]) ID(index int) any {
-	return t.tableItemWidgets[index].item.ID
+	return t.tableItemWidgets[index].item.Value
 }
 
 func (t *Table[T]) SelectItemByIndex(index int) {
 	t.list.SelectItemByIndex(index)
 }
 
-func (t *Table[T]) SelectItemByID(id T) {
-	t.list.SelectItemByID(id)
+func (t *Table[T]) SelectItemByValue(value T) {
+	t.list.SelectItemByValue(value)
 }
 
 func (t *Table[T]) JumpToItemIndex(index int) {
@@ -270,7 +270,7 @@ func (t *tableItemWidget[T]) listItem() baseListItem[T] {
 		Content:    t,
 		Selectable: t.selectable(),
 		Movable:    t.item.Movable,
-		ID:         t.item.ID,
+		Value:      t.item.Value,
 	}
 }
 

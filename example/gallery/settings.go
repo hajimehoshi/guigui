@@ -44,16 +44,16 @@ func (s *Settings) Build(context *guigui.Context) error {
 	s.colorModeText.SetValue("Color mode")
 	s.colorModeSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[string]{
 		{
-			Text: "Auto",
-			ID:   "",
+			Text:  "Auto",
+			Value: "",
 		},
 		{
-			Icon: lightModeImg,
-			ID:   "light",
+			Icon:  lightModeImg,
+			Value: "light",
 		},
 		{
-			Icon: darkModeImg,
-			ID:   "dark",
+			Icon:  darkModeImg,
+			Value: "dark",
 		},
 	})
 	s.colorModeSegmentedControl.SetOnItemSelected(func(index int) {
@@ -62,7 +62,7 @@ func (s *Settings) Build(context *guigui.Context) error {
 			context.SetColorMode(guigui.ColorModeLight)
 			return
 		}
-		switch item.ID {
+		switch item.Value {
 		case "light":
 			context.SetColorMode(guigui.ColorModeLight)
 		case "dark":
@@ -72,15 +72,15 @@ func (s *Settings) Build(context *guigui.Context) error {
 		}
 	})
 	if context.IsAutoColorModeUsed() {
-		s.colorModeSegmentedControl.SelectItemByID("")
+		s.colorModeSegmentedControl.SelectItemByValue("")
 	} else {
 		switch context.ColorMode() {
 		case guigui.ColorModeLight:
-			s.colorModeSegmentedControl.SelectItemByID("light")
+			s.colorModeSegmentedControl.SelectItemByValue("light")
 		case guigui.ColorModeDark:
-			s.colorModeSegmentedControl.SelectItemByID("dark")
+			s.colorModeSegmentedControl.SelectItemByValue("dark")
 		default:
-			s.colorModeSegmentedControl.SelectItemByID("")
+			s.colorModeSegmentedControl.SelectItemByValue("")
 		}
 	}
 
@@ -89,32 +89,32 @@ func (s *Settings) Build(context *guigui.Context) error {
 
 	s.localeDropdownList.SetItems([]basicwidget.DropdownListItem[language.Tag]{
 		{
-			Text: "(Default)",
-			ID:   language.Und,
+			Text:  "(Default)",
+			Value: language.Und,
 		},
 		{
-			Text: "English",
-			ID:   language.English,
+			Text:  "English",
+			Value: language.English,
 		},
 		{
-			Text: "Japanese",
-			ID:   language.Japanese,
+			Text:  "Japanese",
+			Value: language.Japanese,
 		},
 		{
-			Text: "Korean",
-			ID:   language.Korean,
+			Text:  "Korean",
+			Value: language.Korean,
 		},
 		{
-			Text: "Simplified Chinese",
-			ID:   language.SimplifiedChinese,
+			Text:  "Simplified Chinese",
+			Value: language.SimplifiedChinese,
 		},
 		{
-			Text: "Traditional Chinese",
-			ID:   language.TraditionalChinese,
+			Text:  "Traditional Chinese",
+			Value: language.TraditionalChinese,
 		},
 		{
-			Text: "Hong Kong Chinese",
-			ID:   hongKongChinese,
+			Text:  "Hong Kong Chinese",
+			Value: hongKongChinese,
 		},
 	})
 	s.localeDropdownList.SetOnItemSelected(func(index int) {
@@ -123,33 +123,33 @@ func (s *Settings) Build(context *guigui.Context) error {
 			context.SetAppLocales(nil)
 			return
 		}
-		if item.ID == language.Und {
+		if item.Value == language.Und {
 			context.SetAppLocales(nil)
 			return
 		}
-		context.SetAppLocales([]language.Tag{item.ID})
+		context.SetAppLocales([]language.Tag{item.Value})
 	})
 	if !s.localeDropdownList.IsPopupOpen() {
 		if locales := context.AppendAppLocales(nil); len(locales) > 0 {
-			s.localeDropdownList.SelectItemByID(locales[0])
+			s.localeDropdownList.SelectItemByValue(locales[0])
 		} else {
-			s.localeDropdownList.SelectItemByID(language.Und)
+			s.localeDropdownList.SelectItemByValue(language.Und)
 		}
 	}
 
 	s.scaleText.SetValue("Scale")
 	s.scaleSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[float64]{
 		{
-			Text: "80%",
-			ID:   0.8,
+			Text:  "80%",
+			Value: 0.8,
 		},
 		{
-			Text: "100%",
-			ID:   1,
+			Text:  "100%",
+			Value: 1,
 		},
 		{
-			Text: "120%",
-			ID:   1.2,
+			Text:  "120%",
+			Value: 1.2,
 		},
 	})
 	s.scaleSegmentedControl.SetOnItemSelected(func(index int) {
@@ -158,9 +158,9 @@ func (s *Settings) Build(context *guigui.Context) error {
 			context.SetAppScale(1)
 			return
 		}
-		context.SetAppScale(item.ID)
+		context.SetAppScale(item.Value)
 	})
-	s.scaleSegmentedControl.SelectItemByID(context.AppScale())
+	s.scaleSegmentedControl.SelectItemByValue(context.AppScale())
 
 	s.form.SetItems([]basicwidget.FormItem{
 		{

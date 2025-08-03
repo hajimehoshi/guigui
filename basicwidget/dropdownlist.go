@@ -21,7 +21,7 @@ type DropdownListItem[T comparable] struct {
 	Content      guigui.Widget
 	Unselectable bool
 	Border       bool
-	ID           T
+	Value        T
 }
 
 type DropdownList[T comparable] struct {
@@ -50,7 +50,6 @@ func (d *DropdownList[T]) updateButtonContent() {
 	}
 	d.button.SetContent(&d.buttonContent)
 }
-
 
 func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&d.button)
@@ -123,8 +122,8 @@ func (d *DropdownList[T]) SelectItemByIndex(index int) {
 	d.popupMenu.SelectItemByIndex(index)
 }
 
-func (d *DropdownList[T]) SelectItemByID(id T) {
-	d.popupMenu.SelectItemByID(id)
+func (d *DropdownList[T]) SelectItemByValue(value T) {
+	d.popupMenu.SelectItemByValue(value)
 }
 
 func (d *DropdownList[T]) DefaultSize(context *guigui.Context) image.Point {

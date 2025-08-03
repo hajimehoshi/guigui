@@ -25,11 +25,11 @@ type SegmentedControlItem[T comparable] struct {
 	Icon      *ebiten.Image
 	IconAlign IconAlign
 	Disabled  bool
-	ID        T
+	Value     T
 }
 
-func (s SegmentedControlItem[T]) id() T {
-	return s.ID
+func (s SegmentedControlItem[T]) value() T {
+	return s.Value
 }
 
 type SegmentedControl[T comparable] struct {
@@ -75,8 +75,8 @@ func (s *SegmentedControl[T]) SelectItemByIndex(index int) {
 	}
 }
 
-func (s *SegmentedControl[T]) SelectItemByID(id T) {
-	if s.abstractList.SelectItemByID(s, id, false) {
+func (s *SegmentedControl[T]) SelectItemByValue(value T) {
+	if s.abstractList.SelectItemByValue(s, value, false) {
 		guigui.RequestRedraw(s)
 	}
 }

@@ -103,7 +103,7 @@ func (t *Tables) Build(context *guigui.Context) error {
 		t.tableItems = append(t.tableItems, basicwidget.TableItem[int]{
 			Contents: t.tableItemWidgets[n*i : n*(i+1)],
 			Movable:  model.Tables().Movable(),
-			ID:       item.ID,
+			Value:    item.ID,
 		})
 	}
 	t.table.SetItems(t.tableItems)

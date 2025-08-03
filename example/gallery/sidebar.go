@@ -49,45 +49,45 @@ func (s *sidebarContent) Build(context *guigui.Context) error {
 
 	items := []basicwidget.ListItem[string]{
 		{
-			Text: "Settings",
-			ID:   "settings",
+			Text:  "Settings",
+			Value: "settings",
 		},
 		{
-			Text: "Basic",
-			ID:   "basic",
+			Text:  "Basic",
+			Value: "basic",
 		},
 		{
-			Text: "Buttons",
-			ID:   "buttons",
+			Text:  "Buttons",
+			Value: "buttons",
 		},
 		{
-			Text: "Texts",
-			ID:   "texts",
+			Text:  "Texts",
+			Value: "texts",
 		},
 		{
-			Text: "Text Inputs",
-			ID:   "textinputs",
+			Text:  "Text Inputs",
+			Value: "textinputs",
 		},
 		{
-			Text: "Number Inputs",
-			ID:   "numberinputs",
+			Text:  "Number Inputs",
+			Value: "numberinputs",
 		},
 		{
-			Text: "Lists",
-			ID:   "lists",
+			Text:  "Lists",
+			Value: "lists",
 		},
 		{
-			Text: "Tables",
-			ID:   "tables",
+			Text:  "Tables",
+			Value: "tables",
 		},
 		{
-			Text: "Popups",
-			ID:   "popups",
+			Text:  "Popups",
+			Value: "popups",
 		},
 	}
 
 	s.list.SetItems(items)
-	s.list.SelectItemByID(model.Mode())
+	s.list.SelectItemByValue(model.Mode())
 	s.list.SetItemHeight(basicwidget.UnitSize(context))
 	s.list.SetOnItemSelected(func(index int) {
 		item, ok := s.list.ItemByIndex(index)
@@ -95,7 +95,7 @@ func (s *sidebarContent) Build(context *guigui.Context) error {
 			model.SetMode("")
 			return
 		}
-		model.SetMode(item.ID)
+		model.SetMode(item.Value)
 	})
 
 	context.SetBounds(&s.list, context.Bounds(s), s)

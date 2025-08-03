@@ -32,11 +32,11 @@ type baseListItem[T comparable] struct {
 	Content    guigui.Widget
 	Selectable bool
 	Movable    bool
-	ID         T
+	Value      T
 }
 
-func (b baseListItem[T]) id() T {
-	return b.ID
+func (b baseListItem[T]) value() T {
+	return b.Value
 }
 
 func DefaultActiveListItemTextColor(context *guigui.Context) color.Color {
@@ -127,7 +127,6 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	h -= b.footerHeight
 	return image.Pt(w, h)
 }
-
 
 func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	for i := range b.abstractList.ItemCount() {
@@ -265,8 +264,8 @@ func (b *baseList[T]) selectItemByIndex(index int, forceFireEvents bool) {
 	}
 }
 
-func (b *baseList[T]) SelectItemByID(id T) {
-	if b.abstractList.SelectItemByID(b, id, false) {
+func (b *baseList[T]) SelectItemByValue(value T) {
+	if b.abstractList.SelectItemByValue(b, value, false) {
 		guigui.RequestRedraw(b)
 	}
 }

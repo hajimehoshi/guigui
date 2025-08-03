@@ -145,16 +145,16 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 	t.horizontalAlignText.SetValue("Horizontal align")
 	t.horizontalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.HorizontalAlign]{
 		{
-			Icon: imgAlignStart,
-			ID:   basicwidget.HorizontalAlignStart,
+			Icon:  imgAlignStart,
+			Value: basicwidget.HorizontalAlignStart,
 		},
 		{
-			Icon: imgAlignCenter,
-			ID:   basicwidget.HorizontalAlignCenter,
+			Icon:  imgAlignCenter,
+			Value: basicwidget.HorizontalAlignCenter,
 		},
 		{
-			Icon: imgAlignEnd,
-			ID:   basicwidget.HorizontalAlignEnd,
+			Icon:  imgAlignEnd,
+			Value: basicwidget.HorizontalAlignEnd,
 		},
 	})
 	t.horizontalAlignSegmentedControl.SetOnItemSelected(func(index int) {
@@ -163,23 +163,23 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 			model.TextInputs().SetHorizontalAlign(basicwidget.HorizontalAlignStart)
 			return
 		}
-		model.TextInputs().SetHorizontalAlign(item.ID)
+		model.TextInputs().SetHorizontalAlign(item.Value)
 	})
-	t.horizontalAlignSegmentedControl.SelectItemByID(model.TextInputs().HorizontalAlign())
+	t.horizontalAlignSegmentedControl.SelectItemByValue(model.TextInputs().HorizontalAlign())
 
 	t.verticalAlignText.SetValue("Vertical align")
 	t.verticalAlignSegmentedControl.SetItems([]basicwidget.SegmentedControlItem[basicwidget.VerticalAlign]{
 		{
-			Icon: imgAlignTop,
-			ID:   basicwidget.VerticalAlignTop,
+			Icon:  imgAlignTop,
+			Value: basicwidget.VerticalAlignTop,
 		},
 		{
-			Icon: imgAlignMiddle,
-			ID:   basicwidget.VerticalAlignMiddle,
+			Icon:  imgAlignMiddle,
+			Value: basicwidget.VerticalAlignMiddle,
 		},
 		{
-			Icon: imgAlignBottom,
-			ID:   basicwidget.VerticalAlignBottom,
+			Icon:  imgAlignBottom,
+			Value: basicwidget.VerticalAlignBottom,
 		},
 	})
 	t.verticalAlignSegmentedControl.SetOnItemSelected(func(index int) {
@@ -188,9 +188,9 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 			model.TextInputs().SetVerticalAlign(basicwidget.VerticalAlignTop)
 			return
 		}
-		model.TextInputs().SetVerticalAlign(item.ID)
+		model.TextInputs().SetVerticalAlign(item.Value)
 	})
-	t.verticalAlignSegmentedControl.SelectItemByID(model.TextInputs().VerticalAlign())
+	t.verticalAlignSegmentedControl.SelectItemByValue(model.TextInputs().VerticalAlign())
 
 	t.autoWrapText.SetValue("Auto wrap")
 	t.autoWrapToggle.SetOnValueChanged(func(value bool) {
