@@ -197,6 +197,12 @@ func (t *tasksPanelContent) BeforeBuild(context *guigui.Context) {
 }
 
 func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+	model := context.Model(t, modelKeyModel).(*Model)
+	if model.TaskCount() > len(t.taskWidgets) {
+		t.taskWidgets = slices.Grow(t.taskWidgets, model.TaskCount()-len(t.taskWidgets))[:model.TaskCount()]
+	} else {
+		t.taskWidgets = slices.Delete(t.taskWidgets, model.TaskCount(), len(t.taskWidgets))
+	}
 	for i := range t.taskWidgets {
 		appender.AppendChildWidget(&t.taskWidgets[i])
 	}
@@ -204,12 +210,6 @@ func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender
 
 func (t *tasksPanelContent) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
-
-	if model.TaskCount() > len(t.taskWidgets) {
-		t.taskWidgets = slices.Grow(t.taskWidgets, model.TaskCount()-len(t.taskWidgets))[:model.TaskCount()]
-	} else {
-		t.taskWidgets = slices.Delete(t.taskWidgets, model.TaskCount(), len(t.taskWidgets))
-	}
 	for i := range model.TaskCount() {
 		task := model.TaskByIndex(i)
 		t.taskWidgets[i].SetOnDoneButtonPressed(func() {
