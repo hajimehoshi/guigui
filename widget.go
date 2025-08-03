@@ -11,7 +11,6 @@ import (
 
 type Widget interface {
 	Model(key any) any
-	BeforeBuild(context *Context)
 	AppendChildWidgets(context *Context, appender *ChildWidgetAppender)
 	Build(context *Context) error
 	HandlePointingInput(context *Context) HandleInputResult

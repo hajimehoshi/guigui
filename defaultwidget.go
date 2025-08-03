@@ -19,9 +19,6 @@ func (*DefaultWidget) Model(key any) any {
 	return nil
 }
 
-func (*DefaultWidget) BeforeBuild(context *Context) {
-}
-
 func (*DefaultWidget) AppendChildWidgets(context *Context, appender *ChildWidgetAppender) {
 }
 
