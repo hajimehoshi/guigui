@@ -105,7 +105,6 @@ func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
 	guigui.RegisterEventHandler(p, popupEventClosed, f)
 }
 
-
 func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	// Append children even if openingRate is 0, so that the Build methods of the children are invoked.
 	// The children's state might affect their size and position.

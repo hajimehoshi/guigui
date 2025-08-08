@@ -225,6 +225,7 @@ func (l *listItemWidget[T]) setStyle(style ListStyle) {
 func (l *listItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	if l.item.Content != nil {
 		appender.AppendChildWidget(l.item.Content)
+		return
 	}
 	appender.AppendChildWidget(&l.text)
 }

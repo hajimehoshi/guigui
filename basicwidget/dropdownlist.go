@@ -38,14 +38,10 @@ func (d *DropdownList[T]) SetOnItemSelected(f func(index int)) {
 
 func (d *DropdownList[T]) updateButtonContent() {
 	if item, ok := d.popupMenu.SelectedItem(); ok {
-		if item.Content != nil {
-			d.buttonContent.content = item.Content
-		} else {
-			d.buttonContent.content = nil
-		}
+		// item.Content is not available as this is used in the menu.
+		// TODO: Fix this issue (#182).
 		d.buttonContent.text.SetValue(item.Text)
 	} else {
-		d.buttonContent.content = nil
 		d.buttonContent.text.SetValue("")
 	}
 	d.button.SetContent(&d.buttonContent)
