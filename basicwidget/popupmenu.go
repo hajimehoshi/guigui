@@ -72,22 +72,24 @@ func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 		Min: pos,
 		Max: pos.Add(s),
 	}
-	as := context.AppSize()
-	if r.Max.X > as.X {
-		r.Min.X = as.X - s.X
-		r.Max.X = as.X
-	}
-	if r.Min.X < 0 {
-		r.Min.X = 0
-		r.Max.X = s.X
-	}
-	if r.Max.Y > as.Y {
-		r.Min.Y = as.Y - s.Y
-		r.Max.Y = as.Y
-	}
-	if r.Min.Y < 0 {
-		r.Min.Y = 0
-		r.Max.Y = s.Y
+	if p.IsOpen() {
+		as := context.AppSize()
+		if r.Max.X > as.X {
+			r.Min.X = as.X - s.X
+			r.Max.X = as.X
+		}
+		if r.Min.X < 0 {
+			r.Min.X = 0
+			r.Max.X = s.X
+		}
+		if r.Max.Y > as.Y {
+			r.Min.Y = as.Y - s.Y
+			r.Max.Y = as.Y
+		}
+		if r.Min.Y < 0 {
+			r.Min.Y = 0
+			r.Max.Y = s.Y
+		}
 	}
 	return r
 }
