@@ -248,9 +248,8 @@ func (c *Context) ActualSize(widget Widget) image.Point {
 		w = w.parent.widgetState()
 	}
 	s := image.Pt(AutoSize, AutoSize)
-	// TODO: Now the widget closest to the root is preferred. Does this order make sense? (#163)
-	for i := len(c.tmpWidgetStates) - 1; i >= 0; i-- {
-		size, ok := widgetState.sizes[c.tmpWidgetStates[i]]
+	for _, w := range c.tmpWidgetStates {
+		size, ok := widgetState.sizes[w]
 		if !ok {
 			continue
 		}
