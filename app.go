@@ -171,7 +171,13 @@ func (a *app) focusWidget(widgetState *widgetState) {
 	if a.focusedWidgetState == widgetState {
 		return
 	}
+	if a.focusedWidgetState != nil {
+		invokeEventHandler(a.focusedWidgetState, focusChangedEvent, false)
+	}
 	a.focusedWidgetState = widgetState
+	if a.focusedWidgetState != nil {
+		invokeEventHandler(a.focusedWidgetState, focusChangedEvent, true)
+	}
 }
 
 func (a *app) Update() error {

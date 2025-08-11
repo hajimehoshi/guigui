@@ -201,7 +201,10 @@ func IsEventHandlerRegistered(widget Widget, eventName string) bool {
 }
 
 func InvokeEventHandler(widget Widget, eventName string, args ...any) ([]any, bool) {
-	widgetState := widget.widgetState()
+	return invokeEventHandler(widget.widgetState(), eventName, args...)
+}
+
+func invokeEventHandler(widgetState *widgetState, eventName string, args ...any) ([]any, bool) {
 	hanlder, ok := widgetState.eventHandlers[eventName]
 	if !ok {
 		return nil, false
@@ -218,6 +221,15 @@ func InvokeEventHandler(widget Widget, eventName string, args ...any) ([]any, bo
 		v = append(v, ret.Interface())
 	}
 	return v, true
+}
+
+const focusChangedEvent = "__focusChanged"
+
+// RegisterFocusChangedEventHandler registers a handler for focus changed events.
+//
+// A handler can be dispatched even when the widget is not in the tree.
+func RegisterFocusChangedEventHandler(widget Widget, f func(focused bool)) {
+	RegisterEventHandler(widget, focusChangedEvent, f)
 }
 
 // noCopy is a struct to warn that the struct should not be copied.

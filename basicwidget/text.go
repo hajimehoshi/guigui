@@ -171,7 +171,6 @@ func (t *Text) resetAutoWrapCachedTextSize() {
 	t.cachedTextSizePlus1[newTextSizeCacheKey(true, true)] = image.Point{}
 }
 
-
 func (t *Text) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	if t.selectable || t.editable {
 		appender.AppendChildWidget(&t.cursor)
@@ -198,8 +197,7 @@ func (t *Text) Build(context *guigui.Context) error {
 		}
 	}
 
-	focused := context.IsFocused(t)
-	if t.prevFocused != focused {
+	guigui.RegisterFocusChangedEventHandler(t, func(focused bool) {
 		if focused {
 			t.field.Focus()
 			t.cursor.resetCounter()
@@ -210,8 +208,8 @@ func (t *Text) Build(context *guigui.Context) error {
 		} else {
 			t.commit()
 		}
-	}
-	t.prevFocused = focused
+	})
+	t.prevFocused = context.IsFocused(t)
 
 	if t.selectable || t.editable {
 		t.cursor.text = t
