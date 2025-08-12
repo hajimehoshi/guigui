@@ -55,7 +55,6 @@ func toggleMaxCount() int {
 	return ebiten.TPS() / 12
 }
 
-
 func (t *Toggle) Build(context *guigui.Context) error {
 	if hovered := t.isHovered(context); t.prevHovered != hovered {
 		t.prevHovered = hovered

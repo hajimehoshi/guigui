@@ -130,7 +130,6 @@ type taskWidget struct {
 
 	doneButton basicwidget.Button
 	text       basicwidget.Text
-
 }
 
 const (
@@ -144,7 +143,6 @@ func (t *taskWidget) SetOnDoneButtonPressed(f func()) {
 func (t *taskWidget) SetText(text string) {
 	t.text.SetValue(text)
 }
-
 
 func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	appender.AppendChildWidget(&t.doneButton)
@@ -182,7 +180,6 @@ type tasksPanelContent struct {
 	guigui.DefaultWidget
 
 	taskWidgets []taskWidget
-
 }
 
 const (
@@ -192,7 +189,6 @@ const (
 func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 	guigui.RegisterEventHandler(t, tasksPanelContentEventDeleted, f)
 }
-
 
 func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
 	model := context.Model(t, modelKeyModel).(*Model)

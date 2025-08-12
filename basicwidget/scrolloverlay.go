@@ -282,7 +282,6 @@ func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
 	return false
 }
 
-
 func (s *ScrollOverlay) Build(context *guigui.Context) error {
 	cs := context.ActualSize(s)
 	if s.lastSize != cs {
