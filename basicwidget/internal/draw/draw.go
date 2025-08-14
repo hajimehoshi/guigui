@@ -100,7 +100,9 @@ func ensureWhiteRoundedRect(radius int) *ebiten.Image {
 	appendRoundedRectVectorPath(&path, 0, 0, float32(s), float32(s), float32(radius))
 	path.Close()
 
-	vector.FillPath(img, &path, color.White, true, vector.FillRuleNonZero)
+	drawPathOp := &vector.DrawPathOptions{}
+	drawPathOp.AntiAlias = true
+	vector.FillPath(img, &path, nil, drawPathOp)
 
 	whiteRoundedRects[key] = img
 
@@ -275,7 +277,11 @@ func whiteRoundedRectBorder(radius int, borderWidth float32, borderType RoundedR
 	path.Close()
 
 	img := ebiten.NewImage(s, s)
-	vector.FillPath(img, &path, color.White, true, vector.FillRuleEvenOdd)
+	fillOp := &vector.FillOptions{}
+	fillOp.FillRule = vector.FillRuleEvenOdd
+	drawOp := &vector.DrawPathOptions{}
+	drawOp.AntiAlias = true
+	vector.FillPath(img, &path, fillOp, drawOp)
 
 	return img
 }
