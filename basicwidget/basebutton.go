@@ -70,19 +70,19 @@ func (b *baseButton) HandlePointingInput(context *guigui.Context) guigui.HandleI
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			context.SetFocused(b, true)
 			b.setPressed(true)
-			guigui.InvokeEventHandler(b, baseButtonEventDown)
+			guigui.DispatchEventHandler(b, baseButtonEventDown)
 			if isMouseButtonRepeating(ebiten.MouseButtonLeft) {
-				guigui.InvokeEventHandler(b, baseButtonEventRepeat)
+				guigui.DispatchEventHandler(b, baseButtonEventRepeat)
 			}
 			return guigui.HandleInputByWidget(b)
 		}
 		if (b.pressed || b.pairedButton != nil && b.pairedButton.pressed) && isMouseButtonRepeating(ebiten.MouseButtonLeft) {
-			guigui.InvokeEventHandler(b, baseButtonEventRepeat)
+			guigui.DispatchEventHandler(b, baseButtonEventRepeat)
 			return guigui.HandleInputByWidget(b)
 		}
 		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && b.pressed {
 			b.setPressed(false)
-			guigui.InvokeEventHandler(b, baseButtonEventUp)
+			guigui.DispatchEventHandler(b, baseButtonEventUp)
 			guigui.RequestRedraw(b)
 			return guigui.HandleInputByWidget(b)
 		}

@@ -152,7 +152,7 @@ func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigu
 func (t *taskWidget) Build(context *guigui.Context) error {
 	t.doneButton.SetText("Done")
 	t.doneButton.SetOnUp(func() {
-		guigui.InvokeEventHandler(t, taskWidgetEventDoneButtonPressed)
+		guigui.DispatchEventHandler(t, taskWidgetEventDoneButtonPressed)
 	})
 
 	t.text.SetVerticalAlign(basicwidget.VerticalAlignMiddle)
@@ -207,7 +207,7 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 	for i := range model.TaskCount() {
 		task := model.TaskByIndex(i)
 		t.taskWidgets[i].SetOnDoneButtonPressed(func() {
-			guigui.InvokeEventHandler(t, tasksPanelContentEventDeleted, task.ID)
+			guigui.DispatchEventHandler(t, tasksPanelContentEventDeleted, task.ID)
 		})
 		t.taskWidgets[i].SetText(task.Text)
 	}

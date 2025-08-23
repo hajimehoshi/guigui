@@ -48,7 +48,7 @@ func (t *Toggle) SetValue(value bool) {
 	}
 	guigui.RequestRedraw(t)
 
-	guigui.InvokeEventHandler(t, toggleEventValueChanged, value)
+	guigui.DispatchEventHandler(t, toggleEventValueChanged, value)
 }
 
 func toggleMaxCount() int {

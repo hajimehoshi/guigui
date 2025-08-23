@@ -64,7 +64,7 @@ func (d *DropdownList[T]) Build(context *guigui.Context) error {
 	context.SetPosition(&d.button, context.Position(d))
 
 	d.popupMenu.SetOnItemSelected(func(index int) {
-		guigui.InvokeEventHandler(d, dropdownListEventItemSelected, index)
+		guigui.DispatchEventHandler(d, dropdownListEventItemSelected, index)
 	})
 	if !d.popupMenu.IsOpen() {
 		d.popupMenu.SetCheckmarkIndex(d.SelectedItemIndex())

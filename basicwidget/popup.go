@@ -226,7 +226,7 @@ func (p *Popup) Tick(context *guigui.Context) error {
 		if p.openingCount == 0 {
 			context.SetFocused(p, false)
 			p.hiding = false
-			guigui.InvokeEventHandler(p, popupEventClosed, p.closedReason)
+			guigui.DispatchEventHandler(p, popupEventClosed, p.closedReason)
 			p.closedReason = PopupClosedReasonNone
 			if p.openAfterClose {
 				if p.hasNextContentPosition {

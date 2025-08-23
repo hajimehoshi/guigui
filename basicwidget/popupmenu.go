@@ -51,7 +51,7 @@ func (p *PopupMenu[T]) Build(context *guigui.Context) error {
 	p.list.SetStyle(ListStyleMenu)
 	p.list.list.SetOnItemSelected(func(index int) {
 		p.popup.Close()
-		guigui.InvokeEventHandler(p, popupMenuEventItemSelected, index)
+		guigui.DispatchEventHandler(p, popupMenuEventItemSelected, index)
 	})
 
 	p.popup.SetContent(&p.list)

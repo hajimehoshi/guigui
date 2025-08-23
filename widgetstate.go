@@ -200,11 +200,11 @@ func IsEventHandlerRegistered(widget Widget, eventName string) bool {
 	return ok
 }
 
-func InvokeEventHandler(widget Widget, eventName string, args ...any) ([]any, bool) {
-	return invokeEventHandler(widget.widgetState(), eventName, args...)
+func DispatchEventHandler(widget Widget, eventName string, args ...any) ([]any, bool) {
+	return dispatchEventHandler(widget.widgetState(), eventName, args...)
 }
 
-func invokeEventHandler(widgetState *widgetState, eventName string, args ...any) ([]any, bool) {
+func dispatchEventHandler(widgetState *widgetState, eventName string, args ...any) ([]any, bool) {
 	hanlder, ok := widgetState.eventHandlers[eventName]
 	if !ok {
 		return nil, false

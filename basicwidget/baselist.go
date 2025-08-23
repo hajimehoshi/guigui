@@ -345,7 +345,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		}
 		if b.dragDstIndexPlus1 > 0 {
 			// TODO: Implement multiple items drop.
-			guigui.InvokeEventHandler(b, baseListEventItemsMoved, b.dragSrcIndexPlus1-1, 1, b.dragDstIndexPlus1-1)
+			guigui.DispatchEventHandler(b, baseListEventItemsMoved, b.dragSrcIndexPlus1-1, 1, b.dragDstIndexPlus1-1)
 			b.dragDstIndexPlus1 = 0
 		}
 		b.dragSrcIndexPlus1 = 0

@@ -60,7 +60,7 @@ func (a *abstractList[Value, Item]) SelectItemByIndex(widget guigui.Widget, inde
 	a.selectedIndices = adjustSliceSize(a.selectedIndices, 1)
 	a.selectedIndices[0] = index
 	if !selected || forceFireEvents {
-		guigui.InvokeEventHandler(widget, abstractListEventItemSelected, index)
+		guigui.DispatchEventHandler(widget, abstractListEventItemSelected, index)
 	}
 	return true
 }

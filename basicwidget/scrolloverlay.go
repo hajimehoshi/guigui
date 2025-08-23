@@ -187,7 +187,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 			}
 			s.adjustOffset(context)
 			if prevOffsetX != s.offsetX || prevOffsetY != s.offsetY {
-				guigui.InvokeEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
+				guigui.DispatchEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
 				guigui.RequestRedraw(s)
 			}
 		}
@@ -210,7 +210,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 		s.offsetY += dy * 4 * context.Scale()
 		s.adjustOffset(context)
 		if prevOffsetX != s.offsetX || prevOffsetY != s.offsetY {
-			guigui.InvokeEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
+			guigui.DispatchEventHandler(s, scrollOverlayEventScroll, s.offsetX, s.offsetY)
 			guigui.RequestRedraw(s)
 			return guigui.HandleInputByWidget(s)
 		}

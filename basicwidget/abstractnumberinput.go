@@ -45,10 +45,10 @@ func (a *abstractNumberInput) SetOnValueChangedUint64(widget guigui.Widget, f fu
 }
 
 func (a *abstractNumberInput) fireValueChangeEvents(widget guigui.Widget, force bool, committed bool) {
-	guigui.InvokeEventHandler(widget, abstractNumberInputEventValueChangedString, a.value.String(), force)
-	guigui.InvokeEventHandler(widget, abstractNumberInputEventValueChangedBigInt, a.ValueBigInt(), committed)
-	guigui.InvokeEventHandler(widget, abstractNumberInputEventValueChangedInt64, a.ValueInt64(), committed)
-	guigui.InvokeEventHandler(widget, abstractNumberInputEventValueChangedUint64, a.ValueUint64(), committed)
+	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedString, a.value.String(), force)
+	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedBigInt, a.ValueBigInt(), committed)
+	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedInt64, a.ValueInt64(), committed)
+	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedUint64, a.ValueUint64(), committed)
 }
 
 func (a *abstractNumberInput) ValueString() string {

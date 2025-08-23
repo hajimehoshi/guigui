@@ -278,7 +278,7 @@ func (t *Text) CommitWithCurrentInputValue() {
 		return
 	}
 	// Fire the event even if the text is not changed.
-	guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), true)
+	guigui.DispatchEventHandler(t, textEventValueChanged, t.field.Text(), true)
 }
 
 func (t *Text) setText(text string) bool {
@@ -317,7 +317,7 @@ func (t *Text) setTextAndSelection(text string, start, end int, shiftIndex int) 
 	guigui.RequestRedraw(t)
 	if textChanged {
 		t.resetCachedTextSize()
-		guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), false)
+		guigui.DispatchEventHandler(t, textEventValueChanged, t.field.Text(), false)
 	}
 	return true
 }
@@ -657,7 +657,7 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 	if t.field.UncommittedTextLengthInBytes() == 0 && guigui.IsEventHandlerRegistered(t, textEventKeyJustPressed) {
 		var handled bool
 		for _, key := range inpututil.AppendJustPressedKeys(nil) {
-			rets, _ := guigui.InvokeEventHandler(t, textEventKeyJustPressed, key)
+			rets, _ := guigui.DispatchEventHandler(t, textEventKeyJustPressed, key)
 			handled = handled || rets[0].(bool)
 		}
 		if handled {
@@ -686,7 +686,7 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 			// Reset the cache size before adjust the scroll offset in order to get the correct text size.
 			t.resetCachedTextSize()
 			if t.field.Text() != origText {
-				guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), false)
+				guigui.DispatchEventHandler(t, textEventValueChanged, t.field.Text(), false)
 			}
 			return guigui.HandleInputByWidget(t)
 		}
@@ -928,7 +928,7 @@ func (t *Text) HandleButtonInput(context *guigui.Context) guigui.HandleInputResu
 }
 
 func (t *Text) commit() {
-	guigui.InvokeEventHandler(t, textEventValueChanged, t.field.Text(), true)
+	guigui.DispatchEventHandler(t, textEventValueChanged, t.field.Text(), true)
 	t.nextText = ""
 	t.nextTextSet = false
 }
