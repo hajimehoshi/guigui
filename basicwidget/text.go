@@ -468,7 +468,7 @@ func (t *Text) setKeepTailingSpace(keep bool) {
 	guigui.RequestRedraw(t)
 }
 
-func (t *Text) textBounds(context *guigui.Context) image.Rectangle {
+func (t *Text) actualTextBounds(context *guigui.Context) image.Rectangle {
 	b := context.Bounds(t)
 
 	ts := t.DefaultSizeInContainer(context, context.ActualSize(t).X)
@@ -934,7 +934,7 @@ func (t *Text) commit() {
 }
 
 func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
-	textBounds := t.textBounds(context)
+	textBounds := t.actualTextBounds(context)
 	if !textBounds.Overlaps(context.VisibleBounds(t)) {
 		return
 	}
@@ -1050,7 +1050,7 @@ func (t *Text) cursorPosition(context *guigui.Context) (position textutil.TextPo
 }
 
 func (t *Text) textIndexFromPosition(context *guigui.Context, position image.Point, showComposition bool) int {
-	textBounds := t.textBounds(context)
+	textBounds := t.actualTextBounds(context)
 	if position.Y < textBounds.Min.Y {
 		return 0
 	}
@@ -1076,7 +1076,7 @@ func (t *Text) textIndexFromPosition(context *guigui.Context, position image.Poi
 }
 
 func (t *Text) textPosition(context *guigui.Context, index int, showComposition bool) (position textutil.TextPosition, ok bool) {
-	textBounds := t.textBounds(context)
+	textBounds := t.actualTextBounds(context)
 	if !textBounds.Overlaps(context.VisibleBounds(t)) && t.textToDraw(context, showComposition) != "" {
 		return textutil.TextPosition{}, false
 	}
