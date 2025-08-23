@@ -158,6 +158,6 @@ func (t *Toggle) isActive(context *guigui.Context) bool {
 	return context.IsEnabled(t) && t.isHovered(context) && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && t.pressed
 }
 
-func (t *Toggle) DefaultSize(context *guigui.Context) image.Point {
+func (t *Toggle) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return image.Pt(int(LineHeight(context)*1.75), int(LineHeight(context)))
 }

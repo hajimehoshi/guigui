@@ -259,8 +259,8 @@ func (n *NumberInput) HandleButtonInput(context *guigui.Context) guigui.HandleIn
 	return guigui.HandleInputResult{}
 }
 
-func (n *NumberInput) DefaultSize(context *guigui.Context) image.Point {
-	return n.textInput.DefaultSize(context)
+func (n *NumberInput) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return n.textInput.Measure(context, constraints)
 }
 
 func (n *NumberInput) increment() {

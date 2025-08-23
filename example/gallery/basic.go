@@ -79,7 +79,7 @@ func (b *Basic) Build(context *guigui.Context) error {
 				if row >= 1 {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(b.form.DefaultSizeInContainer(context, context.Bounds(b).Dx()-u).Y)
+				return layout.FixedSize(b.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y)
 			}),
 		},
 		RowGap: u / 2,

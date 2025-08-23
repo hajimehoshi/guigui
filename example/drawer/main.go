@@ -58,7 +58,7 @@ func (r *Root) Build(context *guigui.Context) error {
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(r),
 		Heights: []layout.Size{
-			layout.FixedSize(r.toolbar.DefaultSize(context).Y),
+			layout.FixedSize(r.toolbar.Measure(context, guigui.Constraints{}).Y),
 			layout.FlexibleSize(1),
 		},
 	}

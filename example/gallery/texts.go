@@ -193,7 +193,7 @@ func (t *Texts) Build(context *guigui.Context) error {
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FlexibleSize(1),
-			layout.FixedSize(t.form.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
+			layout.FixedSize(t.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
 		},
 		RowGap: u / 2,
 	}

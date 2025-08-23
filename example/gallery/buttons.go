@@ -155,9 +155,9 @@ func (b *Buttons) Build(context *guigui.Context) error {
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(b).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(b.buttonsForm.DefaultSizeInContainer(context, context.Bounds(b).Dx()-u).Y),
+			layout.FixedSize(b.buttonsForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(b.configForm.DefaultSizeInContainer(context, context.Bounds(b).Dx()-u).Y),
+			layout.FixedSize(b.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y),
 		},
 		RowGap: u / 2,
 	}

@@ -81,7 +81,7 @@ func (p *Popups) Build(context *guigui.Context) error {
 				if row >= len(p.forms) {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(p.forms[row].DefaultSizeInContainer(context, context.Bounds(p).Dx()-u).Y)
+				return layout.FixedSize(p.forms[row].Measure(context, guigui.FixedWidthConstraints(context.Bounds(p).Dx()-u)).Y)
 			}),
 		},
 		RowGap: u / 2,
@@ -160,7 +160,7 @@ func (s *simplePopupContent) Build(context *guigui.Context) error {
 				if row != 1 {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(s.closeButton.DefaultSize(context).Y)
+				return layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).Y)
 			}),
 		},
 	}
@@ -170,7 +170,7 @@ func (s *simplePopupContent) Build(context *guigui.Context) error {
 			Bounds: gl.CellBounds(0, 1),
 			Widths: []layout.Size{
 				layout.FlexibleSize(1),
-				layout.FixedSize(s.closeButton.DefaultSize(context).X),
+				layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).X),
 			},
 		}
 		context.SetBounds(&s.closeButton, gl.CellBounds(1, 0), s)

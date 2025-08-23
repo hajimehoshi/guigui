@@ -122,10 +122,10 @@ func (d *DropdownList[T]) SelectItemByValue(value T) {
 	d.popupMenu.SelectItemByValue(value)
 }
 
-func (d *DropdownList[T]) DefaultSize(context *guigui.Context) image.Point {
+func (d *DropdownList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	// Update the button content to reflect the current selected item.
 	d.updateButtonContent()
-	return d.button.DefaultSize(context)
+	return d.button.Measure(context, constraints)
 }
 
 func (d *DropdownList[T]) ItemTextColor(context *guigui.Context, index int) color.Color {
@@ -158,7 +158,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
 	bounds := context.Bounds(d)
 
 	if d.content != nil {
-		contentSize := d.content.DefaultSize(context)
+		contentSize := d.content.Measure(context, guigui.Constraints{})
 		contentP := image.Point{
 			X: bounds.Min.X + paddingStartX,
 			Y: bounds.Min.Y + (bounds.Dy()-contentSize.Y)/2,
@@ -166,7 +166,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
 		context.SetPosition(d.content, contentP)
 	}
 
-	textSize := d.text.DefaultSize(context)
+	textSize := d.text.Measure(context, guigui.Constraints{})
 	textP := image.Point{
 		X: bounds.Min.X + paddingStartX,
 		Y: bounds.Min.Y + (bounds.Dy()-textSize.Y)/2,
@@ -193,7 +193,7 @@ func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.Point {
+func (d *dropdownListButtonContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	paddingStartX := buttonEdgeAndTextPadding(context)
 	paddingEndX := buttonEdgeAndImagePadding(context)
 
@@ -201,7 +201,7 @@ func (d *dropdownListButtonContent) DefaultSize(context *guigui.Context) image.P
 	if d.content != nil {
 		contentSize = context.ActualSize(d.content)
 	}
-	textSize := d.text.DefaultSize(context)
+	textSize := d.text.Measure(context, constraints)
 	iconSize := defaultIconSize(context)
 	return image.Point{
 		X: paddingStartX + max(contentSize.X, textSize.X) + buttonTextAndImagePadding(context) + iconSize + paddingEndX,

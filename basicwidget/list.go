@@ -192,8 +192,8 @@ func (l *List[T]) SetItemString(str string, index int) {
 	l.listItemWidgets[index].item.Text = str
 }
 
-func (l *List[T]) DefaultSize(context *guigui.Context) image.Point {
-	return l.list.DefaultSize(context)
+func (l *List[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return l.list.Measure(context, constraints)
 }
 
 type listItemWidget[T comparable] struct {
@@ -275,7 +275,7 @@ func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	}*/
 }
 
-func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
+func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	var w, h int
 	if l.item.Content != nil {
 		s := context.ActualSize(l.item.Content)
@@ -283,7 +283,7 @@ func (l *listItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
 	}
 
 	// Assume that every item can use a bold font.
-	w = max(w, l.text.boldTextSize(context, 0).X)
+	w = max(w, l.text.boldTextSize(context, guigui.Constraints{}).X)
 	h = max(h, int(LineHeight(context)))
 	if l.item.Border {
 		h = UnitSize(context) / 2

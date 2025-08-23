@@ -72,7 +72,7 @@ func (r *Root) Build(context *guigui.Context) error {
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
 				if row == 0 {
-					return layout.FixedSize(r.configForm.DefaultSizeInContainer(context, context.Bounds(r).Dx()-u).Y)
+					return layout.FixedSize(r.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(r).Dx()-u)).Y)
 				}
 				return layout.FixedSize(0)
 			}),
@@ -93,7 +93,7 @@ func (r *Root) Build(context *guigui.Context) error {
 	{
 		var firstColumnWidth int
 		for j := range 4 {
-			firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].DefaultSize(context).X)
+			firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].Measure(context, guigui.Constraints{}).X)
 		}
 		gl := layout.GridLayout{
 			Bounds: gl.CellBounds(0, 1),
@@ -107,7 +107,7 @@ func (r *Root) Build(context *guigui.Context) error {
 				layout.LazySize(func(row int) layout.Size {
 					var height int
 					for i := range 4 {
-						height = max(height, r.buttons[4*row+i].DefaultSize(context).Y)
+						height = max(height, r.buttons[4*row+i].Measure(context, guigui.Constraints{}).Y)
 					}
 					return layout.FixedSize(height)
 				}),
@@ -128,7 +128,7 @@ func (r *Root) Build(context *guigui.Context) error {
 					context.SetBounds(widget, bounds, r)
 				} else {
 					pt := bounds.Min
-					s := widget.DefaultSize(context)
+					s := widget.Measure(context, guigui.Constraints{})
 					pt.X += (bounds.Dx() - s.X) / 2
 					pt.Y += (bounds.Dy() - s.Y) / 2
 					context.SetBounds(widget, image.Rectangle{

@@ -586,7 +586,7 @@ func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
 	return h + 2*r + b.headerHeight + b.footerHeight
 }
 
-func (b *baseList[T]) DefaultSize(context *guigui.Context) image.Point {
+func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	w := b.defaultWidth(context)
 	if b.checkmarkIndexPlus1 > 0 {
 		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)

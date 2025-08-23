@@ -168,7 +168,7 @@ func defaultButtonSize(context *guigui.Context) image.Point {
 	return image.Pt(6*UnitSize(context), UnitSize(context))
 }
 
-func (b *baseButton) DefaultSize(context *guigui.Context) image.Point {
+func (b *baseButton) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return defaultButtonSize(context)
 }
 

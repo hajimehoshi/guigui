@@ -301,6 +301,6 @@ func (s *Slider) isActive(context *guigui.Context) bool {
 	return context.IsEnabled(s) && s.isThumbHovered(context) && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && s.dragging
 }
 
-func (s *Slider) DefaultSize(context *guigui.Context) image.Point {
+func (s *Slider) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return image.Pt(6*UnitSize(context), UnitSize(context))
 }

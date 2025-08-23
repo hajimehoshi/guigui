@@ -169,10 +169,10 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (s *SegmentedControl[T]) DefaultSize(context *guigui.Context) image.Point {
+func (s *SegmentedControl[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	var w, h int
 	for i := range s.buttons {
-		size := s.buttons[i].defaultSize(context, true)
+		size := s.buttons[i].defaultSize(context, constraints, true)
 		w = max(w, size.X)
 		h = max(h, size.Y)
 	}

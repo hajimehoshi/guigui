@@ -303,7 +303,7 @@ func (p *popupFrame) Draw(context *guigui.Context, dst *ebiten.Image) {
 	draw.DrawRoundedRectBorder(context, dst, bounds, clr1, clr2, RoundedCornerRadius(context), float32(1*context.Scale()), draw.RoundedRectBorderTypeOutset)
 }
 
-func (p *popupFrame) DefaultSize(context *guigui.Context) image.Point {
+func (p *popupFrame) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return context.ActualSize(p.popup)
 }
 
@@ -363,7 +363,7 @@ func (p *popupBackground) Draw(context *guigui.Context, dst *ebiten.Image) {
 	draw.DrawBlurredImage(context, dst, p.backgroundCache, rate)
 }
 
-func (p *popupBackground) DefaultSize(context *guigui.Context) image.Point {
+func (p *popupBackground) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return context.ActualSize(p.popup)
 }
 
@@ -387,7 +387,7 @@ func (p *popupShadow) Draw(context *guigui.Context, dst *ebiten.Image) {
 	draw.DrawRoundedShadowRect(context, dst, bounds, clr, int(16*context.Scale())+RoundedCornerRadius(context))
 }
 
-func (p *popupShadow) DefaultSize(context *guigui.Context) image.Point {
+func (p *popupShadow) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return context.ActualSize(p.popup)
 }
 

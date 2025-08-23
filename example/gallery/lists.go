@@ -129,9 +129,9 @@ func (l *Lists) Build(context *guigui.Context) error {
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(l).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(l.listForm.DefaultSizeInContainer(context, context.Bounds(l).Dx()-u).Y),
+			layout.FixedSize(l.listForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(l).Dx()-u)).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(l.configForm.DefaultSizeInContainer(context, context.Bounds(l).Dx()-u).Y),
+			layout.FixedSize(l.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(l).Dx()-u)).Y),
 		},
 		RowGap: u / 2,
 	}

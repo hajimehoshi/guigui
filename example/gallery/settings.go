@@ -185,7 +185,7 @@ func (s *Settings) Build(context *guigui.Context) error {
 				if row >= 1 {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(s.form.DefaultSizeInContainer(context, context.Bounds(s).Dx()-u).Y)
+				return layout.FixedSize(s.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(s).Dx()-u)).Y)
 			}),
 		},
 		RowGap: u / 2,
@@ -221,8 +221,8 @@ func (t *textWithSubText) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *textWithSubText) DefaultSize(context *guigui.Context) image.Point {
-	s1 := t.text.DefaultSize(context)
-	s2 := t.subText.DefaultSize(context)
+func (t *textWithSubText) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	s1 := t.text.Measure(context, constraints)
+	s2 := t.subText.Measure(context, constraints)
 	return image.Pt(max(s1.X, s2.X), s1.Y+s2.Y)
 }

@@ -50,7 +50,7 @@ func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (f *Form) Build(context *guigui.Context) error {
-	f.calcItemBounds(context, context.Bounds(f).Dx())
+	f.calcItemBounds(context, context.ActualSize(f).X)
 
 	for i, item := range f.items {
 		if item.PrimaryWidget != nil {
@@ -161,8 +161,8 @@ func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
 	draw.DrawRoundedRectBorder(context, dst, bounds, borderClr, borderClr, RoundedCornerRadius(context), 1*float32(context.Scale()), draw.RoundedRectBorderTypeRegular)
 }
 
-func (f *Form) DefaultSize(context *guigui.Context) image.Point {
-	// DefaultSize should return the default size rather than an actual size.
+func (f *Form) measureWithoutConstraints(context *guigui.Context) image.Point {
+	// Measure without size constraints should return the default size rather than an actual size.
 	// Do not use itemBounds, primaryBounds, or secondaryBounds here.
 
 	paddingS := formItemPadding(context)
@@ -189,11 +189,16 @@ func (f *Form) DefaultSize(context *guigui.Context) image.Point {
 	return s
 }
 
-func (f *Form) DefaultSizeInContainer(context *guigui.Context, containerWidth int) image.Point {
-	f.calcItemBounds(context, containerWidth)
+func (f *Form) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	if len(f.itemBounds) == 0 {
 		return image.Point{}
 	}
+
+	if s := f.measureWithoutConstraints(context); s.X <= constraints.MaxSize().X {
+		return image.Pt(max(s.X, constraints.MinSize().X), s.Y)
+	}
+
+	f.calcItemBounds(context, constraints.MaxSize().X)
 	return f.itemBounds[len(f.itemBounds)-1].Max.Sub(f.itemBounds[0].Min)
 }
 

@@ -211,7 +211,7 @@ func (t *Table[T]) JumpToItemIndex(index int) {
 	t.list.JumpToItemIndex(index)
 }
 
-func (t *Table[T]) DefaultSize(context *guigui.Context) image.Point {
+func (t *Table[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return image.Pt(12*UnitSize(context), 6*UnitSize(context))
 }
 
@@ -247,7 +247,7 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *tableItemWidget[T]) DefaultSize(context *guigui.Context) image.Point {
+func (t *tableItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	var w, h int
 	for _, content := range t.item.Contents {
 		if content == nil {

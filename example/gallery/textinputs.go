@@ -236,9 +236,9 @@ func (t *TextInputs) Build(context *guigui.Context) error {
 	gl := layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
-			layout.FixedSize(t.textInputForm.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
+			layout.FixedSize(t.textInputForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
 			layout.FlexibleSize(1),
-			layout.FixedSize(t.configForm.DefaultSizeInContainer(context, context.Bounds(t).Dx()-u).Y),
+			layout.FixedSize(t.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
 		},
 		RowGap: u / 2,
 	}
@@ -265,7 +265,7 @@ func (c *inlineTextInputContainer) AppendChildWidgets(context *guigui.Context, a
 
 func (c *inlineTextInputContainer) Build(context *guigui.Context) error {
 	c.textInput.SetStyle(basicwidget.TextInputStyleInline)
-	if c.textInput.DefaultSize(context).X > context.ActualSize(c).X {
+	if c.textInput.Measure(context, guigui.Constraints{}).X > context.ActualSize(c).X {
 		context.SetSize(&c.textInput, image.Pt(context.ActualSize(c).X, guigui.AutoSize), c)
 	} else {
 		context.SetSize(&c.textInput, image.Pt(guigui.AutoSize, guigui.AutoSize), c)
@@ -283,6 +283,6 @@ func (c *inlineTextInputContainer) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (c *inlineTextInputContainer) DefaultSize(context *guigui.Context) image.Point {
-	return c.textInput.DefaultSize(context)
+func (c *inlineTextInputContainer) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return c.textInput.Measure(context, constraints)
 }

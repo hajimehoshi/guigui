@@ -66,7 +66,7 @@ func (p *PopupMenu[T]) Build(context *guigui.Context) error {
 func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 	pos := context.Position(p)
 	// List size can dynamically change based on the items. Use the default size.
-	s := p.list.DefaultSize(context)
+	s := p.list.Measure(context, guigui.Constraints{})
 	s.Y = min(s.Y, 24*UnitSize(context))
 	r := image.Rectangle{
 		Min: pos,

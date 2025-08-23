@@ -172,7 +172,7 @@ func (t *taskWidget) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *taskWidget) DefaultSize(context *guigui.Context) image.Point {
+func (t *taskWidget) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return image.Pt(6*int(basicwidget.UnitSize(context)), context.ActualSize(&t.doneButton).Y)
 }
 
@@ -234,7 +234,7 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *tasksPanelContent) DefaultSize(context *guigui.Context) image.Point {
+func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	u := basicwidget.UnitSize(context)
 	var h int
 	for i := range t.taskWidgets {

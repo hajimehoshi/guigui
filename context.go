@@ -265,12 +265,12 @@ func (c *Context) ActualSize(widget Widget) image.Point {
 	}
 	c.tmpWidgetStates = slices.Delete(c.tmpWidgetStates, 0, len(c.tmpWidgetStates))
 	if s.X == AutoSize || s.Y == AutoSize {
-		defaultSize := widget.DefaultSize(c)
+		size := widget.Measure(c, Constraints{})
 		if s.X == AutoSize {
-			s.X = defaultSize.X
+			s.X = size.X
 		}
 		if s.Y == AutoSize {
-			s.Y = defaultSize.Y
+			s.Y = size.Y
 		}
 	}
 	return s

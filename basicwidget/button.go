@@ -6,6 +6,7 @@ package basicwidget
 import (
 	"image"
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -114,7 +115,7 @@ func (b *Button) Build(context *guigui.Context) error {
 
 	imgSize := b.iconSize(context)
 
-	tw := b.text.DefaultSizeInContainer(context, context.ActualSize(b).X).X
+	tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(b).X, math.MaxInt))).X
 	if b.textColor != nil {
 		b.text.SetColor(b.textColor)
 	} else {
@@ -123,7 +124,7 @@ func (b *Button) Build(context *guigui.Context) error {
 	b.text.SetHorizontalAlign(HorizontalAlignCenter)
 	b.text.SetVerticalAlign(VerticalAlignMiddle)
 
-	ds := b.defaultSize(context, false)
+	ds := b.defaultSize(context, guigui.Constraints{}, false)
 
 	textP := context.Position(b)
 	if b.icon.HasImage() {
@@ -175,19 +176,19 @@ func (b *Button) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (b *Button) DefaultSize(context *guigui.Context) image.Point {
-	return b.defaultSize(context, false)
+func (b *Button) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return b.defaultSize(context, constraints, false)
 }
 
-func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Point {
+func (b *Button) defaultSize(context *guigui.Context, constraints guigui.Constraints, forceBold bool) image.Point {
 	h := defaultButtonSize(context).Y
 	var textAndImageW int
 	if b.text.Value() != "" {
 		textAndImageW += buttonEdgeAndTextPadding(context)
 		if forceBold {
-			textAndImageW += b.text.boldTextSize(context, 0).X
+			textAndImageW += b.text.boldTextSize(context, guigui.Constraints{}).X
 		} else {
-			textAndImageW += b.text.DefaultSizeInContainer(context, 0).X
+			textAndImageW += b.text.Measure(context, guigui.Constraints{}).X
 		}
 	}
 	if b.icon.HasImage() {
@@ -205,7 +206,7 @@ func (b *Button) defaultSize(context *guigui.Context, forceBold bool) image.Poin
 
 	var contentW int
 	if b.content != nil {
-		contentW = b.content.DefaultSize(context).X
+		contentW = b.content.Measure(context, constraints).X
 	}
 
 	return image.Pt(max(textAndImageW, contentW), h)

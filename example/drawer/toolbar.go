@@ -34,8 +34,8 @@ func (t *Toolbar) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *Toolbar) DefaultSize(context *guigui.Context) image.Point {
-	return t.content.DefaultSize(context)
+func (t *Toolbar) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return t.content.Measure(context, constraints)
 }
 
 type toolbarContent struct {
@@ -100,7 +100,7 @@ func (t *toolbarContent) Build(context *guigui.Context) error {
 	return nil
 }
 
-func (t *toolbarContent) DefaultSize(context *guigui.Context) image.Point {
+func (t *toolbarContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	u := basicwidget.UnitSize(context)
-	return image.Pt(t.DefaultWidget.DefaultSize(context).X, 2*u)
+	return image.Pt(t.DefaultWidget.Measure(context, constraints).X, 2*u)
 }

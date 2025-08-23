@@ -5,6 +5,7 @@ package basicwidget
 
 import (
 	"image"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -163,7 +164,7 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 
 func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 	start, top, end, bottom := t.textInputPaddingInScrollableContent(context)
-	return t.text.DefaultSizeInContainer(context, context.ActualSize(t).X-start-end).Add(image.Pt(start+end, top+bottom))
+	return t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt((context.ActualSize(t).X-start-end), math.MaxInt))).Add(image.Pt(start+end, top+bottom))
 }
 
 func (t *TextInput) isFocused(context *guigui.Context) bool {
@@ -203,7 +204,7 @@ func (t *TextInput) Build(context *guigui.Context) error {
 	t.text.setKeepTailingSpace(!t.text.autoWrap)
 
 	pt := context.Position(t)
-	s := t.text.DefaultSizeInContainer(context, context.ActualSize(t).X-paddingStart-paddingEnd)
+	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X-paddingStart-paddingEnd, math.MaxInt)))
 	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
 	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
 	textBounds := image.Rectangle{
@@ -307,11 +308,12 @@ func (t *TextInput) CursorShape(context *guigui.Context) (ebiten.CursorShapeType
 	return t.text.CursorShape(context)
 }
 
-func (t *TextInput) DefaultSize(context *guigui.Context) image.Point {
+func (t *TextInput) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	if t.style == TextInputStyleInline {
 		start, _, end, _ := t.textInputPaddingInScrollableContent(context)
-		w := max(t.text.DefaultSize(context).X+start+end, UnitSize(context))
-		h := t.text.DefaultSize(context).Y
+		s := t.text.Measure(context, constraints)
+		w := max(s.X+start+end, UnitSize(context))
+		h := s.Y
 		return image.Pt(w, h)
 	}
 	if t.text.IsMultiline() {
@@ -380,7 +382,7 @@ func (t *textInputFocus) ZDelta() int {
 	return 1
 }
 
-func (t *textInputFocus) DefaultSize(context *guigui.Context) image.Point {
+func (t *textInputFocus) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return context.ActualSize(t.textInput).Add(image.Pt(2*textInputFocusBorderWidth(context), 2*textInputFocusBorderWidth(context)))
 }
 

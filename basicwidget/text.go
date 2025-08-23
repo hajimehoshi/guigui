@@ -471,7 +471,7 @@ func (t *Text) setKeepTailingSpace(keep bool) {
 func (t *Text) actualTextBounds(context *guigui.Context) image.Rectangle {
 	b := context.Bounds(t)
 
-	ts := t.DefaultSizeInContainer(context, context.ActualSize(t).X)
+	ts := t.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X, math.MaxInt)))
 
 	switch t.vAlign {
 	case VerticalAlignTop:
@@ -984,31 +984,22 @@ func (t *Text) Draw(context *guigui.Context, dst *ebiten.Image) {
 	textutil.Draw(textBounds, dst, t.textToDraw(context, true), op)
 }
 
-func (t *Text) DefaultSize(context *guigui.Context) image.Point {
-	return t.textSize(context, 0, true, false)
+func (t *Text) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return t.textSize(context, constraints, false)
 }
 
-func (t *Text) DefaultSizeInContainer(context *guigui.Context, containerWidth int) image.Point {
-	return t.textSize(context, containerWidth, false, false)
+func (t *Text) boldTextSize(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	return t.textSize(context, constraints, true)
 }
 
-func (t *Text) boldTextSize(context *guigui.Context, containerWidth int) image.Point {
-	return t.textSize(context, containerWidth, false, true)
-}
-
-func (t *Text) textSize(context *guigui.Context, containerWidth int, forceUnwrap bool, forceBold bool) image.Point {
-	useAutoWrap := t.autoWrap && !forceUnwrap
-
-	key := newTextSizeCacheKey(useAutoWrap, t.bold || forceBold)
+func (t *Text) textSize(context *guigui.Context, constraints guigui.Constraints, forceBold bool) image.Point {
+	key := newTextSizeCacheKey(t.autoWrap, t.bold || forceBold)
 	if size := t.cachedTextSizePlus1[key]; size != (image.Point{}) {
 		return size.Sub(image.Pt(1, 1))
 	}
 
 	txt := t.textToDraw(context, true)
-	if containerWidth == 0 {
-		containerWidth = math.MaxInt
-	}
-	w, h := textutil.Measure(containerWidth, txt, useAutoWrap, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
+	w, h := textutil.Measure(constraints.MaxSize().X, txt, t.autoWrap, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
 	// If width is 0, the text's bounds and visible bounds are empty, and nothing including its cursor is rendered.
 	// Force to set a positive number as the width.
 	w = max(w, 1)
@@ -1186,7 +1177,7 @@ func (t *textCursor) ZDelta() int {
 	return 1
 }
 
-func (t *textCursor) DefaultSize(context *guigui.Context) image.Point {
+func (t *textCursor) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	return t.text.cursorBounds(context).Size()
 }
 

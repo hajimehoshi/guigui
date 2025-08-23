@@ -19,7 +19,7 @@ type Widget interface {
 	CursorShape(context *Context) (ebiten.CursorShapeType, bool)
 	Draw(context *Context, dst *ebiten.Image)
 	ZDelta() int
-	DefaultSize(context *Context) image.Point
+	Measure(context *Context, constraints Constraints) image.Point
 	PassThrough() bool
 
 	widgetState() *widgetState
