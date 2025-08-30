@@ -18,11 +18,11 @@ type Buttons struct {
 	buttonText            basicwidget.Text
 	button                basicwidget.Button
 	textIconButton1Text   basicwidget.Text
-	textIconButton1       basicwidget.Button
+	textIconButton1       guigui.WidgetWithSize[*basicwidget.Button]
 	textIconButton2Text   basicwidget.Text
-	textIconButton2       basicwidget.Button
+	textIconButton2       guigui.WidgetWithSize[*basicwidget.Button]
 	imageButtonText       basicwidget.Text
-	imageButton           basicwidget.Button
+	imageButton           guigui.WidgetWithSize[*basicwidget.Button]
 	segmentedControlHText basicwidget.Text
 	segmentedControlH     basicwidget.SegmentedControl[int]
 	segmentedControlVText basicwidget.Text
@@ -33,6 +33,8 @@ type Buttons struct {
 	configForm    basicwidget.Form
 	enabledText   basicwidget.Text
 	enabledToggle basicwidget.Toggle
+
+	layout layout.GridLayout
 }
 
 func (b *Buttons) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -50,30 +52,30 @@ func (b *Buttons) Build(context *guigui.Context) error {
 	context.SetEnabled(&b.button, model.Buttons().Enabled())
 
 	b.textIconButton1Text.SetValue("Button w/ text and icon (1)")
-	b.textIconButton1.SetText("Button")
+	b.textIconButton1.Widget().SetText("Button")
 	img, err := theImageCache.GetMonochrome("check", context.ColorMode())
 	if err != nil {
 		return err
 	}
-	b.textIconButton1.SetIcon(img)
+	b.textIconButton1.Widget().SetIcon(img)
 	context.SetEnabled(&b.textIconButton1, model.Buttons().Enabled())
-	context.SetSize(&b.textIconButton1, image.Pt(6*u, guigui.AutoSize), b)
+	b.textIconButton1.SetFixedWidth(6 * u)
 
 	b.textIconButton2Text.SetValue("Button w/ text and icon (2)")
-	b.textIconButton2.SetText("Button")
-	b.textIconButton2.SetIcon(img)
-	b.textIconButton2.SetIconAlign(basicwidget.IconAlignEnd)
+	b.textIconButton2.Widget().SetText("Button")
+	b.textIconButton2.Widget().SetIcon(img)
+	b.textIconButton2.Widget().SetIconAlign(basicwidget.IconAlignEnd)
 	context.SetEnabled(&b.textIconButton2, model.Buttons().Enabled())
-	context.SetSize(&b.textIconButton2, image.Pt(6*u, guigui.AutoSize), b)
+	b.textIconButton2.SetFixedWidth(6 * u)
 
 	b.imageButtonText.SetValue("Image button")
 	img, err = theImageCache.Get("gopher")
 	if err != nil {
 		return err
 	}
-	b.imageButton.SetIcon(img)
+	b.imageButton.Widget().SetIcon(img)
 	context.SetEnabled(&b.imageButton, model.Buttons().Enabled())
-	context.SetSize(&b.imageButton, image.Pt(2*u, 2*u), b)
+	b.imageButton.SetFixedSize(image.Pt(2*u, 2*u))
 
 	b.segmentedControlHText.SetValue("Segmented control (Horizontal)")
 	b.segmentedControlH.SetItems([]basicwidget.SegmentedControlItem[int]{
@@ -152,7 +154,7 @@ func (b *Buttons) Build(context *guigui.Context) error {
 		},
 	})
 
-	gl := layout.GridLayout{
+	b.layout = layout.GridLayout{
 		Bounds: context.Bounds(b).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FixedSize(b.buttonsForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y),
@@ -161,8 +163,16 @@ func (b *Buttons) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&b.buttonsForm, gl.CellBounds(0, 0), b)
-	context.SetBounds(&b.configForm, gl.CellBounds(0, 2), b)
 
 	return nil
+}
+
+func (b *Buttons) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &b.buttonsForm:
+		return b.layout.CellBounds(0, 0)
+	case &b.configForm:
+		return b.layout.CellBounds(0, 2)
+	}
+	return image.Rectangle{}
 }

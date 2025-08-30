@@ -26,6 +26,11 @@ func (*DefaultWidget) Build(context *Context) error {
 	return nil
 }
 
+func (*DefaultWidget) Layout(context *Context, widget Widget) image.Rectangle {
+	// TODO: Return appropriate bounds for the child widgets.
+	return image.Rectangle{}
+}
+
 func (*DefaultWidget) HandlePointingInput(context *Context) HandleInputResult {
 	return HandleInputResult{}
 }

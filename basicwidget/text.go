@@ -213,11 +213,17 @@ func (t *Text) Build(context *guigui.Context) error {
 
 	if t.selectable || t.editable {
 		t.cursor.text = t
-		b := t.cursorBounds(context)
-		context.SetBounds(&t.cursor, b, t)
 	}
 
 	return nil
+}
+
+func (t *Text) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.cursor:
+		return t.cursorBounds(context)
+	}
+	return image.Rectangle{}
 }
 
 func (t *Text) SetSelectable(selectable bool) {

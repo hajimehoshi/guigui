@@ -90,19 +90,21 @@ func (l *List[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 }
 
 func (l *List[T]) Build(context *guigui.Context) error {
-	context.SetSize(&l.list, context.ActualSize(l), l)
-
 	l.updateListItems()
-
-	context.SetPosition(&l.list, context.Position(l))
-
 	for i := range l.listItemWidgets {
 		item := &l.listItemWidgets[i]
 		item.text.SetBold(item.item.Header || l.list.style == ListStyleSidebar && l.SelectedItemIndex() == i)
 		item.text.SetColor(l.ItemTextColor(context, i))
 	}
-
 	return nil
+}
+
+func (l *List[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &l.list:
+		return context.Bounds(l)
+	}
+	return image.Rectangle{}
 }
 
 func (l *List[T]) ItemTextColor(context *guigui.Context, index int) color.Color {
@@ -223,31 +225,41 @@ func (l *listItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender
 }
 
 func (l *listItemWidget[T]) Build(context *guigui.Context) error {
-	if l.item.Content != nil {
-		s := image.Pt(guigui.AutoSize, guigui.AutoSize)
+	l.text.SetValue(l.item.Text)
+	l.text.SetVerticalAlign(VerticalAlignMiddle)
+	return nil
+}
+
+func (l *listItemWidget[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case l.item.Content:
+		b := context.Bounds(l)
+		s := l.item.Content.Measure(context, guigui.Constraints{})
 		if l.style != ListStyleMenu {
-			s.X = context.ActualSize(l).X
+			s.X = b.Dx()
 		}
 		if l.heightPlus1 > 0 {
 			s.Y = l.heightPlus1 - 1
 		}
-		context.SetSize(l.item.Content, s, l)
-		context.SetPosition(l.item.Content, context.Bounds(l).Min)
+		return image.Rectangle{
+			Min: b.Min,
+			Max: b.Min.Add(s),
+		}
+	case &l.text:
+		b := context.Bounds(l)
+		s := l.text.Measure(context, guigui.Constraints{})
+		if l.style != ListStyleMenu {
+			s.X = b.Dx()
+		}
+		if l.heightPlus1 > 0 {
+			s.Y = l.heightPlus1 - 1
+		}
+		return image.Rectangle{
+			Min: b.Min,
+			Max: b.Min.Add(s),
+		}
 	}
-
-	l.text.SetValue(l.item.Text)
-	l.text.SetVerticalAlign(VerticalAlignMiddle)
-	s := image.Pt(guigui.AutoSize, guigui.AutoSize)
-	if l.style != ListStyleMenu {
-		s.X = context.ActualSize(l).X
-	}
-	if l.heightPlus1 > 0 {
-		s.Y = l.heightPlus1 - 1
-	}
-	context.SetSize(&l.text, s, l)
-	context.SetPosition(&l.text, context.Bounds(l).Min)
-
-	return nil
+	return image.Rectangle{}
 }
 
 func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {

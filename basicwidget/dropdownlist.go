@@ -61,8 +61,6 @@ func (d *DropdownList[T]) Build(context *guigui.Context) error {
 	d.button.setKeepPressed(d.popupMenu.IsOpen())
 	d.button.SetIconAlign(IconAlignEnd)
 
-	context.SetPosition(&d.button, context.Position(d))
-
 	d.popupMenu.SetOnItemSelected(func(index int) {
 		guigui.DispatchEventHandler(d, dropdownListEventItemSelected, index)
 	})
@@ -70,16 +68,31 @@ func (d *DropdownList[T]) Build(context *guigui.Context) error {
 		d.popupMenu.SetCheckmarkIndex(d.SelectedItemIndex())
 	}
 
-	pt := context.Position(d)
-	pt.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
-	pt.X = max(pt.X, 0)
-	pt.Y -= RoundedCornerRadius(context)
-	pt.Y += int((float64(context.ActualSize(d).Y) - LineHeight(context)) / 2)
-	pt.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
-	pt.Y = max(pt.Y, 0)
-	context.SetPosition(&d.popupMenu, pt)
-
 	return nil
+}
+
+func (d *DropdownList[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &d.button:
+		p := context.Position(d)
+		return image.Rectangle{
+			Min: p,
+			Max: p.Add(d.button.Measure(context, guigui.Constraints{})),
+		}
+	case &d.popupMenu:
+		p := context.Position(d)
+		p.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
+		p.X = max(p.X, 0)
+		p.Y -= RoundedCornerRadius(context)
+		p.Y += int((float64(context.ActualSize(d).Y) - LineHeight(context)) / 2)
+		p.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
+		p.Y = max(p.Y, 0)
+		return image.Rectangle{
+			Min: p,
+			Max: p.Add(d.popupMenu.Measure(context, guigui.Constraints{})),
+		}
+	}
+	return image.Rectangle{}
 }
 
 func (d *DropdownList[T]) SetItems(items []DropdownListItem[T]) {
@@ -153,44 +166,51 @@ func (d *dropdownListButtonContent) AppendChildWidgets(context *guigui.Context, 
 }
 
 func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
-	paddingStartX := buttonEdgeAndTextPadding(context)
-
-	bounds := context.Bounds(d)
-
-	if d.content != nil {
-		contentSize := d.content.Measure(context, guigui.Constraints{})
-		contentP := image.Point{
-			X: bounds.Min.X + paddingStartX,
-			Y: bounds.Min.Y + (bounds.Dy()-contentSize.Y)/2,
-		}
-		context.SetPosition(d.content, contentP)
-	}
-
-	textSize := d.text.Measure(context, guigui.Constraints{})
-	textP := image.Point{
-		X: bounds.Min.X + paddingStartX,
-		Y: bounds.Min.Y + (bounds.Dy()-textSize.Y)/2,
-	}
-	context.SetPosition(&d.text, textP)
-
 	img, err := theResourceImages.Get("unfold_more", context.ColorMode())
 	if err != nil {
 		return err
 	}
 	d.image.SetImage(img)
-
-	iconSize := defaultIconSize(context)
-	imgP := image.Point{
-		X: bounds.Max.X - buttonEdgeAndImagePadding(context) - iconSize,
-		Y: bounds.Min.Y + (bounds.Dy()-iconSize)/2,
-	}
-	imgBounds := image.Rectangle{
-		Min: imgP,
-		Max: imgP.Add(image.Pt(iconSize, iconSize)),
-	}
-	context.SetBounds(&d.image, imgBounds, d)
-
 	return nil
+}
+
+func (d *dropdownListButtonContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	bounds := context.Bounds(d)
+	paddingStartX := buttonEdgeAndTextPadding(context)
+
+	switch widget {
+	case d.content:
+		contentSize := d.content.Measure(context, guigui.Constraints{})
+		contentP := image.Point{
+			X: bounds.Min.X + paddingStartX,
+			Y: bounds.Min.Y + (bounds.Dy()-contentSize.Y)/2,
+		}
+		return image.Rectangle{
+			Min: contentP,
+			Max: contentP.Add(contentSize),
+		}
+	case &d.text:
+		textSize := d.text.Measure(context, guigui.Constraints{})
+		textP := image.Point{
+			X: bounds.Min.X + paddingStartX,
+			Y: bounds.Min.Y + (bounds.Dy()-textSize.Y)/2,
+		}
+		return image.Rectangle{
+			Min: textP,
+			Max: textP.Add(textSize),
+		}
+	case &d.image:
+		iconSize := defaultIconSize(context)
+		imgP := image.Point{
+			X: bounds.Max.X - buttonEdgeAndImagePadding(context) - iconSize,
+			Y: bounds.Min.Y + (bounds.Dy()-iconSize)/2,
+		}
+		return image.Rectangle{
+			Min: imgP,
+			Max: imgP.Add(image.Pt(iconSize, iconSize)),
+		}
+	}
+	return image.Rectangle{}
 }
 
 func (d *dropdownListButtonContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {

@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"slices"
 	"strconv"
 
@@ -28,6 +29,8 @@ type Tables struct {
 
 	tableItems       []basicwidget.TableItem[int]
 	tableItemWidgets []guigui.Widget
+
+	layout layout.GridLayout
 }
 
 func (t *Tables) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -156,7 +159,7 @@ func (t *Tables) Build(context *guigui.Context) error {
 		},
 	})
 
-	gl := layout.GridLayout{
+	t.layout = layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FixedSize(12 * u),
@@ -165,7 +168,15 @@ func (t *Tables) Build(context *guigui.Context) error {
 		},
 	}
 
-	context.SetBounds(&t.table, gl.CellBounds(0, 0), t)
-	context.SetBounds(&t.configForm, gl.CellBounds(0, 2), t)
 	return nil
+}
+
+func (t *Tables) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.table:
+		return t.layout.CellBounds(0, 0)
+	case &t.configForm:
+		return t.layout.CellBounds(0, 2)
+	}
+	return image.Rectangle{}
 }

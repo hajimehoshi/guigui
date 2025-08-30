@@ -136,12 +136,21 @@ func (p *Popup) Build(context *guigui.Context) error {
 	context.SetOpacity(&p.content, p.openingRate())
 	context.SetOpacity(&p.frame, p.openingRate())
 
-	context.SetBounds(&p.background, context.AppBounds(), p)
-	context.SetBounds(&p.shadow, context.AppBounds(), p)
-	context.SetBounds(&p.content, p.ContentBounds(context), p)
-	context.SetBounds(&p.frame, context.AppBounds(), p)
-
 	return nil
+}
+
+func (p *Popup) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &p.background:
+		return context.AppBounds()
+	case &p.shadow:
+		return context.AppBounds()
+	case &p.content:
+		return p.ContentBounds(context)
+	case &p.frame:
+		return context.AppBounds()
+	}
+	return image.Rectangle{}
 }
 
 func (p *Popup) Open(context *guigui.Context) {
@@ -267,11 +276,15 @@ func (p *popupContent) AppendChildWidgets(context *guigui.Context, appender *gui
 	}
 }
 
-func (p *popupContent) Build(context *guigui.Context) error {
-	if p.content != nil {
-		context.SetPosition(p.content, context.Position(p))
+func (p *popupContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case p.content:
+		return image.Rectangle{
+			Min: context.Position(p),
+			Max: context.Position(p).Add(context.ActualSize(p)),
+		}
 	}
-	return nil
+	return image.Rectangle{}
 }
 
 func (p *popupContent) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {

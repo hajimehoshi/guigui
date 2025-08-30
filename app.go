@@ -382,6 +382,16 @@ func (a *app) build() error {
 			return err
 		}
 
+		for _, child := range widget.widgetState().children {
+			b := widget.Layout(&a.context, child)
+			// Skip calling SetBounds if bounds are empty, for backwards compatibility.
+			// Remove this special treatment when SetBounds, SetPosition, and SetSize are removed.
+			if b.Empty() {
+				continue
+			}
+			a.context.SetBounds(child, b, widget)
+		}
+
 		a.visitedZs[widgetState.z] = struct{}{}
 
 		return nil

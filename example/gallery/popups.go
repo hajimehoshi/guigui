@@ -28,9 +28,12 @@ type Popups struct {
 	contextMenuPopupClickHereText basicwidget.Text
 
 	simplePopup        basicwidget.Popup
-	simplePopupContent simplePopupContent
+	simplePopupContent guigui.WidgetWithSize[*simplePopupContent]
 
 	contextMenuPopup basicwidget.PopupMenu[int]
+
+	layout                   layout.GridLayout
+	contextMenuPopupPosition image.Point
 }
 
 func (p *Popups) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -74,7 +77,7 @@ func (p *Popups) Build(context *guigui.Context) error {
 	})
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	p.layout = layout.GridLayout{
 		Bounds: context.Bounds(p).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
@@ -86,28 +89,14 @@ func (p *Popups) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	for i := range p.forms {
-		context.SetBounds(&p.forms[i], gl.CellBounds(0, i), p)
-	}
 
-	p.simplePopupContent.popup = &p.simplePopup
+	p.simplePopupContent.Widget().SetPopup(&p.simplePopup)
 	p.simplePopup.SetContent(&p.simplePopupContent)
 	p.simplePopup.SetBackgroundBlurred(p.blurBackgroundToggle.Value())
 	p.simplePopup.SetCloseByClickingOutside(p.closeByClickingOutsideToggle.Value())
 	p.simplePopup.SetAnimationDuringFade(true)
 
-	appBounds := context.AppBounds()
-	contentSize := image.Pt(int(12*u), int(6*u))
-	simplePopupPosition := image.Point{
-		X: appBounds.Min.X + (appBounds.Dx()-contentSize.X)/2,
-		Y: appBounds.Min.Y + (appBounds.Dy()-contentSize.Y)/2,
-	}
-	simplePopupBounds := image.Rectangle{
-		Min: simplePopupPosition,
-		Max: simplePopupPosition.Add(contentSize),
-	}
-	context.SetSize(&p.simplePopupContent, simplePopupBounds.Size(), p)
-	context.SetBounds(&p.simplePopup, simplePopupBounds, p)
+	p.simplePopupContent.SetFixedSize(p.contentSize(context))
 
 	p.contextMenuPopup.SetItemsByStrings([]string{"Item 1", "Item 2", "Item 3"})
 	// A context menu's position is updated at HandlePointingInput.
@@ -115,12 +104,42 @@ func (p *Popups) Build(context *guigui.Context) error {
 	return nil
 }
 
+func (p *Popups) contentSize(context *guigui.Context) image.Point {
+	u := basicwidget.UnitSize(context)
+	return image.Pt(int(12*u), int(6*u))
+}
+
+func (p *Popups) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &p.forms[0]:
+		return p.layout.CellBounds(0, 0)
+	case &p.forms[1]:
+		return p.layout.CellBounds(0, 1)
+	case &p.simplePopup:
+		appBounds := context.AppBounds()
+		contentSize := p.contentSize(context)
+		p := image.Point{
+			X: appBounds.Min.X + (appBounds.Dx()-contentSize.X)/2,
+			Y: appBounds.Min.Y + (appBounds.Dy()-contentSize.Y)/2,
+		}
+		return image.Rectangle{
+			Min: p,
+			Max: p.Add(contentSize),
+		}
+	case &p.contextMenuPopup:
+		return image.Rectangle{
+			Min: p.contextMenuPopupPosition,
+			Max: p.contextMenuPopupPosition.Add(p.contextMenuPopup.Measure(context, guigui.Constraints{})),
+		}
+	}
+	return image.Rectangle{}
+}
+
 func (p *Popups) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		// Use IsWidgetOrBackgroundHitAtCursor. context.IsWidgetHitAtCursor doesn't work when a popup's transparent background exists.
 		if p.contextMenuPopup.IsWidgetOrBackgroundHitAtCursor(context, &p.contextMenuPopupClickHereText) {
-			pt := image.Pt(ebiten.CursorPosition())
-			context.SetPosition(&p.contextMenuPopup, pt)
+			p.contextMenuPopupPosition = image.Pt(ebiten.CursorPosition())
 			p.contextMenuPopup.Open(context)
 		}
 	}
@@ -134,6 +153,13 @@ type simplePopupContent struct {
 
 	titleText   basicwidget.Text
 	closeButton basicwidget.Button
+
+	mainLayout   layout.GridLayout
+	footerLayout layout.GridLayout
+}
+
+func (s *simplePopupContent) SetPopup(popup *basicwidget.Popup) {
+	s.popup = popup
 }
 
 func (s *simplePopupContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -152,7 +178,7 @@ func (s *simplePopupContent) Build(context *guigui.Context) error {
 		s.popup.Close()
 	})
 
-	gl := layout.GridLayout{
+	s.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(s).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FlexibleSize(1),
@@ -164,17 +190,23 @@ func (s *simplePopupContent) Build(context *guigui.Context) error {
 			}),
 		},
 	}
-	context.SetBounds(&s.titleText, gl.CellBounds(0, 0), s)
-	{
-		gl := layout.GridLayout{
-			Bounds: gl.CellBounds(0, 1),
-			Widths: []layout.Size{
-				layout.FlexibleSize(1),
-				layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).X),
-			},
-		}
-		context.SetBounds(&s.closeButton, gl.CellBounds(1, 0), s)
+	s.footerLayout = layout.GridLayout{
+		Bounds: s.mainLayout.CellBounds(0, 1),
+		Widths: []layout.Size{
+			layout.FlexibleSize(1),
+			layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).X),
+		},
 	}
 
 	return nil
+}
+
+func (s *simplePopupContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &s.titleText:
+		return s.mainLayout.CellBounds(0, 0)
+	case &s.closeButton:
+		return s.footerLayout.CellBounds(1, 0)
+	}
+	return image.Rectangle{}
 }

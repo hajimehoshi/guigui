@@ -68,6 +68,8 @@ type baseList[T comparable] struct {
 
 	cachedDefaultWidth         int
 	cachedDefaultContentHeight int
+
+	itemBoundsForLayout map[guigui.Widget]image.Rectangle
 }
 
 func listItemPadding(context *guigui.Context) int {
@@ -156,17 +158,16 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 		b.indexToJumpPlus1 = 0
 	}
 
-	bounds := context.Bounds(b)
-	bounds.Min.Y += b.headerHeight
-	bounds.Max.Y -= b.footerHeight
-	context.SetBounds(&b.scrollOverlay, bounds, b)
-
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	p := context.Position(b)
 	offsetX, offsetY := b.scrollOverlay.Offset()
 	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
+	clear(b.itemBoundsForLayout)
+	if b.itemBoundsForLayout == nil {
+		b.itemBoundsForLayout = map[guigui.Widget]image.Rectangle{}
+	}
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
@@ -185,10 +186,10 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
-			context.SetBounds(&b.checkmark, image.Rectangle{
+			b.itemBoundsForLayout[&b.checkmark] = image.Rectangle{
 				Min: imgP,
 				Max: imgP.Add(image.Pt(imgSize, imgSize)),
-			}, b)
+			}
 		}
 
 		itemP := p
@@ -196,17 +197,35 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 			itemP.X += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 		}
 		itemP.Y = b.adjustItemY(context, itemP.Y)
+		b.itemBoundsForLayout[item.Content] = image.Rectangle{
+			Min: itemP,
+			Max: itemP.Add(item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X))),
+		}
 
-		context.SetPosition(item.Content, itemP)
 		p.Y += item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
 		b.listFrame.list = b
-		context.SetBounds(&b.listFrame, context.Bounds(b), b)
 	}
 
 	return nil
+}
+
+func (b *baseList[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &b.listFrame:
+		return context.Bounds(b)
+	case &b.scrollOverlay:
+		bounds := context.Bounds(b)
+		bounds.Min.Y += b.headerHeight
+		bounds.Max.Y -= b.footerHeight
+		return bounds
+	}
+	if r, ok := b.itemBoundsForLayout[widget]; ok {
+		return r
+	}
+	return image.Rectangle{}
 }
 
 func (b *baseList[T]) hasMovableItems() bool {

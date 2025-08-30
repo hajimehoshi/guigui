@@ -4,6 +4,8 @@
 package main
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 )
@@ -12,7 +14,7 @@ type LeftPanel struct {
 	guigui.DefaultWidget
 
 	panel   basicwidget.Panel
-	content leftPanelContent
+	content guigui.WidgetWithSize[*leftPanelContent]
 }
 
 func (l *LeftPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -24,11 +26,18 @@ func (l *LeftPanel) Build(context *guigui.Context) error {
 	l.panel.SetBorder(basicwidget.PanelBorder{
 		End: true,
 	})
-	context.SetSize(&l.content, context.ActualSize(l), l)
+	l.content.SetFixedSize(context.ActualSize(l))
 	l.panel.SetContent(&l.content)
 
-	context.SetBounds(&l.panel, context.Bounds(l), l)
 	return nil
+}
+
+func (l *LeftPanel) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &l.panel:
+		return context.Bounds(l)
+	}
+	return image.Rectangle{}
 }
 
 type leftPanelContent struct {
@@ -45,7 +54,14 @@ func (l *leftPanelContent) Build(context *guigui.Context) error {
 	l.text.SetValue("Left panel: " + dummyText)
 	l.text.SetAutoWrap(true)
 	l.text.SetSelectable(true)
-	u := basicwidget.UnitSize(context)
-	context.SetBounds(&l.text, context.Bounds(l).Inset(u/2), l)
 	return nil
+}
+
+func (l *leftPanelContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &l.text:
+		u := basicwidget.UnitSize(context)
+		return context.Bounds(l).Inset(u / 2)
+	}
+	return image.Rectangle{}
 }

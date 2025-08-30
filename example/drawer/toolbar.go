@@ -15,7 +15,7 @@ type Toolbar struct {
 	guigui.DefaultWidget
 
 	panel   basicwidget.Panel
-	content toolbarContent
+	content guigui.WidgetWithSize[*toolbarContent]
 }
 
 func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -27,15 +27,23 @@ func (t *Toolbar) Build(context *guigui.Context) error {
 	t.panel.SetBorder(basicwidget.PanelBorder{
 		Bottom: true,
 	})
-	context.SetSize(&t.content, context.ActualSize(t), t)
+	t.content.SetFixedSize(context.ActualSize(t))
 	t.panel.SetContent(&t.content)
-	context.SetBounds(&t.panel, context.Bounds(t), t)
 
 	return nil
 }
 
+func (t *Toolbar) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.panel:
+		return context.Bounds(t)
+	}
+	return image.Rectangle{}
+}
+
 func (t *Toolbar) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return t.content.Measure(context, constraints)
+	u := basicwidget.UnitSize(context)
+	return image.Pt(t.DefaultWidget.Measure(context, constraints).X, 2*u)
 }
 
 type toolbarContent struct {
@@ -43,6 +51,8 @@ type toolbarContent struct {
 
 	leftPanelButton  basicwidget.Button
 	rightPanelButton basicwidget.Button
+
+	layout layout.GridLayout
 }
 
 func (t *toolbarContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -54,7 +64,7 @@ func (t *toolbarContent) Build(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	t.layout = layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 4),
 		Widths: []layout.Size{
 			layout.FixedSize(u * 3 / 2),
@@ -94,13 +104,16 @@ func (t *toolbarContent) Build(context *guigui.Context) error {
 	t.rightPanelButton.SetOnDown(func() {
 		model.SetRightPanelOpen(!model.IsRightPanelOpen())
 	})
-	context.SetBounds(&t.leftPanelButton, gl.CellBounds(0, 0), t)
-	context.SetBounds(&t.rightPanelButton, gl.CellBounds(2, 0), t)
 
 	return nil
 }
 
-func (t *toolbarContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	u := basicwidget.UnitSize(context)
-	return image.Pt(t.DefaultWidget.Measure(context, constraints).X, 2*u)
+func (t *toolbarContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.leftPanelButton:
+		return t.layout.CellBounds(0, 0)
+	case &t.rightPanelButton:
+		return t.layout.CellBounds(2, 0)
+	}
+	return image.Rectangle{}
 }

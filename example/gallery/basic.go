@@ -4,6 +4,8 @@
 package main
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 	"github.com/hajimehoshi/guigui/layout"
@@ -25,6 +27,8 @@ type Basic struct {
 	slider          basicwidget.Slider
 	listText        basicwidget.Text
 	list            basicwidget.List[int]
+
+	layout layout.GridLayout
 }
 
 func (b *Basic) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -72,7 +76,7 @@ func (b *Basic) Build(context *guigui.Context) error {
 	})
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	b.layout = layout.GridLayout{
 		Bounds: context.Bounds(b).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
@@ -84,7 +88,14 @@ func (b *Basic) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&b.form, gl.CellBounds(0, 0), b)
 
 	return nil
+}
+
+func (b *Basic) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &b.form:
+		return b.layout.CellBounds(0, 0)
+	}
+	return image.Rectangle{}
 }

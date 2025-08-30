@@ -23,6 +23,8 @@ type Settings struct {
 	localeDropdownList        basicwidget.DropdownList[language.Tag]
 	scaleText                 basicwidget.Text
 	scaleSegmentedControl     basicwidget.SegmentedControl[float64]
+
+	layout layout.GridLayout
 }
 
 var hongKongChinese = language.MustParse("zh-HK")
@@ -178,7 +180,7 @@ func (s *Settings) Build(context *guigui.Context) error {
 	})
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	s.layout = layout.GridLayout{
 		Bounds: context.Bounds(s).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
@@ -190,9 +192,16 @@ func (s *Settings) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&s.form, gl.CellBounds(0, 0), s)
 
 	return nil
+}
+
+func (s *Settings) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &s.form:
+		return s.layout.CellBounds(0, 0)
+	}
+	return image.Rectangle{}
 }
 
 type textWithSubText struct {
@@ -208,17 +217,30 @@ func (t *textWithSubText) AppendChildWidgets(context *guigui.Context, appender *
 }
 
 func (t *textWithSubText) Build(context *guigui.Context) error {
-	pt := context.Position(t)
-	context.SetPosition(&t.text, pt)
-
-	pt.Y += context.ActualSize(&t.text).Y
 	t.subText.SetScale(0.875)
 	t.subText.SetMultiline(true)
 	t.subText.SetAutoWrap(true)
 	t.subText.SetOpacity(0.675)
-	context.SetPosition(&t.subText, pt)
-
 	return nil
+}
+
+func (t *textWithSubText) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.text:
+		pt := context.Position(t)
+		return image.Rectangle{
+			Min: pt,
+			Max: pt.Add(t.text.Measure(context, guigui.Constraints{})),
+		}
+	case &t.subText:
+		pt := context.Position(t)
+		pt.Y += context.ActualSize(&t.text).Y
+		return image.Rectangle{
+			Min: pt,
+			Max: pt.Add(t.subText.Measure(context, guigui.Constraints{})),
+		}
+	}
+	return image.Rectangle{}
 }
 
 func (t *textWithSubText) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {

@@ -99,16 +99,28 @@ func (p *Panel) Build(context *guigui.Context) error {
 		p.nextOffsetY = 0
 	}
 
-	offsetX, offsetY := p.scollOverlay.Offset()
-	context.SetPosition(p.content, context.Position(p).Add(image.Pt(int(offsetX), int(offsetY))))
-
 	p.scollOverlay.SetContentSize(context, p.content.Measure(context, guigui.Constraints{}))
-	context.SetBounds(&p.scollOverlay, context.Bounds(p), p)
-
 	p.border.scrollOverlay = &p.scollOverlay
-	context.SetBounds(&p.border, context.Bounds(p), p)
 
 	return nil
+}
+
+func (p *Panel) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case p.content:
+		offsetX, offsetY := p.scollOverlay.Offset()
+		pt := context.Position(p).Add(image.Pt(int(offsetX), int(offsetY)))
+		// TODO: Do not call ActualSize in Layout. This is a kind of circular dependency.
+		return image.Rectangle{
+			Min: pt,
+			Max: pt.Add(p.content.Measure(context, guigui.Constraints{})),
+		}
+	case &p.scollOverlay:
+		return context.Bounds(p)
+	case &p.border:
+		return context.Bounds(p)
+	}
+	return image.Rectangle{}
 }
 
 func (p *Panel) Draw(context *guigui.Context, dst *ebiten.Image) {
@@ -143,6 +155,10 @@ func (b *panelBorder) SetAutoBorder(auto bool) {
 }
 
 func (p *panelBorder) Draw(context *guigui.Context, dst *ebiten.Image) {
+	if p.scrollOverlay == nil {
+		return
+	}
+
 	// Render borders.
 	strokeWidth := float32(1 * context.Scale())
 	bounds := context.Bounds(p)

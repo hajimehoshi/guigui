@@ -38,7 +38,8 @@ type SegmentedControl[T comparable] struct {
 	abstractList abstractList[T, SegmentedControlItem[T]]
 	buttons      []Button
 
-	direction SegmentedControlDirection
+	direction   SegmentedControlDirection
+	layoutSizes []layout.Size
 }
 
 func (s *SegmentedControl[T]) SetDirection(direction SegmentedControlDirection) {
@@ -90,7 +91,6 @@ func (s *SegmentedControl[T]) AppendChildWidgets(context *guigui.Context, append
 func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
 	s.buttons = adjustSliceSize(s.buttons, s.abstractList.ItemCount())
 
-	sizes := make([]layout.Size, s.abstractList.ItemCount())
 	for i := range s.abstractList.ItemCount() {
 		item, _ := s.abstractList.ItemByIndex(i)
 		s.buttons[i].SetText(item.Text)
@@ -140,7 +140,15 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
 		s.buttons[i].SetOnDown(func() {
 			s.SelectItemByIndex(i)
 		})
-		sizes[i] = layout.FlexibleSize(1)
+	}
+
+	return nil
+}
+
+func (s *SegmentedControl[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	s.layoutSizes = adjustSliceSize(s.layoutSizes, s.abstractList.ItemCount())
+	for i := range s.abstractList.ItemCount() {
+		s.layoutSizes[i] = layout.FlexibleSize(1)
 	}
 
 	var g layout.GridLayout
@@ -148,25 +156,33 @@ func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
 	case SegmentedControlDirectionHorizontal:
 		g = layout.GridLayout{
 			Bounds: context.Bounds(s),
-			Widths: sizes,
+			Widths: s.layoutSizes,
 		}
 	case SegmentedControlDirectionVertical:
 		g = layout.GridLayout{
 			Bounds:  context.Bounds(s),
-			Heights: sizes,
+			Heights: s.layoutSizes,
 		}
 	}
 
+	idx := -1
 	for i := range s.buttons {
+		if &s.buttons[i] == widget {
+			idx = i
+			break
+		}
+
+	}
+	if idx >= 0 {
 		switch s.direction {
 		case SegmentedControlDirectionHorizontal:
-			context.SetBounds(&s.buttons[i], g.CellBounds(i, 0), s)
+			return g.CellBounds(idx, 0)
 		case SegmentedControlDirectionVertical:
-			context.SetBounds(&s.buttons[i], g.CellBounds(0, i), s)
+			return g.CellBounds(0, idx)
 		}
 	}
 
-	return nil
+	return image.Rectangle{}
 }
 
 func (s *SegmentedControl[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {

@@ -43,6 +43,8 @@ type Root struct {
 
 	locales           []language.Tag
 	faceSourceEntries []basicwidget.FaceSourceEntry
+
+	layout layout.GridLayout
 }
 
 func (r *Root) updateFontFaceSources(context *guigui.Context) {
@@ -90,40 +92,42 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 
 func (r *Root) Build(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
-
-	context.SetBounds(&r.background, context.Bounds(r), r)
-
-	gl := layout.GridLayout{
+	r.layout = layout.GridLayout{
 		Bounds: context.Bounds(r),
 		Widths: []layout.Size{
 			layout.FixedSize(8 * basicwidget.UnitSize(context)),
 			layout.FlexibleSize(1),
 		},
 	}
-	context.SetBounds(&r.sidebar, gl.CellBounds(0, 0), r)
-	bounds := gl.CellBounds(1, 0)
-	switch r.model.Mode() {
-	case "settings":
-		context.SetBounds(&r.settings, bounds, r)
-	case "basic":
-		context.SetBounds(&r.basic, bounds, r)
-	case "buttons":
-		context.SetBounds(&r.buttons, bounds, r)
-	case "texts":
-		context.SetBounds(&r.texts, bounds, r)
-	case "textinputs":
-		context.SetBounds(&r.textInputs, bounds, r)
-	case "numberinputs":
-		context.SetBounds(&r.numberInputs, bounds, r)
-	case "lists":
-		context.SetBounds(&r.lists, bounds, r)
-	case "tables":
-		context.SetBounds(&r.tables, bounds, r)
-	case "popups":
-		context.SetBounds(&r.popups, bounds, r)
-	}
-
 	return nil
+}
+
+func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &r.background:
+		return context.Bounds(r)
+	case &r.sidebar:
+		return r.layout.CellBounds(0, 0)
+	case &r.settings:
+		return r.layout.CellBounds(1, 0)
+	case &r.basic:
+		return r.layout.CellBounds(1, 0)
+	case &r.buttons:
+		return r.layout.CellBounds(1, 0)
+	case &r.texts:
+		return r.layout.CellBounds(1, 0)
+	case &r.textInputs:
+		return r.layout.CellBounds(1, 0)
+	case &r.numberInputs:
+		return r.layout.CellBounds(1, 0)
+	case &r.lists:
+		return r.layout.CellBounds(1, 0)
+	case &r.tables:
+		return r.layout.CellBounds(1, 0)
+	case &r.popups:
+		return r.layout.CellBounds(1, 0)
+	}
+	return image.Rectangle{}
 }
 
 func main() {

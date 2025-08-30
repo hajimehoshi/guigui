@@ -33,6 +33,9 @@ type Root struct {
 	rightPanel   RightPanel
 
 	model Model
+
+	mainLayout    layout.GridLayout
+	contentLayout layout.GridLayout
 }
 
 func (r *Root) Model(key any) any {
@@ -53,34 +56,42 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (r *Root) Build(context *guigui.Context) error {
-	context.SetBounds(&r.background, context.Bounds(r), r)
-
-	gl := layout.GridLayout{
+	r.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(r),
 		Heights: []layout.Size{
 			layout.FixedSize(r.toolbar.Measure(context, guigui.Constraints{}).Y),
 			layout.FlexibleSize(1),
 		},
 	}
-	context.SetBounds(&r.toolbar, gl.CellBounds(0, 0), r)
-
-	contentGL := layout.GridLayout{
-		Bounds: gl.CellBounds(0, 1),
+	r.contentLayout = layout.GridLayout{
+		Bounds: r.mainLayout.CellBounds(0, 1),
 		Widths: []layout.Size{
 			layout.FixedSize(r.model.LeftPanelWidth(context)),
 			layout.FlexibleSize(1),
 			layout.FixedSize(r.model.RightPanelWidth(context)),
 		},
 	}
-	leftPanelB := contentGL.CellBounds(0, 0)
-	leftPanelB.Min.X = leftPanelB.Max.X - r.model.DefaultPanelWidth(context)
-	context.SetBounds(&r.leftPanel, leftPanelB, r)
-	context.SetBounds(&r.contentPanel, contentGL.CellBounds(1, 0), r)
-	rightPanelB := contentGL.CellBounds(2, 0)
-	rightPanelB.Max.X = rightPanelB.Min.X + r.model.DefaultPanelWidth(context)
-	context.SetBounds(&r.rightPanel, rightPanelB, r)
-
 	return nil
+}
+
+func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &r.background:
+		return context.Bounds(r)
+	case &r.toolbar:
+		return r.mainLayout.CellBounds(0, 0)
+	case &r.leftPanel:
+		b := r.contentLayout.CellBounds(0, 0)
+		b.Min.X = b.Max.X - r.model.DefaultPanelWidth(context)
+		return b
+	case &r.contentPanel:
+		return r.contentLayout.CellBounds(1, 0)
+	case &r.rightPanel:
+		b := r.contentLayout.CellBounds(2, 0)
+		b.Max.X = b.Min.X + r.model.DefaultPanelWidth(context)
+		return b
+	}
+	return image.Rectangle{}
 }
 
 func (r *Root) Tick(context *guigui.Context) error {

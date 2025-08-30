@@ -4,6 +4,8 @@
 package main
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 )
@@ -12,7 +14,7 @@ type ContentPanel struct {
 	guigui.DefaultWidget
 
 	panel   basicwidget.Panel
-	content contentPanelContent
+	content guigui.WidgetWithSize[*contentPanelContent]
 }
 
 func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -20,11 +22,17 @@ func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *gui
 }
 
 func (c *ContentPanel) Build(context *guigui.Context) error {
-	context.SetSize(&c.content, context.ActualSize(c), c)
+	c.content.SetFixedSize(context.ActualSize(c))
 	c.panel.SetContent(&c.content)
-
-	context.SetBounds(&c.panel, context.Bounds(c), c)
 	return nil
+}
+
+func (c *ContentPanel) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &c.panel:
+		return context.Bounds(c)
+	}
+	return image.Rectangle{}
 }
 
 type contentPanelContent struct {
@@ -41,7 +49,14 @@ func (c *contentPanelContent) Build(context *guigui.Context) error {
 	c.text.SetValue("Content panel: " + dummyText)
 	c.text.SetAutoWrap(true)
 	c.text.SetSelectable(true)
-	u := basicwidget.UnitSize(context)
-	context.SetBounds(&c.text, context.Bounds(c).Inset(u/2), c)
 	return nil
+}
+
+func (c *contentPanelContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &c.text:
+		u := basicwidget.UnitSize(context)
+		return context.Bounds(c).Inset(u / 2)
+	}
+	return image.Rectangle{}
 }

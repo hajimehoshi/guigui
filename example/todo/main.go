@@ -37,6 +37,9 @@ type Root struct {
 
 	locales           []language.Tag
 	faceSourceEntries []basicwidget.FaceSourceEntry
+
+	mainLayout layout.GridLayout
+	topLayout  layout.GridLayout
 }
 
 func (r *Root) updateFontFaceSources(context *guigui.Context) {
@@ -67,8 +70,6 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 func (r *Root) Build(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
 
-	context.SetBounds(&r.background, context.Bounds(r), r)
-
 	r.textInput.SetOnKeyJustPressed(func(key ebiten.Key) bool {
 		if key == ebiten.KeyEnter {
 			r.tryCreateTask(r.textInput.Value())
@@ -90,7 +91,7 @@ func (r *Root) Build(context *guigui.Context) error {
 	r.tasksPanel.SetAutoBorder(true)
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	r.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(r).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FixedSize(u),
@@ -98,25 +99,32 @@ func (r *Root) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	{
-		gl := layout.GridLayout{
-			Bounds: gl.CellBounds(0, 0),
-			Widths: []layout.Size{
-				layout.FlexibleSize(1),
-				layout.FixedSize(5 * u),
-			},
-			ColumnGap: u / 2,
-		}
-		context.SetBounds(&r.textInput, gl.CellBounds(0, 0), r)
-		context.SetBounds(&r.createButton, gl.CellBounds(1, 0), r)
-	}
-	{
-		bounds := gl.CellBounds(0, 1)
-		context.SetSize(&r.tasksPanelContent, image.Pt(bounds.Dx(), guigui.AutoSize), r)
-		context.SetBounds(&r.tasksPanel, bounds, r)
+	r.topLayout = layout.GridLayout{
+		Bounds: r.mainLayout.CellBounds(0, 0),
+		Widths: []layout.Size{
+			layout.FlexibleSize(1),
+			layout.FixedSize(5 * u),
+		},
+		ColumnGap: u / 2,
 	}
 
+	r.tasksPanelContent.SetWidth(r.mainLayout.CellBounds(0, 1).Dx())
+
 	return nil
+}
+
+func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &r.background:
+		return context.Bounds(r)
+	case &r.textInput:
+		return r.topLayout.CellBounds(0, 0)
+	case &r.createButton:
+		return r.topLayout.CellBounds(1, 0)
+	case &r.tasksPanel:
+		return r.mainLayout.CellBounds(0, 1)
+	}
+	return image.Rectangle{}
 }
 
 func (r *Root) tryCreateTask(text string) {
@@ -130,6 +138,8 @@ type taskWidget struct {
 
 	doneButton basicwidget.Button
 	text       basicwidget.Text
+
+	layout layout.GridLayout
 }
 
 const (
@@ -158,7 +168,7 @@ func (t *taskWidget) Build(context *guigui.Context) error {
 	t.text.SetVerticalAlign(basicwidget.VerticalAlignMiddle)
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	t.layout = layout.GridLayout{
 		Bounds: context.Bounds(t),
 		Widths: []layout.Size{
 			layout.FixedSize(3 * u),
@@ -166,10 +176,18 @@ func (t *taskWidget) Build(context *guigui.Context) error {
 		},
 		ColumnGap: u / 2,
 	}
-	context.SetBounds(&t.doneButton, gl.CellBounds(0, 0), t)
-	context.SetBounds(&t.text, gl.CellBounds(1, 0), t)
 
 	return nil
+}
+
+func (t *taskWidget) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.doneButton:
+		return t.layout.CellBounds(0, 0)
+	case &t.text:
+		return t.layout.CellBounds(1, 0)
+	}
+	return image.Rectangle{}
 }
 
 func (t *taskWidget) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
@@ -180,11 +198,19 @@ type tasksPanelContent struct {
 	guigui.DefaultWidget
 
 	taskWidgets []taskWidget
+
+	width int
+
+	layout layout.GridLayout
 }
 
 const (
 	tasksPanelContentEventDeleted = "deleted"
 )
+
+func (t *tasksPanelContent) SetWidth(width int) {
+	t.width = width
+}
 
 func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 	guigui.RegisterEventHandler(t, tasksPanelContentEventDeleted, f)
@@ -214,7 +240,7 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 
 	u := basicwidget.UnitSize(context)
 
-	gl := layout.GridLayout{
+	t.layout = layout.GridLayout{
 		Bounds: context.Bounds(t),
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
@@ -226,12 +252,18 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 4,
 	}
-	for i := range t.taskWidgets {
-		bounds := gl.CellBounds(0, i)
-		context.SetBounds(&t.taskWidgets[i], bounds, t)
-	}
 
 	return nil
+}
+
+func (t *tasksPanelContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	// TODO: This is not efficient as searching an index takes O(n) time.
+	for i := range t.taskWidgets {
+		if widget == &t.taskWidgets[i] {
+			return t.layout.CellBounds(0, i)
+		}
+	}
+	return image.Rectangle{}
 }
 
 func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
@@ -241,7 +273,7 @@ func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.
 		h += context.ActualSize(&t.taskWidgets[i]).Y
 		h += int(u / 4)
 	}
-	return image.Pt(6*int(u), h)
+	return image.Pt(t.width, h)
 }
 
 func main() {

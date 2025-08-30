@@ -24,7 +24,9 @@ type Root struct {
 	incButton   basicwidget.Button
 	counterText basicwidget.Text
 
-	counter int
+	counter      int
+	mainLayout   layout.GridLayout
+	footerLayout layout.GridLayout
 }
 
 func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -36,8 +38,6 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (r *Root) Build(context *guigui.Context) error {
-	context.SetBounds(&r.background, context.Bounds(r), r)
-
 	r.counterText.SetSelectable(true)
 	r.counterText.SetBold(true)
 	r.counterText.SetHorizontalAlign(basicwidget.HorizontalAlignCenter)
@@ -62,7 +62,7 @@ func (r *Root) Build(context *guigui.Context) error {
 	})
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	r.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(r).Inset(u),
 		Heights: []layout.Size{
 			layout.FlexibleSize(1),
@@ -70,24 +70,34 @@ func (r *Root) Build(context *guigui.Context) error {
 		},
 		RowGap: u,
 	}
-	context.SetBounds(&r.counterText, gl.CellBounds(0, 0), r)
-	{
-		gl := layout.GridLayout{
-			Bounds: gl.CellBounds(0, 1),
-			Widths: []layout.Size{
-				layout.FixedSize(6 * u),
-				layout.FlexibleSize(1),
-				layout.FixedSize(6 * u),
-				layout.FixedSize(6 * u),
-			},
-			ColumnGap: u / 2,
-		}
-		context.SetBounds(&r.resetButton, gl.CellBounds(0, 0), r)
-		context.SetBounds(&r.decButton, gl.CellBounds(2, 0), r)
-		context.SetBounds(&r.incButton, gl.CellBounds(3, 0), r)
+	r.footerLayout = layout.GridLayout{
+		Bounds: r.mainLayout.CellBounds(0, 1),
+		Widths: []layout.Size{
+			layout.FixedSize(6 * u),
+			layout.FlexibleSize(1),
+			layout.FixedSize(6 * u),
+			layout.FixedSize(6 * u),
+		},
+		ColumnGap: u / 2,
 	}
 
 	return nil
+}
+
+func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &r.background:
+		return context.Bounds(r)
+	case &r.counterText:
+		return r.mainLayout.CellBounds(0, 0)
+	case &r.resetButton:
+		return r.footerLayout.CellBounds(0, 0)
+	case &r.decButton:
+		return r.footerLayout.CellBounds(2, 0)
+	case &r.incButton:
+		return r.footerLayout.CellBounds(3, 0)
+	}
+	return image.Rectangle{}
 }
 
 func main() {

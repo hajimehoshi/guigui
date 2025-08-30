@@ -30,6 +30,9 @@ type Root struct {
 
 	background basicwidget.Background
 	buttons    [16]guigui.Widget
+
+	mainLayout    layout.GridLayout
+	contentLayout layout.GridLayout
 }
 
 func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -43,8 +46,6 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (r *Root) Build(context *guigui.Context) error {
-	context.SetBounds(&r.background, context.Bounds(r), r)
-
 	r.fillText.SetValue("Fill Widgets into Grid Cells")
 	r.fillToggle.SetValue(r.fill)
 	r.fillToggle.SetOnValueChanged(func(value bool) {
@@ -67,7 +68,7 @@ func (r *Root) Build(context *guigui.Context) error {
 	})
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	r.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(r).Inset(int(u / 2)),
 		Heights: []layout.Size{
 			layout.LazySize(func(row int) layout.Size {
@@ -80,7 +81,6 @@ func (r *Root) Build(context *guigui.Context) error {
 		},
 		RowGap: int(u / 2),
 	}
-	context.SetBounds(&r.configForm, gl.CellBounds(0, 0), r)
 
 	for i := range r.buttons {
 		if r.buttons[i] == nil {
@@ -90,56 +90,65 @@ func (r *Root) Build(context *guigui.Context) error {
 		t.SetText(fmt.Sprintf("Button %d", i))
 	}
 
-	{
-		var firstColumnWidth int
-		for j := range 4 {
-			firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].Measure(context, guigui.Constraints{}).X)
-		}
-		gl := layout.GridLayout{
-			Bounds: gl.CellBounds(0, 1),
-			Widths: []layout.Size{
-				layout.FixedSize(firstColumnWidth),
-				layout.FixedSize(200),
-				layout.FlexibleSize(1),
-				layout.FlexibleSize(2),
-			},
-			Heights: []layout.Size{
-				layout.LazySize(func(row int) layout.Size {
-					var height int
-					for i := range 4 {
-						height = max(height, r.buttons[4*row+i].Measure(context, guigui.Constraints{}).Y)
-					}
-					return layout.FixedSize(height)
-				}),
-				layout.FixedSize(100),
-				layout.FlexibleSize(1),
-				layout.FlexibleSize(2),
-			},
-		}
-		if r.gap {
-			gl.ColumnGap = int(u / 2)
-			gl.RowGap = int(u / 2)
-		}
-		for j := range 4 {
-			for i := range 4 {
-				bounds := gl.CellBounds(i, j)
-				widget := r.buttons[4*j+i]
-				if r.fill {
-					context.SetBounds(widget, bounds, r)
-				} else {
-					pt := bounds.Min
-					s := widget.Measure(context, guigui.Constraints{})
-					pt.X += (bounds.Dx() - s.X) / 2
-					pt.Y += (bounds.Dy() - s.Y) / 2
-					context.SetBounds(widget, image.Rectangle{
-						Min: pt,
-						Max: pt.Add(s),
-					}, r)
+	var firstColumnWidth int
+	for j := range 4 {
+		firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].Measure(context, guigui.Constraints{}).X)
+	}
+	r.contentLayout = layout.GridLayout{
+		Bounds: r.mainLayout.CellBounds(0, 1),
+		Widths: []layout.Size{
+			layout.FixedSize(firstColumnWidth),
+			layout.FixedSize(200),
+			layout.FlexibleSize(1),
+			layout.FlexibleSize(2),
+		},
+		Heights: []layout.Size{
+			layout.LazySize(func(row int) layout.Size {
+				var height int
+				for i := range 4 {
+					height = max(height, r.buttons[4*row+i].Measure(context, guigui.Constraints{}).Y)
 				}
-			}
+				return layout.FixedSize(height)
+			}),
+			layout.FixedSize(100),
+			layout.FlexibleSize(1),
+			layout.FlexibleSize(2),
+		},
+	}
+	if r.gap {
+		r.contentLayout.ColumnGap = int(u / 2)
+		r.contentLayout.RowGap = int(u / 2)
+	}
+
+	return nil
+}
+
+func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &r.background:
+		return context.Bounds(r)
+	case &r.configForm:
+		return r.mainLayout.CellBounds(0, 0)
+	}
+	// TODO: This is not efficient. Define a better layout utility to get bounds from a widget directly.
+	for i := range r.buttons {
+		if widget != r.buttons[i] {
+			continue
+		}
+		b := r.contentLayout.CellBounds(i%4, i/4)
+		if r.fill {
+			return b
+		}
+		pt := b.Min
+		s := widget.Measure(context, guigui.Constraints{})
+		pt.X += (b.Dx() - s.X) / 2
+		pt.Y += (b.Dy() - s.Y) / 2
+		return image.Rectangle{
+			Min: pt,
+			Max: pt.Add(s),
 		}
 	}
-	return nil
+	return image.Rectangle{}
 }
 
 func main() {

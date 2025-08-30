@@ -27,8 +27,8 @@ type PopupMenuItem[T comparable] struct {
 type PopupMenu[T comparable] struct {
 	guigui.DefaultWidget
 
-	list  List[T]
 	popup Popup
+	list  guigui.WidgetWithSize[*List[T]]
 }
 
 func (p *PopupMenu[T]) SetOnItemSelected(f func(index int)) {
@@ -36,7 +36,7 @@ func (p *PopupMenu[T]) SetOnItemSelected(f func(index int)) {
 }
 
 func (p *PopupMenu[T]) SetCheckmarkIndex(index int) {
-	p.list.SetCheckmarkIndex(index)
+	p.list.Widget().SetCheckmarkIndex(index)
 }
 
 func (p *PopupMenu[T]) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, widget guigui.Widget) bool {
@@ -48,25 +48,32 @@ func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *gui
 }
 
 func (p *PopupMenu[T]) Build(context *guigui.Context) error {
-	p.list.SetStyle(ListStyleMenu)
-	p.list.list.SetOnItemSelected(func(index int) {
+	list := p.list.Widget()
+	list.SetStyle(ListStyleMenu)
+	list.list.SetOnItemSelected(func(index int) {
 		p.popup.Close()
 		guigui.DispatchEventHandler(p, popupMenuEventItemSelected, index)
 	})
+	p.list.SetFixedSize(p.contentBounds(context).Size())
 
 	p.popup.SetContent(&p.list)
 	p.popup.SetCloseByClickingOutside(true)
-	bounds := p.contentBounds(context)
-	context.SetSize(&p.list, bounds.Size(), p)
-	context.SetBounds(&p.popup, bounds, p)
 
 	return nil
+}
+
+func (p *PopupMenu[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &p.popup:
+		return p.contentBounds(context)
+	}
+	return image.Rectangle{}
 }
 
 func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 	pos := context.Position(p)
 	// List size can dynamically change based on the items. Use the default size.
-	s := p.list.Measure(context, guigui.Constraints{})
+	s := p.list.Widget().Measure(context, guigui.Constraints{})
 	s.Y = min(s.Y, 24*UnitSize(context))
 	r := image.Rectangle{
 		Min: pos,
@@ -119,15 +126,15 @@ func (p *PopupMenu[T]) SetItems(items []PopupMenuItem[T]) {
 			Value:        item.Value,
 		})
 	}
-	p.list.SetItems(listItems)
+	p.list.Widget().SetItems(listItems)
 }
 
 func (p *PopupMenu[T]) SetItemsByStrings(items []string) {
-	p.list.SetItemsByStrings(items)
+	p.list.Widget().SetItemsByStrings(items)
 }
 
 func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
-	listItem, ok := p.list.SelectedItem()
+	listItem, ok := p.list.Widget().SelectedItem()
 	if !ok {
 		return PopupMenuItem[T]{}, false
 	}
@@ -143,7 +150,7 @@ func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
 }
 
 func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
-	listItem, ok := p.list.ItemByIndex(index)
+	listItem, ok := p.list.Widget().ItemByIndex(index)
 	if !ok {
 		return PopupMenuItem[T]{}, false
 	}
@@ -159,17 +166,17 @@ func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
 }
 
 func (p *PopupMenu[T]) SelectedItemIndex() int {
-	return p.list.SelectedItemIndex()
+	return p.list.Widget().SelectedItemIndex()
 }
 
 func (p *PopupMenu[T]) SelectItemByIndex(index int) {
-	p.list.SelectItemByIndex(index)
+	p.list.Widget().SelectItemByIndex(index)
 }
 
 func (p *PopupMenu[T]) SelectItemByValue(value T) {
-	p.list.SelectItemByValue(value)
+	p.list.Widget().SelectItemByValue(value)
 }
 
 func (p *PopupMenu[T]) ItemTextColor(context *guigui.Context, index int) color.Color {
-	return p.list.ItemTextColor(context, index)
+	return p.list.Widget().ItemTextColor(context, index)
 }

@@ -191,7 +191,6 @@ func (n *NumberInput) Build(context *guigui.Context) error {
 			n.nextValue = nil
 		}
 	})
-	context.SetBounds(&n.textInput, context.Bounds(n), n)
 
 	imgUp, err := theResourceImages.Get("keyboard_arrow_up", context.ColorMode())
 	if err != nil {
@@ -213,18 +212,6 @@ func (n *NumberInput) Build(context *guigui.Context) error {
 	})
 	context.SetEnabled(&n.upButton, n.IsEditable() && n.abstractNumberInput.CanIncrement())
 
-	b := context.Bounds(n)
-	context.SetBounds(&n.upButton, image.Rectangle{
-		Min: image.Point{
-			X: b.Max.X - UnitSize(context)*3/4,
-			Y: b.Min.Y,
-		},
-		Max: image.Point{
-			X: b.Max.X,
-			Y: b.Min.Y + b.Dy()/2,
-		},
-	}, n)
-
 	n.downButton.SetIcon(imgDown)
 	n.downButton.setSharpenCorners(draw.SharpenCorners{
 		UpperStart: true,
@@ -236,15 +223,36 @@ func (n *NumberInput) Build(context *guigui.Context) error {
 	})
 	context.SetEnabled(&n.downButton, n.IsEditable() && n.abstractNumberInput.CanDecrement())
 
-	context.SetBounds(&n.downButton, image.Rectangle{
-		Min: image.Point{
-			X: b.Max.X - UnitSize(context)*3/4,
-			Y: b.Min.Y + b.Dy()/2,
-		},
-		Max: b.Max,
-	}, n)
-
 	return nil
+}
+
+func (n *NumberInput) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &n.textInput:
+		return context.Bounds(n)
+	case &n.upButton:
+		b := context.Bounds(n)
+		return image.Rectangle{
+			Min: image.Point{
+				X: b.Max.X - UnitSize(context)*3/4,
+				Y: b.Min.Y,
+			},
+			Max: image.Point{
+				X: b.Max.X,
+				Y: b.Min.Y + b.Dy()/2,
+			},
+		}
+	case &n.downButton:
+		b := context.Bounds(n)
+		return image.Rectangle{
+			Min: image.Point{
+				X: b.Max.X - UnitSize(context)*3/4,
+				Y: b.Min.Y + b.Dy()/2,
+			},
+			Max: b.Max,
+		}
+	}
+	return image.Rectangle{}
 }
 
 func (n *NumberInput) HandleButtonInput(context *guigui.Context) guigui.HandleInputResult {

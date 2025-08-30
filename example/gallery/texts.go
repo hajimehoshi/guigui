@@ -4,6 +4,8 @@
 package main
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"github.com/hajimehoshi/guigui"
@@ -28,6 +30,8 @@ type Texts struct {
 	editableText                    basicwidget.Text
 	editableToggle                  basicwidget.Toggle
 	sampleText                      basicwidget.Text
+
+	layout layout.GridLayout
 }
 
 func (t *Texts) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -189,7 +193,7 @@ func (t *Texts) Build(context *guigui.Context) error {
 	t.sampleText.SetValue(model.Texts().Text())
 
 	u := basicwidget.UnitSize(context)
-	gl := layout.GridLayout{
+	t.layout = layout.GridLayout{
 		Bounds: context.Bounds(t).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FlexibleSize(1),
@@ -197,8 +201,16 @@ func (t *Texts) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&t.sampleText, gl.CellBounds(0, 0), t)
-	context.SetBounds(&t.form, gl.CellBounds(0, 1), t)
 
 	return nil
+}
+
+func (t *Texts) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.sampleText:
+		return t.layout.CellBounds(0, 0)
+	case &t.form:
+		return t.layout.CellBounds(0, 1)
+	}
+	return image.Rectangle{}
 }

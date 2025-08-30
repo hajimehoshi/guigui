@@ -210,6 +210,7 @@ func (c *Context) Position(widget Widget) image.Point {
 	return widget.widgetState().position
 }
 
+// Deprecated: use [Widget.Layout] instead.
 func (c *Context) SetPosition(widget Widget, position image.Point) {
 	if widget.widgetState().position == position {
 		return
@@ -219,8 +220,10 @@ func (c *Context) SetPosition(widget Widget, position image.Point) {
 	// Rerendering happens at (*.app).requestRedrawIfTreeChanged if necessary.
 }
 
+// Deprecated: use [Widget.Layout] instead.
 const AutoSize = -1
 
+// Deprecated: use [Widget.Layout] or [WidgetWithSize] instead.
 func (c *Context) SetSize(widget Widget, size image.Point, specifierWidget Widget) {
 	w := widget.widgetState()
 	if size == image.Pt(AutoSize, AutoSize) {
@@ -284,6 +287,7 @@ func (c *Context) Bounds(widget Widget) image.Rectangle {
 	}
 }
 
+// Deprecated: use [Widget.Layout] instead.
 func (c *Context) SetBounds(widget Widget, bounds image.Rectangle, specifierWidget Widget) {
 	c.SetPosition(widget, bounds.Min)
 	c.SetSize(widget, bounds.Size(), specifierWidget)

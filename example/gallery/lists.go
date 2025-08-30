@@ -17,7 +17,7 @@ type Lists struct {
 
 	listForm basicwidget.Form
 	listText basicwidget.Text
-	list     basicwidget.List[int]
+	list     guigui.WidgetWithSize[*basicwidget.List[int]]
 
 	configForm       basicwidget.Form
 	showStripeText   basicwidget.Text
@@ -32,6 +32,8 @@ type Lists struct {
 	enabledToggle    basicwidget.Toggle
 
 	items []basicwidget.ListItem[int]
+
+	layout layout.GridLayout
 }
 
 func (l *Lists) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -47,27 +49,28 @@ func (l *Lists) Build(context *guigui.Context) error {
 	// Lists
 	l.listText.SetValue("Text list")
 
-	l.list.SetStripeVisible(model.Lists().IsStripeVisible())
+	list := l.list.Widget()
+	list.SetStripeVisible(model.Lists().IsStripeVisible())
 	if model.Lists().IsHeaderVisible() {
-		l.list.SetHeaderHeight(u)
+		list.SetHeaderHeight(u)
 	} else {
-		l.list.SetHeaderHeight(0)
+		list.SetHeaderHeight(0)
 	}
 	if model.Lists().IsFooterVisible() {
-		l.list.SetFooterHeight(u)
+		list.SetFooterHeight(u)
 	} else {
-		l.list.SetFooterHeight(0)
+		list.SetFooterHeight(0)
 	}
-	l.list.SetOnItemsMoved(func(from, count, to int) {
+	list.SetOnItemsMoved(func(from, count, to int) {
 		idx := model.Lists().MoveListItems(from, count, to)
-		l.list.SelectItemByIndex(idx)
+		list.SelectItemByIndex(idx)
 	})
 
 	l.items = slices.Delete(l.items, 0, len(l.items))
 	l.items = model.lists.AppendListItems(l.items)
-	l.list.SetItems(l.items)
-	context.SetSize(&l.list, image.Pt(guigui.AutoSize, 6*basicwidget.UnitSize(context)), l)
+	list.SetItems(l.items)
 	context.SetEnabled(&l.list, model.Lists().Enabled())
+	l.list.SetFixedHeight(6 * u)
 
 	l.listForm.SetItems([]basicwidget.FormItem{
 		{
@@ -126,7 +129,7 @@ func (l *Lists) Build(context *guigui.Context) error {
 		},
 	})
 
-	gl := layout.GridLayout{
+	l.layout = layout.GridLayout{
 		Bounds: context.Bounds(l).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FixedSize(l.listForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(l).Dx()-u)).Y),
@@ -135,8 +138,16 @@ func (l *Lists) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&l.listForm, gl.CellBounds(0, 0), l)
-	context.SetBounds(&l.configForm, gl.CellBounds(0, 2), l)
 
 	return nil
+}
+
+func (l *Lists) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &l.listForm:
+		return l.layout.CellBounds(0, 0)
+	case &l.configForm:
+		return l.layout.CellBounds(0, 2)
+	}
+	return image.Rectangle{}
 }

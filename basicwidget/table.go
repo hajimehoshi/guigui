@@ -94,11 +94,7 @@ func (t *Table[T]) Build(context *guigui.Context) error {
 	t.list.SetStyle(ListStyleNormal)
 	t.list.SetStripeVisible(true)
 
-	context.SetSize(&t.list, context.ActualSize(t), t)
-
 	t.updateTableItems()
-
-	context.SetPosition(&t.list, context.Position(t))
 
 	w := context.ActualSize(t).X - 2*listItemPadding(context)
 	t.columnWidthsInPixels = adjustSliceSize(t.columnWidthsInPixels, len(t.columns))
@@ -128,22 +124,34 @@ func (t *Table[T]) Build(context *guigui.Context) error {
 		item.table = t
 	}
 
+	t.tableHeader.table = t
+
+	return nil
+}
+
+func (t *Table[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.list:
+		return context.Bounds(t)
+	case &t.tableHeader:
+		return context.Bounds(t)
+	}
+
 	offsetX, _ := t.list.ScrollOffset()
 	pt := context.Bounds(&t.list).Min
 	pt.X += int(offsetX)
 	pt.X += listItemPadding(context)
 	for i := range t.columnTexts {
-		context.SetBounds(&t.columnTexts[i], image.Rectangle{
-			Min: pt,
-			Max: pt.Add(image.Pt(t.columnWidthsInPixels[i], tableHeaderHeight(context))),
-		}, t)
+		if widget == &t.columnTexts[i] {
+			return image.Rectangle{
+				Min: pt,
+				Max: pt.Add(image.Pt(t.columnWidthsInPixels[i], tableHeaderHeight(context))),
+			}
+		}
 		pt.X += t.columnWidthsInPixels[i] + tableColumnGap(context)
 	}
 
-	t.tableHeader.table = t
-	context.SetBounds(&t.tableHeader, context.Bounds(t), t)
-
-	return nil
+	return image.Rectangle{}
 }
 
 func tableColumnGap(context *guigui.Context) int {
@@ -219,6 +227,8 @@ type tableItemWidget[T comparable] struct {
 
 	item  TableItem[T]
 	table *Table[T]
+
+	contentBounds map[guigui.Widget]image.Rectangle
 }
 
 func (t *tableItemWidget[T]) setListItem(listItem TableItem[T]) {
@@ -236,14 +246,25 @@ func (t *tableItemWidget[T]) AppendChildWidgets(context *guigui.Context, appende
 func (t *tableItemWidget[T]) Build(context *guigui.Context) error {
 	b := context.Bounds(t)
 	x := b.Min.X
+	clear(t.contentBounds)
+	if t.contentBounds == nil {
+		t.contentBounds = map[guigui.Widget]image.Rectangle{}
+	}
 	for i, content := range t.item.Contents {
 		if content != nil {
-			context.SetSize(content, image.Pt(t.table.columnWidthsInPixels[i], guigui.AutoSize), t)
-			context.SetPosition(content, image.Pt(x, b.Min.Y))
+			w := t.table.columnWidthsInPixels[i]
+			t.contentBounds[content] = image.Rectangle{
+				Min: image.Pt(x, b.Min.Y),
+				Max: image.Pt(x+w, b.Min.Y+content.Measure(context, guigui.FixedHeightConstraints(w)).Y),
+			}
 		}
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
 	}
 	return nil
+}
+
+func (t *tableItemWidget[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	return t.contentBounds[widget]
 }
 
 func (t *tableItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {

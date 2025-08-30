@@ -185,47 +185,46 @@ func (t *TextInput) AppendChildWidgets(context *guigui.Context, appender *guigui
 	}
 }
 
+func (t *TextInput) textBounds(context *guigui.Context) image.Rectangle {
+	paddingStart, paddingTop, paddingEnd, paddingBottom := t.textInputPaddingInScrollableContent(context)
+	pt := context.Position(t)
+	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X-paddingStart-paddingEnd, math.MaxInt)))
+	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
+	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
+	b := image.Rectangle{
+		Min: pt,
+		Max: pt.Add(s),
+	}
+	b = b.Add(image.Pt(paddingStart, paddingTop))
+
+	// As the text is rendered in an inset box, shift the text bounds down by 0.5 pixel.
+	b = b.Add(image.Pt(0, int(0.5*context.Scale())))
+
+	offsetX, offsetY := t.scrollOverlay.Offset()
+	b = b.Add(image.Pt(int(offsetX), int(offsetY)))
+
+	return b
+}
+
 func (t *TextInput) Build(context *guigui.Context) error {
 	if t.prevFocused != (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))
 		guigui.RequestRedraw(t)
 	}
 
-	paddingStart, paddingTop, paddingEnd, paddingBottom := t.textInputPaddingInScrollableContent(context)
-
 	t.scrollOverlay.SetContentSize(context, t.scrollContentSize(context))
 
 	t.background.textInput = t
-	context.SetBounds(&t.background, context.Bounds(t), t)
 
 	t.text.SetEditable(!t.readonly)
 	t.text.SetSelectable(true)
 	t.text.SetColor(draw.TextColor(context.ColorMode(), context.IsEnabled(t)))
 	t.text.setKeepTailingSpace(!t.text.autoWrap)
 
-	pt := context.Position(t)
-	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X-paddingStart-paddingEnd, math.MaxInt)))
-	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
-	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
-	textBounds := image.Rectangle{
-		Min: pt,
-		Max: pt.Add(s),
-	}
-	textBounds = textBounds.Add(image.Pt(paddingStart, paddingTop))
-
-	// As the text is rendered in an inset box, shift the text bounds down by 0.5 pixel.
-	textBounds = textBounds.Add(image.Pt(0, int(0.5*context.Scale())))
-
 	// TODO: The cursor position might be unstable when the text horizontal align is center or right. Fix this.
 	t.adjustScrollOffsetIfNeeded(context)
-	offsetX, offsetY := t.scrollOverlay.Offset()
-	textPt := textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
-	context.SetBounds(&t.text, image.Rectangle{
-		Min: textPt,
-		Max: textPt.Add(textBounds.Size()),
-	}, t)
 
-	if draw.OverlapsWithRoundedCorner(context.Bounds(t), RoundedCornerRadius(context), textBounds) {
+	if draw.OverlapsWithRoundedCorner(context.Bounds(t), RoundedCornerRadius(context), t.textBounds(context)) {
 		// CustomDraw might be too generic and overkill for this case.
 		context.SetCustomDraw(&t.text, func(dst, widgetImage *ebiten.Image, op *ebiten.DrawImageOptions) {
 			draw.DrawInRoundedCornerRect(context, dst, context.Bounds(t), RoundedCornerRadius(context), widgetImage, op)
@@ -241,7 +240,24 @@ func (t *TextInput) Build(context *guigui.Context) error {
 
 	if t.icon.HasImage() {
 		t.iconBackground.textInput = t
+	}
 
+	context.SetVisible(&t.scrollOverlay, t.text.IsMultiline())
+
+	if t.style != TextInputStyleInline && (context.IsFocused(t) || context.IsFocused(&t.text)) {
+		t.focus.textInput = t
+	}
+
+	return nil
+}
+
+func (t *TextInput) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &t.background:
+		return context.Bounds(t)
+	case &t.text:
+		return t.textBounds(context)
+	case &t.iconBackground, &t.icon:
 		b := context.Bounds(t)
 		iconSize := defaultIconSize(context)
 		var imgBounds image.Rectangle
@@ -250,27 +266,26 @@ func (t *TextInput) Build(context *guigui.Context) error {
 			Y: (b.Dy() - iconSize) / 2,
 		})
 		imgBounds.Max = imgBounds.Min.Add(image.Pt(iconSize, iconSize))
+		if widget == &t.icon {
+			return imgBounds
+		}
 
 		imgBgBounds := b
 		imgBgBounds.Max.X = imgBounds.Max.X + UnitSize(context)/4
-
-		context.SetBounds(&t.iconBackground, imgBgBounds, t)
-		context.SetBounds(&t.icon, imgBounds, t)
-	}
-
-	context.SetBounds(&t.frame, context.Bounds(t), t)
-
-	context.SetVisible(&t.scrollOverlay, t.text.IsMultiline())
-	context.SetBounds(&t.scrollOverlay, context.Bounds(t), t)
-
-	if t.style != TextInputStyleInline && (context.IsFocused(t) || context.IsFocused(&t.text)) {
-		t.focus.textInput = t
+		return imgBgBounds
+	case &t.frame:
+		return context.Bounds(t)
+	case &t.scrollOverlay:
+		return context.Bounds(t)
+	case &t.focus:
 		w := textInputFocusBorderWidth(context)
 		p := context.Position(t).Add(image.Pt(-w, -w))
-		context.SetPosition(&t.focus, p)
+		return image.Rectangle{
+			Min: p,
+			Max: p.Add(t.focus.Measure(context, guigui.Constraints{})),
+		}
 	}
-
-	return nil
+	return image.Rectangle{}
 }
 
 func (t *TextInput) adjustScrollOffsetIfNeeded(context *guigui.Context) {

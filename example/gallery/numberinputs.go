@@ -18,21 +18,23 @@ type NumberInputs struct {
 
 	numberInputForm       basicwidget.Form
 	numberInput1Text      basicwidget.Text
-	numberInput1          basicwidget.NumberInput
+	numberInput1          guigui.WidgetWithSize[*basicwidget.NumberInput]
 	numberInput2Text      basicwidget.Text
-	numberInput2          basicwidget.NumberInput
+	numberInput2          guigui.WidgetWithSize[*basicwidget.NumberInput]
 	numberInput3Text      basicwidget.Text
-	numberInput3          basicwidget.NumberInput
+	numberInput3          guigui.WidgetWithSize[*basicwidget.NumberInput]
 	sliderText            basicwidget.Text
-	slider                basicwidget.Slider
+	slider                guigui.WidgetWithSize[*basicwidget.Slider]
 	slierWithoutRangeText basicwidget.Text
-	sliderWithoutRange    basicwidget.Slider
+	sliderWithoutRange    guigui.WidgetWithSize[*basicwidget.Slider]
 
 	configForm     basicwidget.Form
 	editableText   basicwidget.Text
 	editableToggle basicwidget.Toggle
 	enabledText    basicwidget.Text
 	enabledToggle  basicwidget.Toggle
+
+	layout layout.GridLayout
 }
 
 func (n *NumberInputs) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
@@ -49,61 +51,59 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 	width := 12 * u
 
 	n.numberInput1Text.SetValue("Number input")
-	n.numberInput1.SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
+	n.numberInput1.Widget().SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
 		if !committed {
 			return
 		}
 		model.NumberInputs().SetNumberInputValue1(value)
 	})
-	n.numberInput1.SetValueBigInt(model.NumberInputs().NumberInputValue1())
-	n.numberInput1.SetEditable(model.NumberInputs().Editable())
+	n.numberInput1.Widget().SetValueBigInt(model.NumberInputs().NumberInputValue1())
+	n.numberInput1.Widget().SetEditable(model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput1, model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput1, image.Pt(width, guigui.AutoSize), n)
+	n.numberInput1.SetFixedWidth(width)
 
 	n.numberInput2Text.SetValue("Number input (uint64)")
-	n.numberInput2.SetOnValueChangedUint64(func(value uint64, committed bool) {
+	n.numberInput2.Widget().SetOnValueChangedUint64(func(value uint64, committed bool) {
 		if !committed {
 			return
 		}
 		model.NumberInputs().SetNumberInputValue2(value)
 	})
-	n.numberInput2.SetMinimumValueUint64(0)
-	n.numberInput2.SetMaximumValueUint64(math.MaxUint64)
-	n.numberInput2.SetValueUint64(model.NumberInputs().NumberInputValue2())
-	n.numberInput2.SetEditable(model.NumberInputs().Editable())
+	n.numberInput2.Widget().SetMinimumValueUint64(0)
+	n.numberInput2.Widget().SetMaximumValueUint64(math.MaxUint64)
+	n.numberInput2.Widget().SetValueUint64(model.NumberInputs().NumberInputValue2())
+	n.numberInput2.Widget().SetEditable(model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput2, model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput2, image.Pt(width, guigui.AutoSize), n)
+	n.numberInput2.SetFixedWidth(width)
 
 	n.numberInput3Text.SetValue("Number input (Range: [-100, 100], Step: 5)")
-	n.numberInput3.SetOnValueChangedInt64(func(value int64, committed bool) {
+	n.numberInput3.Widget().SetOnValueChangedInt64(func(value int64, committed bool) {
 		if !committed {
 			return
 		}
 		model.NumberInputs().SetNumberInputValue3(int(value))
 	})
-	n.numberInput3.SetMinimumValueInt64(-100)
-	n.numberInput3.SetMaximumValueInt64(100)
-	n.numberInput3.SetStepInt64(5)
-	n.numberInput3.SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
-	n.numberInput3.SetEditable(model.NumberInputs().Editable())
+	n.numberInput3.Widget().SetMinimumValueInt64(-100)
+	n.numberInput3.Widget().SetMaximumValueInt64(100)
+	n.numberInput3.Widget().SetStepInt64(5)
+	n.numberInput3.Widget().SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
+	n.numberInput3.Widget().SetEditable(model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput3, model.NumberInputs().Enabled())
-	context.SetSize(&n.numberInput3, image.Pt(width, guigui.AutoSize), n)
+	n.numberInput3.SetFixedWidth(width)
 
 	n.sliderText.SetValue("Slider (Range: [-100, 100])")
-	n.slider.SetOnValueChangedInt64(func(value int64) {
+	n.slider.Widget().SetOnValueChangedInt64(func(value int64) {
 		model.NumberInputs().SetNumberInputValue3(int(value))
 	})
-	n.slider.SetMinimumValueInt64(-100)
-	n.slider.SetMaximumValueInt64(100)
-	n.slider.SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
+	n.slider.Widget().SetMinimumValueInt64(-100)
+	n.slider.Widget().SetMaximumValueInt64(100)
+	n.slider.Widget().SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
 	context.SetEnabled(&n.slider, model.NumberInputs().Enabled())
-	context.SetSize(&n.slider, image.Pt(width, guigui.AutoSize), n)
+	n.slider.SetFixedWidth(width)
 
 	n.slierWithoutRangeText.SetValue("Slider w/o range")
-	n.sliderWithoutRange.SetOnValueChangedInt64(func(value int64) {
-	})
 	context.SetEnabled(&n.sliderWithoutRange, model.NumberInputs().Enabled())
-	context.SetSize(&n.sliderWithoutRange, image.Pt(width, guigui.AutoSize), n)
+	n.sliderWithoutRange.SetFixedWidth(width)
 
 	n.numberInputForm.SetItems([]basicwidget.FormItem{
 		{
@@ -152,7 +152,7 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 		},
 	})
 
-	gl := layout.GridLayout{
+	n.layout = layout.GridLayout{
 		Bounds: context.Bounds(n).Inset(u / 2),
 		Heights: []layout.Size{
 			layout.FixedSize(n.numberInputForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(n).Dx()-u)).Y),
@@ -161,8 +161,16 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 		},
 		RowGap: u / 2,
 	}
-	context.SetBounds(&n.numberInputForm, gl.CellBounds(0, 0), n)
-	context.SetBounds(&n.configForm, gl.CellBounds(0, 2), n)
 
 	return nil
+}
+
+func (n *NumberInputs) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
+	switch widget {
+	case &n.numberInputForm:
+		return n.layout.CellBounds(0, 0)
+	case &n.configForm:
+		return n.layout.CellBounds(0, 2)
+	}
+	return image.Rectangle{}
 }
