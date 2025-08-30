@@ -277,11 +277,11 @@ func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	var s image.Point
 	if l.item.Content != nil {
-		s = context.ActualSize(l.item.Content)
+		s = l.item.Content.Measure(context, constraints)
 	}
-
 	// Assume that every item can use a bold font.
 	s.X = max(s.X, l.text.boldTextSize(context, guigui.Constraints{}).X)
+
 	if l.item.Border {
 		s.Y = UnitSize(context) / 2
 	} else if l.item.Header {
