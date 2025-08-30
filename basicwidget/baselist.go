@@ -122,7 +122,7 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	if b.contentWidthPlus1 > 0 {
 		w = b.contentWidthPlus1 - 1
 	}
-	h := b.defaultHeight(context)
+	h := b.defaultHeight(context, guigui.Constraints{})
 	h -= b.headerHeight
 	h -= b.footerHeight
 	return image.Pt(w, h)
@@ -557,21 +557,21 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	}
 }
 
-func (b *baseList[T]) defaultWidth(context *guigui.Context) int {
+func (b *baseList[T]) defaultWidth(context *guigui.Context, constraints guigui.Constraints) int {
 	if b.cachedDefaultWidth > 0 {
 		return b.cachedDefaultWidth
 	}
 	var w int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		w = max(w, context.ActualSize(item.Content).X)
+		w = max(w, item.Content.Measure(context, constraints).X)
 	}
 	w += 2 * listItemPadding(context)
 	b.cachedDefaultWidth = w
 	return w
 }
 
-func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
+func (b *baseList[T]) defaultHeight(context *guigui.Context, constraints guigui.Constraints) int {
 	r := RoundedCornerRadius(context)
 	if b.cachedDefaultContentHeight > 0 {
 		return b.cachedDefaultContentHeight + 2*r + b.headerHeight + b.footerHeight
@@ -580,18 +580,18 @@ func (b *baseList[T]) defaultHeight(context *guigui.Context) int {
 	var h int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		h += context.ActualSize(item.Content).Y
+		h += item.Content.Measure(context, constraints).Y
 	}
 	b.cachedDefaultContentHeight = h
 	return h + 2*r + b.headerHeight + b.footerHeight
 }
 
 func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	w := b.defaultWidth(context)
+	w := b.defaultWidth(context, constraints)
 	if b.checkmarkIndexPlus1 > 0 {
 		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 	}
-	h := b.defaultHeight(context)
+	h := b.defaultHeight(context, constraints)
 	return image.Pt(w, h)
 }
 
