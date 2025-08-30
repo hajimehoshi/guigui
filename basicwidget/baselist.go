@@ -117,11 +117,15 @@ func (b *baseList[T]) SetContentWidth(width int) {
 	guigui.RequestRedraw(b)
 }
 
-func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
-	w := context.ActualSize(b).X
+func (b *baseList[T]) contentWidth(context *guigui.Context) int {
 	if b.contentWidthPlus1 > 0 {
-		w = b.contentWidthPlus1 - 1
+		return b.contentWidthPlus1 - 1
 	}
+	return context.ActualSize(b).X
+}
+
+func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
+	w := b.contentWidth(context)
 	h := b.defaultHeight(context, guigui.Constraints{})
 	h -= b.headerHeight
 	h -= b.footerHeight
@@ -143,11 +147,12 @@ func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guig
 }
 
 func (b *baseList[T]) Build(context *guigui.Context) error {
-	b.scrollOverlay.SetContentSize(context, b.contentSize(context))
+	cs := b.contentSize(context)
+	b.scrollOverlay.SetContentSize(context, cs)
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
 		y := b.itemYFromIndex(context, idx) - b.headerHeight - RoundedCornerRadius(context)
-		b.scrollOverlay.SetOffset(context, b.contentSize(context), 0, float64(-y))
+		b.scrollOverlay.SetOffset(context, cs, 0, float64(-y))
 		b.indexToJumpPlus1 = 0
 	}
 
@@ -177,7 +182,7 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 
 			imgSize := listItemCheckmarkSize(context)
 			imgP := p
-			itemH := context.ActualSize(item.Content).Y
+			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
 			context.SetBounds(&b.checkmark, image.Rectangle{
@@ -193,7 +198,7 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 
 		context.SetPosition(item.Content, itemP)
-		p.Y += context.ActualSize(item.Content).Y
+		p.Y += item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {

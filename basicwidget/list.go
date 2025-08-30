@@ -96,18 +96,10 @@ func (l *List[T]) Build(context *guigui.Context) error {
 
 	context.SetPosition(&l.list, context.Position(l))
 
-	itemSize := image.Pt(guigui.AutoSize, guigui.AutoSize)
-	if l.list.style != ListStyleMenu {
-		itemSize.X = context.ActualSize(l).X - 2*listItemPadding(context)
-	}
-	if l.listItemHeightPlus1 > 0 {
-		itemSize.Y = l.listItemHeightPlus1 - 1
-	}
 	for i := range l.listItemWidgets {
 		item := &l.listItemWidgets[i]
 		item.text.SetBold(item.item.Header || l.list.style == ListStyleSidebar && l.SelectedItemIndex() == i)
 		item.text.SetColor(l.ItemTextColor(context, i))
-		context.SetSize(item, itemSize, l)
 	}
 
 	return nil
@@ -200,8 +192,8 @@ type listItemWidget[T comparable] struct {
 	guigui.DefaultWidget
 
 	item ListItem[T]
+	text Text
 
-	text        Text
 	heightPlus1 int
 	style       ListStyle
 }
@@ -280,9 +272,15 @@ func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.
 		s = l.item.Content.Measure(context, constraints)
 	}
 	// Assume that every item can use a bold font.
-	s.X = max(s.X, l.text.boldTextSize(context, guigui.Constraints{}).X)
+	s.X = max(s.X, l.text.boldTextSize(context, constraints).X)
 
-	if l.item.Border {
+	if l.style != ListStyleMenu {
+		s.X = max(s.X, constraints.MinSize().X-2*listItemPadding(context))
+	}
+
+	if l.heightPlus1 > 0 {
+		s.Y = l.heightPlus1 - 1
+	} else if l.item.Border {
 		s.Y = UnitSize(context) / 2
 	} else if l.item.Header {
 		s.Y = UnitSize(context) * 3 / 2
