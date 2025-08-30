@@ -126,7 +126,6 @@ func (t *Table[T]) Build(context *guigui.Context) error {
 	for i := range t.tableItemWidgets {
 		item := &t.tableItemWidgets[i]
 		item.table = t
-		context.SetSize(item, image.Pt(guigui.AutoSize, guigui.AutoSize), t)
 	}
 
 	offsetX, _ := t.list.ScrollOffset()
@@ -249,12 +248,13 @@ func (t *tableItemWidget[T]) Build(context *guigui.Context) error {
 
 func (t *tableItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	var w, h int
-	for _, content := range t.item.Contents {
+	for i, content := range t.item.Contents {
 		if content == nil {
 			continue
 		}
-		s := context.ActualSize(content)
-		w += s.X + tableColumnGap(context)
+		s := content.Measure(context, guigui.FixedWidthConstraints(t.table.columnWidthsInPixels[i]))
+		// s.X is not reliable because the content might return an arbitrary value.
+		w += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
 		h = max(h, s.Y)
 	}
 	h = max(h, int(LineHeight(context)))
