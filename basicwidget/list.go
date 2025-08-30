@@ -260,11 +260,10 @@ func (l *listItemWidget[T]) Build(context *guigui.Context) error {
 
 func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	if l.item.Border {
-		p := context.Position(l)
-		s := context.ActualSize(l)
-		x0 := float32(p.X)
-		x1 := float32(p.X + s.X)
-		y := float32(p.Y) + float32(s.Y)/2
+		b := context.Bounds(l)
+		x0 := float32(b.Min.X)
+		x1 := float32(b.Max.X)
+		y := float32(b.Min.Y) + float32(b.Dy())/2
 		width := float32(1 * context.Scale())
 		vector.StrokeLine(dst, x0, y, x1, y, width, draw.Color(context.ColorMode(), draw.ColorTypeBase, 0.8), false)
 		return
@@ -276,21 +275,21 @@ func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	var w, h int
+	var s image.Point
 	if l.item.Content != nil {
-		s := context.ActualSize(l.item.Content)
-		w, h = s.X, s.Y
+		s = context.ActualSize(l.item.Content)
 	}
 
 	// Assume that every item can use a bold font.
-	w = max(w, l.text.boldTextSize(context, guigui.Constraints{}).X)
-	h = max(h, int(LineHeight(context)))
+	s.X = max(s.X, l.text.boldTextSize(context, guigui.Constraints{}).X)
 	if l.item.Border {
-		h = UnitSize(context) / 2
+		s.Y = UnitSize(context) / 2
 	} else if l.item.Header {
-		h = UnitSize(context) * 3 / 2
+		s.Y = UnitSize(context) * 3 / 2
+	} else {
+		s.Y = max(s.Y, int(LineHeight(context)))
 	}
-	return image.Pt(w, h)
+	return s
 }
 
 func (l *listItemWidget[T]) selectable() bool {
