@@ -216,12 +216,15 @@ func (t *TextInput) Build(context *guigui.Context) error {
 	// As the text is rendered in an inset box, shift the text bounds down by 0.5 pixel.
 	textBounds = textBounds.Add(image.Pt(0, int(0.5*context.Scale())))
 
-	// Set the content size before adjustScrollOffset, as the size affects the adjustment.
-	context.SetSize(&t.text, textBounds.Size(), t)
+	// TODO: The cursor position might be unstable when the text horizontal align is center or right. Fix this.
 	t.adjustScrollOffsetIfNeeded(context)
 	offsetX, offsetY := t.scrollOverlay.Offset()
-	textBounds.Min = textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
-	context.SetPosition(&t.text, textBounds.Min)
+	textPt := textBounds.Min.Add(image.Pt(int(offsetX), int(offsetY)))
+	context.SetBounds(&t.text, image.Rectangle{
+		Min: textPt,
+		Max: textPt.Add(textBounds.Size()),
+	}, t)
+
 	if draw.OverlapsWithRoundedCorner(context.Bounds(t), RoundedCornerRadius(context), textBounds) {
 		// CustomDraw might be too generic and overkill for this case.
 		context.SetCustomDraw(&t.text, func(dst, widgetImage *ebiten.Image, op *ebiten.DrawImageOptions) {
@@ -230,6 +233,7 @@ func (t *TextInput) Build(context *guigui.Context) error {
 	} else {
 		context.SetCustomDraw(&t.text, nil)
 	}
+
 	// Focusing the text widget works only after appending it.
 	if context.IsFocused(t) {
 		context.SetFocused(&t.text, true)
