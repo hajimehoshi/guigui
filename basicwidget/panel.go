@@ -90,9 +90,9 @@ func (p *Panel) Build(context *guigui.Context) error {
 
 	if p.hasNextOffset {
 		if p.isNextOffsetDelta {
-			p.scollOverlay.SetOffsetByDelta(context, context.ActualSize(p.content), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffsetByDelta(context, p.content.Measure(context, guigui.Constraints{}), p.nextOffsetX, p.nextOffsetY)
 		} else {
-			p.scollOverlay.SetOffset(context, context.ActualSize(p.content), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffset(context, p.content.Measure(context, guigui.Constraints{}), p.nextOffsetX, p.nextOffsetY)
 		}
 		p.hasNextOffset = false
 		p.nextOffsetX = 0
@@ -102,7 +102,7 @@ func (p *Panel) Build(context *guigui.Context) error {
 	offsetX, offsetY := p.scollOverlay.Offset()
 	context.SetPosition(p.content, context.Position(p).Add(image.Pt(int(offsetX), int(offsetY))))
 
-	p.scollOverlay.SetContentSize(context, context.ActualSize(p.content))
+	p.scollOverlay.SetContentSize(context, p.content.Measure(context, guigui.Constraints{}))
 	context.SetBounds(&p.scollOverlay, context.Bounds(p), p)
 
 	p.border.scrollOverlay = &p.scollOverlay
