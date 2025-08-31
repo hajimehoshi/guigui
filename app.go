@@ -554,7 +554,7 @@ func (a *app) doDrawWidget(dst *ebiten.Image, widget Widget, zToRender int) {
 	}
 
 	customDraw := widgetState.customDraw
-	useOffscreen := widgetState.opacity() < 1 || customDraw != nil
+	useOffscreen := (widgetState.opacity() < 1 || customDraw != nil) && !dst.Bounds().Empty()
 
 	vb := a.context.VisibleBounds(widget)
 	var origDst *ebiten.Image
