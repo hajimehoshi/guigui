@@ -97,11 +97,8 @@ func (w *WidgetWithSize[T]) AppendChildWidgets(context *Context, appender *Child
 
 func (w *WidgetWithSize[T]) Layout(context *Context, widget Widget) image.Rectangle {
 	if widget == Widget(w.Widget()) {
-		pt := context.Position(w)
-		return image.Rectangle{
-			Min: pt,
-			Max: pt.Add(w.Measure(context, Constraints{})),
-		}
+		// WidgetWithSize overwrites Measure, but doesn't overwrite Layout.
+		return context.Bounds(w)
 	}
 	return image.Rectangle{}
 }
@@ -114,10 +111,12 @@ func (w *WidgetWithSize[T]) Measure(context *Context, constraints Constraints) i
 		return w.fixedSizePlus1.Sub(image.Pt(1, 1))
 	}
 	if w.fixedSizePlus1.X > 0 {
+		// TODO: Consider constraints.
 		s := w.Widget().Measure(context, FixedWidthConstraints(w.fixedSizePlus1.X-1))
 		return image.Pt(w.fixedSizePlus1.X-1, s.Y)
 	}
 	if w.fixedSizePlus1.Y > 0 {
+		// TODO: Consider constraints.
 		s := w.Widget().Measure(context, FixedHeightConstraints(w.fixedSizePlus1.Y-1))
 		return image.Pt(s.X, w.fixedSizePlus1.Y-1)
 	}

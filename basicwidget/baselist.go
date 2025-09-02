@@ -582,6 +582,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (b *baseList[T]) defaultWidth(context *guigui.Context, constraints guigui.Constraints) int {
+	// TODO: This cache works only for some constraints. Invalid the cache when constraints change.
 	if b.cachedDefaultWidth > 0 {
 		return b.cachedDefaultWidth
 	}
