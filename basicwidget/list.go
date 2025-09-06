@@ -287,7 +287,9 @@ func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.
 	s.X = max(s.X, l.text.boldTextSize(context, constraints).X)
 
 	if l.style != ListStyleMenu {
-		s.X = max(s.X, constraints.MinSize().X-2*listItemPadding(context))
+		if w, ok := constraints.FixedWidth(); ok {
+			s.X = max(s.X, w)
+		}
 	}
 
 	if l.heightPlus1 > 0 {

@@ -193,11 +193,15 @@ func (f *Form) Measure(context *guigui.Context, constraints guigui.Constraints) 
 		return image.Point{}
 	}
 
-	if s := f.measureWithoutConstraints(context); s.X <= constraints.MaxSize().X {
-		return image.Pt(max(s.X, constraints.MinSize().X), s.Y)
+	s := f.measureWithoutConstraints(context)
+	w, ok := constraints.FixedWidth()
+	if !ok {
+		return s
 	}
-
-	f.calcItemBounds(context, constraints.MaxSize().X)
+	if s.X <= w {
+		return image.Pt(w, s.Y)
+	}
+	f.calcItemBounds(context, w)
 	return f.itemBounds[len(f.itemBounds)-1].Max.Sub(f.itemBounds[0].Min)
 }
 

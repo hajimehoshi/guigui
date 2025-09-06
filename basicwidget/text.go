@@ -1004,7 +1004,11 @@ func (t *Text) textSize(context *guigui.Context, constraints guigui.Constraints,
 	}
 
 	txt := t.textToDraw(context, true)
-	w, h := textutil.Measure(constraints.MaxSize().X, txt, t.autoWrap, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
+	width := math.MaxInt
+	if w, ok := constraints.FixedWidth(); ok {
+		width = w
+	}
+	w, h := textutil.Measure(width, txt, t.autoWrap, t.face(context, forceBold), t.lineHeight(context), t.actualTabWidth(context), t.keepTailingSpace)
 	// If width is 0, the text's bounds and visible bounds are empty, and nothing including its cursor is rendered.
 	// Force to set a positive number as the width.
 	w = max(w, 1)

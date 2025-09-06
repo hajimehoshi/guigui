@@ -61,10 +61,12 @@ func (d *DefaultWidget) Measure(context *Context, constraints Constraints) image
 	} else {
 		s = image.Pt(int(144*context.Scale()), int(144*context.Scale()))
 	}
-	s.X = max(s.X, constraints.MinSize().X)
-	s.Y = max(s.Y, constraints.MinSize().Y)
-	s.X = min(s.X, constraints.MaxSize().X)
-	s.Y = min(s.Y, constraints.MaxSize().Y)
+	if w, ok := constraints.FixedWidth(); ok {
+		s.X = w
+	}
+	if h, ok := constraints.FixedHeight(); ok {
+		s.Y = h
+	}
 	return s
 }
 

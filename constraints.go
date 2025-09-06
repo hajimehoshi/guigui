@@ -2,34 +2,43 @@
 
 package guigui
 
-import (
-	"image"
-	"math"
+type constraintsType int
+
+const (
+	constraintsTypeNone constraintsType = iota
+	constraintsTypeFixedWidth
+	constraintsTypeFixedHeight
 )
 
 type Constraints struct {
-	minSize         image.Point
-	maxSizeMinusMax image.Point
+	typ  constraintsType
+	size int
 }
 
-func (c *Constraints) MinSize() image.Point {
-	return c.minSize
+func (c *Constraints) FixedWidth() (int, bool) {
+	if c.typ != constraintsTypeFixedWidth {
+		return 0, false
+	}
+	return c.size, true
 }
 
-func (c *Constraints) MaxSize() image.Point {
-	return c.maxSizeMinusMax.Add(image.Pt(math.MaxInt, math.MaxInt))
+func (c *Constraints) FixedHeight() (int, bool) {
+	if c.typ != constraintsTypeFixedHeight {
+		return 0, false
+	}
+	return c.size, true
 }
 
 func FixedWidthConstraints(w int) Constraints {
 	return Constraints{
-		minSize:         image.Pt(w, 0),
-		maxSizeMinusMax: image.Pt(w, math.MaxInt).Sub(image.Pt(math.MaxInt, math.MaxInt)),
+		typ:  constraintsTypeFixedWidth,
+		size: w,
 	}
 }
 
 func FixedHeightConstraints(h int) Constraints {
 	return Constraints{
-		minSize:         image.Pt(0, h),
-		maxSizeMinusMax: image.Pt(math.MaxInt, h).Sub(image.Pt(math.MaxInt, math.MaxInt)),
+		typ:  constraintsTypeFixedHeight,
+		size: h,
 	}
 }
