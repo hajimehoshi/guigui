@@ -186,8 +186,8 @@ func (t *Text) Build(context *guigui.Context) error {
 		t.lastScale = context.Scale()
 		t.resetCachedTextSize()
 	}
-	if t.autoWrap && t.lastWidth != context.ActualSize(t).X {
-		t.lastWidth = context.ActualSize(t).X
+	if t.autoWrap && t.lastWidth != context.Bounds(t).Dx() {
+		t.lastWidth = context.Bounds(t).Dx()
 		t.resetAutoWrapCachedTextSize()
 	}
 
@@ -477,7 +477,7 @@ func (t *Text) setKeepTailingSpace(keep bool) {
 func (t *Text) actualTextBounds(context *guigui.Context) image.Rectangle {
 	b := context.Bounds(t)
 
-	ts := t.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X, math.MaxInt)))
+	ts := t.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.Bounds(t).Dx(), math.MaxInt)))
 
 	switch t.vAlign {
 	case VerticalAlignTop:

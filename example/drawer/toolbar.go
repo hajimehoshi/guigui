@@ -27,7 +27,7 @@ func (t *Toolbar) Build(context *guigui.Context) error {
 	t.panel.SetBorder(basicwidget.PanelBorder{
 		Bottom: true,
 	})
-	t.content.SetFixedSize(context.ActualSize(t))
+	t.content.SetFixedSize(context.Bounds(t).Size())
 	t.panel.SetContent(&t.content)
 
 	return nil

@@ -227,14 +227,14 @@ func (t *textWithSubText) Build(context *guigui.Context) error {
 func (t *textWithSubText) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	switch widget {
 	case &t.text:
-		pt := context.Position(t)
+		pt := context.Bounds(t).Min
 		return image.Rectangle{
 			Min: pt,
 			Max: pt.Add(t.text.Measure(context, guigui.Constraints{})),
 		}
 	case &t.subText:
-		pt := context.Position(t)
-		pt.Y += context.ActualSize(&t.text).Y
+		pt := context.Bounds(t).Min
+		pt.Y += t.text.Measure(context, guigui.Constraints{}).Y
 		return image.Rectangle{
 			Min: pt,
 			Max: pt.Add(t.subText.Measure(context, guigui.Constraints{})),

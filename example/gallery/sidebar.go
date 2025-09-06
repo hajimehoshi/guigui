@@ -26,7 +26,7 @@ func (s *Sidebar) Build(context *guigui.Context) error {
 	s.panel.SetBorder(basicwidget.PanelBorder{
 		End: true,
 	})
-	s.panelContent.setSize(context.ActualSize(s))
+	s.panelContent.setSize(context.Bounds(s).Size())
 	s.panel.SetContent(&s.panelContent)
 	return nil
 }

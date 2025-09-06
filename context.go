@@ -206,14 +206,6 @@ func (c *Context) AppBounds() image.Rectangle {
 	return c.app.bounds()
 }
 
-func (c *Context) Position(widget Widget) image.Point {
-	return widget.widgetState().bounds.Min
-}
-
-func (c *Context) ActualSize(widget Widget) image.Point {
-	return widget.widgetState().bounds.Size()
-}
-
 func (c *Context) Bounds(widget Widget) image.Rectangle {
 	return widget.widgetState().bounds
 }

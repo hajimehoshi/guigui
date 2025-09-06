@@ -96,7 +96,7 @@ func (t *Table[T]) Build(context *guigui.Context) error {
 
 	t.updateTableItems()
 
-	w := context.ActualSize(t).X - 2*listItemPadding(context)
+	w := context.Bounds(t).Dx() - 2*listItemPadding(context)
 	t.columnWidthsInPixels = adjustSliceSize(t.columnWidthsInPixels, len(t.columns))
 	t.columnSizes = adjustSliceSize(t.columnSizes, len(t.columns))
 	t.columnTexts = adjustSliceSize(t.columnTexts, len(t.columns))

@@ -123,7 +123,7 @@ func (b *baseList[T]) contentWidth(context *guigui.Context) int {
 	if b.contentWidthPlus1 > 0 {
 		return b.contentWidthPlus1 - 1
 	}
-	return context.ActualSize(b).X
+	return context.Bounds(b).Dx()
 }
 
 func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
@@ -160,7 +160,7 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
-	p := context.Position(b)
+	p := context.Bounds(b).Min
 	offsetX, offsetY := b.scrollOverlay.Offset()
 	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
@@ -256,13 +256,13 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 	_, y := ebiten.CursorPosition()
 	_, offsetY := b.scrollOverlay.Offset()
 	y -= RoundedCornerRadius(context) + b.headerHeight
-	y -= context.Position(b).Y
+	y -= context.Bounds(b).Min.Y
 	y -= int(offsetY)
 	index := -1
 	var cy int
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		h := context.ActualSize(item.Content).Y
+		h := context.Bounds(item.Content).Dy()
 		if cy <= y && y < cy+h {
 			index = i
 			break
@@ -351,8 +351,8 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	if b.dragSrcIndexPlus1 > 0 {
 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			_, y := ebiten.CursorPosition()
-			p := context.Position(b)
-			h := context.ActualSize(b).Y - (b.headerHeight + b.footerHeight)
+			p := context.Bounds(b).Min
+			h := context.Bounds(b).Dy() - (b.headerHeight + b.footerHeight)
 			var dy float64
 			if upperY := p.Y + UnitSize(context); y < upperY {
 				dy = float64(upperY-y) / 4
@@ -431,7 +431,7 @@ func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
 			break
 		}
 		item, _ := b.abstractList.ItemByIndex(i)
-		y += context.ActualSize(item.Content).Y
+		y += context.Bounds(item.Content).Dy()
 	}
 	y = b.adjustItemY(context, y)
 	return y
@@ -462,7 +462,7 @@ func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Recta
 	bounds.Min.Y += b.itemYFromIndex(context, index)
 	bounds.Min.Y += int(offsetY)
 	if item, ok := b.abstractList.ItemByIndex(index); ok {
-		bounds.Max.Y = bounds.Min.Y + context.ActualSize(item.Content).Y
+		bounds.Max.Y = bounds.Min.Y + item.Content.Measure(context, guigui.Constraints{}).Y
 	}
 	return bounds
 }
@@ -557,7 +557,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			op.GeoM.Scale(s, s)
 			bounds := b.itemBounds(context, hoveredItemIndex)
 			p := bounds.Min
-			p.X = context.Position(b).X + listItemPadding(context)
+			p.X = context.Bounds(b).Min.X + listItemPadding(context)
 			op.GeoM.Translate(float64(p.X-2*RoundedCornerRadius(context)), float64(p.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
 			op.ColorScale.ScaleAlpha(0.5)
 			op.Filter = ebiten.FilterLinear
@@ -567,7 +567,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	// Draw a dragging guideline.
 	if b.dragDstIndexPlus1 > 0 {
-		p := context.Position(b)
+		p := context.Bounds(b).Min
 		offsetX, _ := b.scrollOverlay.Offset()
 		x0 := float32(p.X) + float32(RoundedCornerRadius(context))
 		x0 += float32(offsetX)

@@ -49,7 +49,7 @@ func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (f *Form) Build(context *guigui.Context) error {
-	f.calcItemBounds(context, context.ActualSize(f).X)
+	f.calcItemBounds(context, context.Bounds(f).Dx())
 	return nil
 }
 

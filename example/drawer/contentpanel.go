@@ -22,7 +22,7 @@ func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *gui
 }
 
 func (c *ContentPanel) Build(context *guigui.Context) error {
-	c.content.SetFixedSize(context.ActualSize(c))
+	c.content.SetFixedSize(context.Bounds(c).Size())
 	c.panel.SetContent(&c.content)
 	return nil
 }

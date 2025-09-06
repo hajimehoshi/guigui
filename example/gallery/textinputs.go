@@ -282,16 +282,16 @@ func (c *inlineTextInputContainer) Layout(context *guigui.Context, widget guigui
 	switch widget {
 	case &c.textInput:
 		size := c.textInput.Measure(context, guigui.Constraints{})
-		if size.X > context.ActualSize(c).X {
-			size = c.textInput.Measure(context, guigui.FixedHeightConstraints(context.ActualSize(c).X))
+		if size.X > context.Bounds(c).Dx() {
+			size = c.textInput.Measure(context, guigui.FixedHeightConstraints(context.Bounds(c).Dx()))
 		}
-		pos := context.Position(c)
+		pos := context.Bounds(c).Min
 		switch c.horizontalAlign {
 		case basicwidget.HorizontalAlignStart:
 		case basicwidget.HorizontalAlignCenter:
-			pos.X += (context.ActualSize(c).X - size.X) / 2
+			pos.X += (context.Bounds(c).Dx() - size.X) / 2
 		case basicwidget.HorizontalAlignEnd:
-			pos.X += context.ActualSize(c).X - size.X
+			pos.X += context.Bounds(c).Dx() - size.X
 		}
 		return image.Rectangle{
 			Min: pos,

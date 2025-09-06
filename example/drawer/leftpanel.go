@@ -26,7 +26,7 @@ func (l *LeftPanel) Build(context *guigui.Context) error {
 	l.panel.SetBorder(basicwidget.PanelBorder{
 		End: true,
 	})
-	l.content.SetFixedSize(context.ActualSize(l))
+	l.content.SetFixedSize(context.Bounds(l).Size())
 	l.panel.SetContent(&l.content)
 
 	return nil

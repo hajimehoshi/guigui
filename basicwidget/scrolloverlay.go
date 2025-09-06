@@ -175,7 +175,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 			prevOffsetX := s.offsetX
 			prevOffsetY := s.offsetY
 
-			cs := context.ActualSize(s)
+			cs := context.Bounds(s).Size()
 			barWidth, barHeight := s.barSize(context)
 			if s.draggingX && barWidth > 0 && s.contentSize.X-cs.X > 0 {
 				offsetPerPixel := float64(s.contentSize.X-cs.X) / (float64(cs.X) - barWidth)
@@ -283,7 +283,7 @@ func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
 }
 
 func (s *ScrollOverlay) Build(context *guigui.Context) error {
-	cs := context.ActualSize(s)
+	cs := context.Bounds(s).Size()
 	if s.lastSize != cs {
 		s.adjustOffset(context)
 		s.lastSize = cs

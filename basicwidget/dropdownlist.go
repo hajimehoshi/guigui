@@ -74,17 +74,17 @@ func (d *DropdownList[T]) Build(context *guigui.Context) error {
 func (d *DropdownList[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	switch widget {
 	case &d.button:
-		p := context.Position(d)
+		p := context.Bounds(d).Min
 		return image.Rectangle{
 			Min: p,
 			Max: p.Add(d.button.Measure(context, guigui.Constraints{})),
 		}
 	case &d.popupMenu:
-		p := context.Position(d)
+		p := context.Bounds(d).Min
 		p.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 		p.X = max(p.X, 0)
 		p.Y -= RoundedCornerRadius(context)
-		p.Y += int((float64(context.ActualSize(d).Y) - LineHeight(context)) / 2)
+		p.Y += int((float64(context.Bounds(d).Dy()) - LineHeight(context)) / 2)
 		p.Y -= int(float64(d.popupMenu.SelectedItemIndex()) * LineHeight(context))
 		p.Y = max(p.Y, 0)
 		return image.Rectangle{
@@ -219,7 +219,7 @@ func (d *dropdownListButtonContent) Measure(context *guigui.Context, constraints
 
 	var contentSize image.Point
 	if d.content != nil {
-		contentSize = context.ActualSize(d.content)
+		contentSize = d.content.Measure(context, guigui.Constraints{})
 	}
 	textSize := d.text.Measure(context, constraints)
 	iconSize := defaultIconSize(context)

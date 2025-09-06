@@ -84,7 +84,7 @@ func (p *Popup) ContentBounds(context *guigui.Context) image.Rectangle {
 	}
 	return image.Rectangle{
 		Min: pt,
-		Max: pt.Add(context.ActualSize(p)),
+		Max: pt.Add(context.Bounds(p).Size()),
 	}
 }
 
@@ -116,10 +116,10 @@ func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.Chi
 
 func (p *Popup) Build(context *guigui.Context) error {
 	if (p.showing || p.hiding) && p.openingCount > 0 {
-		p.nextContentPosition = context.Position(p)
+		p.nextContentPosition = context.Bounds(p).Min
 		p.hasNextContentPosition = true
 	} else {
-		p.contentPosition = context.Position(p)
+		p.contentPosition = context.Bounds(p).Min
 		p.nextContentPosition = image.Point{}
 		p.hasNextContentPosition = false
 	}
@@ -279,10 +279,7 @@ func (p *popupContent) AppendChildWidgets(context *guigui.Context, appender *gui
 func (p *popupContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	switch widget {
 	case p.content:
-		return image.Rectangle{
-			Min: context.Position(p),
-			Max: context.Position(p).Add(context.ActualSize(p)),
-		}
+		return context.Bounds(p)
 	}
 	return image.Rectangle{}
 }
@@ -317,7 +314,7 @@ func (p *popupFrame) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupFrame) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return context.ActualSize(p.popup)
+	return p.popup.Measure(context, constraints)
 }
 
 func (p *popupFrame) ZDelta() int {
@@ -377,7 +374,7 @@ func (p *popupBackground) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupBackground) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return context.ActualSize(p.popup)
+	return p.popup.Measure(context, constraints)
 }
 
 func (p *popupBackground) ZDelta() int {
@@ -401,7 +398,7 @@ func (p *popupShadow) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (p *popupShadow) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return context.ActualSize(p.popup)
+	return p.popup.Measure(context, constraints)
 }
 
 func (p *popupShadow) ZDelta() int {

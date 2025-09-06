@@ -109,8 +109,7 @@ func (p *Panel) Layout(context *guigui.Context, widget guigui.Widget) image.Rect
 	switch widget {
 	case p.content:
 		offsetX, offsetY := p.scollOverlay.Offset()
-		pt := context.Position(p).Add(image.Pt(int(offsetX), int(offsetY)))
-		// TODO: Do not call ActualSize in Layout. This is a kind of circular dependency.
+		pt := context.Bounds(p).Min.Add(image.Pt(int(offsetX), int(offsetY)))
 		return image.Rectangle{
 			Min: pt,
 			Max: pt.Add(p.content.Measure(context, guigui.Constraints{})),

@@ -101,7 +101,7 @@ func (b *baseButton) CursorShape(context *guigui.Context) (ebiten.CursorShapeTyp
 }
 
 func (b *baseButton) radius(context *guigui.Context) int {
-	size := context.ActualSize(b)
+	size := context.Bounds(b).Size()
 	return min(RoundedCornerRadius(context), size.X/4, size.Y/4)
 }
 

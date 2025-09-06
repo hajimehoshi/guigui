@@ -106,8 +106,8 @@ func (b *Button) Build(context *guigui.Context) error {
 }
 
 func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	s := context.ActualSize(b)
-	tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(b).X, math.MaxInt))).X
+	s := context.Bounds(b).Size()
+	tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(s.X, math.MaxInt))).X
 	imgSize := b.iconSize(context)
 	ds := b.defaultSize(context, guigui.Constraints{}, false)
 
@@ -115,7 +115,7 @@ func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rec
 	case &b.button:
 		return context.Bounds(b)
 	case b.content:
-		contentP := context.Position(b)
+		contentP := context.Bounds(b).Min
 		if b.button.isPressed(context) {
 			contentP.Y += int(0.5 * context.Scale())
 		} else {
@@ -126,9 +126,8 @@ func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rec
 			Max: contentP.Add(s),
 		}
 	case &b.text:
-		s := context.ActualSize(b)
-		tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(b).X, math.MaxInt))).X
-		textP := context.Position(b)
+		tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(s.X, math.MaxInt))).X
+		textP := context.Bounds(b).Min
 		if b.icon.HasImage() {
 			textP.X += (s.X - ds.X) / 2
 			switch b.iconAlign {
@@ -151,7 +150,7 @@ func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rec
 			Max: textP.Add(image.Pt(tw, s.Y)),
 		}
 	case &b.icon:
-		imgP := context.Position(b)
+		imgP := context.Bounds(b).Min
 		if b.text.Value() != "" {
 			imgP.X += (s.X - ds.X) / 2
 			switch b.iconAlign {
@@ -231,7 +230,7 @@ func buttonEdgeAndImagePadding(context *guigui.Context) int {
 }
 
 func (b *Button) iconSize(context *guigui.Context) image.Point {
-	s := context.ActualSize(b)
+	s := context.Bounds(b).Size()
 	if b.text.Value() != "" {
 		s := min(defaultIconSize(context), s.X, s.Y)
 		return image.Pt(s, s)

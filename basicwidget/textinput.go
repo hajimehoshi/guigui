@@ -148,7 +148,7 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 	switch t.style {
 	case TextInputStyleNormal:
 		x = UnitSize(context) / 2
-		y = int(float64(min(context.ActualSize(t).Y, UnitSize(context)))-LineHeight(context)*(t.text.scaleMinus1+1)) / 2
+		y = int(float64(min(context.Bounds(t).Dy(), UnitSize(context)))-LineHeight(context)*(t.text.scaleMinus1+1)) / 2
 	case TextInputStyleInline:
 		x = UnitSize(context) / 4
 	}
@@ -164,7 +164,7 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 
 func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 	start, top, end, bottom := t.textInputPaddingInScrollableContent(context)
-	return t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt((context.ActualSize(t).X-start-end), math.MaxInt))).Add(image.Pt(start+end, top+bottom))
+	return t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt((context.Bounds(t).Dx()-start-end), math.MaxInt))).Add(image.Pt(start+end, top+bottom))
 }
 
 func (t *TextInput) isFocused(context *guigui.Context) bool {
@@ -187,10 +187,11 @@ func (t *TextInput) AppendChildWidgets(context *guigui.Context, appender *guigui
 
 func (t *TextInput) textBounds(context *guigui.Context) image.Rectangle {
 	paddingStart, paddingTop, paddingEnd, paddingBottom := t.textInputPaddingInScrollableContent(context)
-	pt := context.Position(t)
-	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.ActualSize(t).X-paddingStart-paddingEnd, math.MaxInt)))
-	s.X = max(s.X, context.ActualSize(t).X-paddingStart-paddingEnd)
-	s.Y = max(s.Y, context.ActualSize(t).Y-paddingTop-paddingBottom)
+	bt := context.Bounds(t)
+	pt := bt.Min
+	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(bt.Dx()-paddingStart-paddingEnd, math.MaxInt)))
+	s.X = max(s.X, bt.Dx()-paddingStart-paddingEnd)
+	s.Y = max(s.Y, bt.Dy()-paddingTop-paddingBottom)
 	b := image.Rectangle{
 		Min: pt,
 		Max: pt.Add(s),
@@ -279,7 +280,7 @@ func (t *TextInput) Layout(context *guigui.Context, widget guigui.Widget) image.
 		return context.Bounds(t)
 	case &t.focus:
 		w := textInputFocusBorderWidth(context)
-		p := context.Position(t).Add(image.Pt(-w, -w))
+		p := context.Bounds(t).Min.Add(image.Pt(-w, -w))
 		return image.Rectangle{
 			Min: p,
 			Max: p.Add(t.focus.Measure(context, guigui.Constraints{})),
@@ -402,7 +403,7 @@ func (t *textInputFocus) ZDelta() int {
 }
 
 func (t *textInputFocus) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return context.ActualSize(t.textInput).Add(image.Pt(2*textInputFocusBorderWidth(context), 2*textInputFocusBorderWidth(context)))
+	return context.Bounds(t.textInput).Size().Add(image.Pt(2*textInputFocusBorderWidth(context), 2*textInputFocusBorderWidth(context)))
 }
 
 func (t *textInputFocus) PassThrough() bool {
