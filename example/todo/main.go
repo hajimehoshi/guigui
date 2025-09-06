@@ -191,7 +191,7 @@ func (t *taskWidget) Layout(context *guigui.Context, widget guigui.Widget) image
 }
 
 func (t *taskWidget) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return image.Pt(6*int(basicwidget.UnitSize(context)), context.ActualSize(&t.doneButton).Y)
+	return image.Pt(6*int(basicwidget.UnitSize(context)), t.doneButton.Measure(context, guigui.Constraints{}).Y)
 }
 
 type tasksPanelContent struct {
@@ -247,7 +247,9 @@ func (t *tasksPanelContent) Build(context *guigui.Context) error {
 				if row >= len(t.taskWidgets) {
 					return layout.FixedSize(0)
 				}
-				return layout.FixedSize(context.ActualSize(&t.taskWidgets[row]).Y)
+				w := guigui.FixedWidthConstraints(context.Bounds(t).Dx())
+				h := t.taskWidgets[row].Measure(context, w).Y
+				return layout.FixedSize(h)
 			}),
 		},
 		RowGap: u / 4,
@@ -270,7 +272,7 @@ func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.
 	u := basicwidget.UnitSize(context)
 	var h int
 	for i := range t.taskWidgets {
-		h += context.ActualSize(&t.taskWidgets[i]).Y
+		h += t.taskWidgets[i].Measure(context, constraints).Y
 		h += int(u / 4)
 	}
 	return image.Pt(t.width, h)
