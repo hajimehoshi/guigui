@@ -14,10 +14,10 @@ github.com/go-text/typesetting-utils v0.0.0-20241103174707-87a29e9e6066 h1:qCuYC
 github.com/go-text/typesetting-utils v0.0.0-20241103174707-87a29e9e6066/go.mod h1:DDxDdQEnB70R8owOx3LVpEFvpMK9eeH1o2r0yZhFI9o=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/hajimehoshi/bitmapfont/v4 v4.1.0-alpha.4 h1:Fi0tj+FB9GugdXnFmTstav+6/TFdnTfQKhTbeBg0J9k=
-github.com/hajimehoshi/bitmapfont/v4 v4.1.0-alpha.4/go.mod h1:/PD+aLjAJ0F2UoQx6hkOfXqWN7BkroDUMr5W+IT1dpE=
-github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.15 h1:dHn0UBoFm2EPdTfSzuSyZlANUfhNxukDzh5oFeQzxcY=
-github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.15/go.mod h1:e1ekBfvhzWVCco3IpGxy1/pujAUx5CFVtqef8icUjeU=
+github.com/hajimehoshi/bitmapfont/v4 v4.1.0-alpha.5 h1:2aPvjNC5pJTOqMbHWkJ4mR8lqgvnV7bXxciarDcJGXg=
+github.com/hajimehoshi/bitmapfont/v4 v4.1.0-alpha.5/go.mod h1:/PD+aLjAJ0F2UoQx6hkOfXqWN7BkroDUMr5W+IT1dpE=
+github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.16 h1:106MQU9ipJz6sdaBEwPq0OPNTyXK6NabSNLpCj7DxCA=
+github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.16/go.mod h1:QguLmnY9V9WaWuk4oChaawF6EZ6SM12VucWmdGL797s=
 github.com/hajimehoshi/oklab v0.1.0 h1:+ApSswl9LlB+8AYIC9ZaRO/r1emGtTF52YQleB3bW7w=
 github.com/hajimehoshi/oklab v0.1.0/go.mod h1:PQQ2H7nXuDlAr4pkdDRTfXp5tXdfIUKQpZbpZE7ugT4=
 github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade h1:FmusiCI1wHw+XQbvL9M+1r/C3SPqKrmBaIOYwVfQoDE=
