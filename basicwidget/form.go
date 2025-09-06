@@ -24,8 +24,11 @@ type Form struct {
 
 	items []FormItem
 
-	itemBounds    []image.Rectangle
-	contentBounds map[guigui.Widget]image.Rectangle
+	cachedItemBounds    []image.Rectangle
+	cachedContentBounds map[guigui.Widget]image.Rectangle
+
+	cachedItemBoundsForMeasure    []image.Rectangle
+	cachedContentBoundsForMeasure map[guigui.Widget]image.Rectangle
 }
 
 func formItemPadding(context *guigui.Context) image.Point {
@@ -49,12 +52,14 @@ func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 }
 
 func (f *Form) Build(context *guigui.Context) error {
-	f.calcItemBounds(context, context.Bounds(f).Dx())
+	f.cachedItemBounds = slices.Delete(f.cachedItemBounds, 0, len(f.cachedItemBounds))
+	clear(f.cachedContentBounds)
+	f.cachedItemBounds, f.cachedContentBounds = f.appendItemBounds(f.cachedItemBounds, f.cachedContentBounds, context, context.Bounds(f).Dx())
 	return nil
 }
 
 func (f *Form) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	return f.contentBounds[widget]
+	return f.cachedContentBounds[widget]
 }
 
 func (f *Form) isItemOmitted(context *guigui.Context, item FormItem) bool {
@@ -62,23 +67,18 @@ func (f *Form) isItemOmitted(context *guigui.Context, item FormItem) bool {
 		(item.SecondaryWidget == nil || !context.IsVisible(item.SecondaryWidget))
 }
 
-func (f *Form) calcItemBounds(context *guigui.Context, width int) {
-	// TODO: Cache the result?
-
-	f.itemBounds = slices.Delete(f.itemBounds, 0, len(f.itemBounds))
-	clear(f.contentBounds)
-	if f.contentBounds == nil {
-		f.contentBounds = map[guigui.Widget]image.Rectangle{}
+func (f *Form) appendItemBounds(itemBounds []image.Rectangle, contentBounds map[guigui.Widget]image.Rectangle, context *guigui.Context, width int) ([]image.Rectangle, map[guigui.Widget]image.Rectangle) {
+	if contentBounds == nil {
+		contentBounds = map[guigui.Widget]image.Rectangle{}
 	}
 
 	bounds := context.Bounds(f)
 	paddingS := formItemPadding(context)
 
 	var y int
-	for i, item := range f.items {
-		f.itemBounds = append(f.itemBounds, image.Rectangle{})
-
+	for _, item := range f.items {
 		if f.isItemOmitted(context, item) {
+			itemBounds = append(itemBounds, image.Rectangle{})
 			continue
 		}
 
@@ -98,26 +98,27 @@ func (f *Form) calcItemBounds(context *guigui.Context, width int) {
 			baseH = max(primaryS.Y, secondaryS.Y, minFormItemHeight(context)) + 2*paddingS.Y
 		}
 		p := bounds.Min
-		f.itemBounds[i] = image.Rectangle{
+		b := image.Rectangle{
 			Min: p.Add(image.Pt(0, y)),
 			Max: p.Add(image.Pt(width, y+baseH)),
 		}
+		itemBounds = append(itemBounds, b)
 
 		maxPaddingY := paddingS.Y + int((float64(UnitSize(context))-LineHeight(context))/2)
 		if item.PrimaryWidget != nil {
-			bounds := f.itemBounds[i]
+			bounds := b
 			bounds.Min.X += paddingS.X
 			bounds.Max.X = bounds.Min.X + primaryS.X
 			pY := min((baseH-primaryS.Y)/2, maxPaddingY)
 			bounds.Min.Y += pY
 			bounds.Max.Y += pY
-			f.contentBounds[item.PrimaryWidget] = image.Rectangle{
+			contentBounds[item.PrimaryWidget] = image.Rectangle{
 				Min: bounds.Min,
 				Max: bounds.Min.Add(primaryS),
 			}
 		}
 		if item.SecondaryWidget != nil {
-			bounds := f.itemBounds[i]
+			bounds := b
 			bounds.Min.X = bounds.Max.X - secondaryS.X - paddingS.X
 			bounds.Max.X -= paddingS.X
 			if newLine {
@@ -128,7 +129,7 @@ func (f *Form) calcItemBounds(context *guigui.Context, width int) {
 				bounds.Min.Y += pY
 				bounds.Max.Y += pY
 			}
-			f.contentBounds[item.SecondaryWidget] = image.Rectangle{
+			contentBounds[item.SecondaryWidget] = image.Rectangle{
 				Min: bounds.Min,
 				Max: bounds.Min.Add(secondaryS),
 			}
@@ -136,6 +137,8 @@ func (f *Form) calcItemBounds(context *guigui.Context, width int) {
 
 		y += baseH
 	}
+
+	return itemBounds, contentBounds
 }
 
 func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
@@ -151,7 +154,7 @@ func (f *Form) Draw(context *guigui.Context, dst *ebiten.Image) {
 		for i := range f.items[:len(f.items)-1] {
 			x0 := float32(bounds.Min.X + paddingS.X)
 			x1 := float32(bounds.Max.X - paddingS.X)
-			y := float32(f.itemBounds[i].Max.Y)
+			y := float32(f.cachedItemBounds[i].Max.Y)
 			width := 1 * float32(context.Scale())
 			vector.StrokeLine(dst, x0, y, x1, y, width, borderClr, false)
 		}
@@ -189,10 +192,6 @@ func (f *Form) measureWithoutConstraints(context *guigui.Context) image.Point {
 }
 
 func (f *Form) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	if len(f.itemBounds) == 0 {
-		return image.Point{}
-	}
-
 	s := f.measureWithoutConstraints(context)
 	w, ok := constraints.FixedWidth()
 	if !ok {
@@ -201,8 +200,14 @@ func (f *Form) Measure(context *guigui.Context, constraints guigui.Constraints) 
 	if s.X <= w {
 		return image.Pt(w, s.Y)
 	}
-	f.calcItemBounds(context, w)
-	return f.itemBounds[len(f.itemBounds)-1].Max.Sub(f.itemBounds[0].Min)
+
+	f.cachedItemBoundsForMeasure = slices.Delete(f.cachedItemBoundsForMeasure, 0, len(f.cachedItemBoundsForMeasure))
+	clear(f.cachedContentBoundsForMeasure)
+	f.cachedItemBoundsForMeasure, f.cachedContentBoundsForMeasure = f.appendItemBounds(f.cachedItemBoundsForMeasure, f.cachedContentBoundsForMeasure, context, w)
+	if len(f.cachedItemBoundsForMeasure) == 0 {
+		return image.Pt(w, 0)
+	}
+	return f.cachedItemBoundsForMeasure[len(f.cachedItemBoundsForMeasure)-1].Max.Sub(f.cachedItemBoundsForMeasure[0].Min)
 }
 
 func minFormItemHeight(context *guigui.Context) int {
