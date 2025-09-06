@@ -207,90 +207,15 @@ func (c *Context) AppBounds() image.Rectangle {
 }
 
 func (c *Context) Position(widget Widget) image.Point {
-	return widget.widgetState().position
-}
-
-// Deprecated: use [Widget.Layout] instead.
-func (c *Context) SetPosition(widget Widget, position image.Point) {
-	if widget.widgetState().position == position {
-		return
-	}
-	c.clearVisibleBoundsCacheForWidget(widget)
-	widget.widgetState().position = position
-	// Rerendering happens at (*.app).requestRedrawIfTreeChanged if necessary.
-}
-
-// Deprecated: use [Widget.Layout] instead.
-const AutoSize = -1
-
-// Deprecated: use [Widget.Layout] or [WidgetWithSize] instead.
-func (c *Context) SetSize(widget Widget, size image.Point, specifierWidget Widget) {
-	w := widget.widgetState()
-	if size == image.Pt(AutoSize, AutoSize) {
-		delete(w.sizes, specifierWidget.widgetState())
-		return
-	}
-	if w.sizes[specifierWidget.widgetState()] == size {
-		return
-	}
-	c.clearVisibleBoundsCacheForWidget(widget)
-	if w.sizes == nil {
-		w.sizes = map[*widgetState]image.Point{}
-	}
-	w.sizes[specifierWidget.widgetState()] = size
+	return widget.widgetState().bounds.Min
 }
 
 func (c *Context) ActualSize(widget Widget) image.Point {
-	widgetState := widget.widgetState()
-	w := widgetState
-	for {
-		c.tmpWidgetStates = append(c.tmpWidgetStates, w)
-		if w.parent == nil {
-			break
-		}
-		w = w.parent.widgetState()
-	}
-	s := image.Pt(AutoSize, AutoSize)
-	for _, w := range c.tmpWidgetStates {
-		size, ok := widgetState.sizes[w]
-		if !ok {
-			continue
-		}
-		if s.X == AutoSize {
-			s.X = size.X
-		}
-		if s.Y == AutoSize {
-			s.Y = size.Y
-		}
-		if s.X != AutoSize && s.Y != AutoSize {
-			break
-		}
-	}
-	c.tmpWidgetStates = slices.Delete(c.tmpWidgetStates, 0, len(c.tmpWidgetStates))
-	if s.X == AutoSize || s.Y == AutoSize {
-		size := widget.Measure(c, Constraints{})
-		if s.X == AutoSize {
-			s.X = size.X
-		}
-		if s.Y == AutoSize {
-			s.Y = size.Y
-		}
-	}
-	return s
+	return widget.widgetState().bounds.Size()
 }
 
 func (c *Context) Bounds(widget Widget) image.Rectangle {
-	widgetState := widget.widgetState()
-	return image.Rectangle{
-		Min: widgetState.position,
-		Max: widgetState.position.Add(c.ActualSize(widget)),
-	}
-}
-
-// Deprecated: use [Widget.Layout] instead.
-func (c *Context) SetBounds(widget Widget, bounds image.Rectangle, specifierWidget Widget) {
-	c.SetPosition(widget, bounds.Min)
-	c.SetSize(widget, bounds.Size(), specifierWidget)
+	return widget.widgetState().bounds
 }
 
 func (c *Context) VisibleBounds(widget Widget) image.Rectangle {

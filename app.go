@@ -185,13 +185,13 @@ func (a *app) Update() error {
 		a.focusWidget(a.root.widgetState())
 	}
 
-	rootState := a.root.widgetState()
-	rootState.position = image.Point{}
-
 	if s := deviceScaleFactor(); a.deviceScale != s {
 		a.deviceScale = s
 		a.requestRedraw(a.bounds())
 	}
+
+	rootState := a.root.widgetState()
+	rootState.bounds = a.bounds()
 
 	// Construct the widget tree.
 	a.context.inBuild = true
@@ -383,13 +383,7 @@ func (a *app) build() error {
 		}
 
 		for _, child := range widget.widgetState().children {
-			b := widget.Layout(&a.context, child)
-			// Skip calling SetBounds if bounds are empty, for backwards compatibility.
-			// Remove this special treatment when SetBounds, SetPosition, and SetSize are removed.
-			if b.Empty() {
-				continue
-			}
-			a.context.SetBounds(child, b, widget)
+			child.widgetState().bounds = widget.Layout(&a.context, child)
 		}
 
 		a.visitedZs[widgetState.z] = struct{}{}
