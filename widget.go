@@ -81,6 +81,11 @@ func (w *WidgetWithSize[T]) SetFixedSize(size image.Point) {
 	w.fixedSizePlus1 = size.Add(image.Pt(1, 1))
 }
 
+func (w *WidgetWithSize[T]) SetIntrinsicSize() {
+	w.measure = nil
+	w.fixedSizePlus1 = image.Point{}
+}
+
 func (w *WidgetWithSize[T]) Widget() T {
 	w.initOnce.Do(func() {
 		t := reflect.TypeFor[T]()
