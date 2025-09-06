@@ -5,7 +5,6 @@ package basicwidget
 
 import (
 	"image"
-	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -164,7 +163,8 @@ func (t *TextInput) textInputPaddingInScrollableContent(context *guigui.Context)
 
 func (t *TextInput) scrollContentSize(context *guigui.Context) image.Point {
 	start, top, end, bottom := t.textInputPaddingInScrollableContent(context)
-	return t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt((context.Bounds(t).Dx()-start-end), math.MaxInt))).Add(image.Pt(start+end, top+bottom))
+	w := context.Bounds(t).Dx() - start - end
+	return t.text.Measure(context, guigui.FixedWidthConstraints(w)).Add(image.Pt(start+end, top+bottom))
 }
 
 func (t *TextInput) isFocused(context *guigui.Context) bool {
@@ -189,7 +189,7 @@ func (t *TextInput) textBounds(context *guigui.Context) image.Rectangle {
 	paddingStart, paddingTop, paddingEnd, paddingBottom := t.textInputPaddingInScrollableContent(context)
 	bt := context.Bounds(t)
 	pt := bt.Min
-	s := t.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(bt.Dx()-paddingStart-paddingEnd, math.MaxInt)))
+	s := t.text.Measure(context, guigui.FixedWidthConstraints(bt.Dx()-paddingStart-paddingEnd))
 	s.X = max(s.X, bt.Dx()-paddingStart-paddingEnd)
 	s.Y = max(s.Y, bt.Dy()-paddingTop-paddingBottom)
 	b := image.Rectangle{

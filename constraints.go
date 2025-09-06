@@ -20,12 +20,6 @@ func (c *Constraints) MaxSize() image.Point {
 	return c.maxSizeMinusMax.Add(image.Pt(math.MaxInt, math.MaxInt))
 }
 
-func MaxSizeConstraints(size image.Point) Constraints {
-	return Constraints{
-		maxSizeMinusMax: size.Sub(image.Pt(math.MaxInt, math.MaxInt)),
-	}
-}
-
 func FixedWidthConstraints(w int) Constraints {
 	return Constraints{
 		minSize:         image.Pt(w, 0),

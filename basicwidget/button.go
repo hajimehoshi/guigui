@@ -6,7 +6,6 @@ package basicwidget
 import (
 	"image"
 	"image/color"
-	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -107,7 +106,7 @@ func (b *Button) Build(context *guigui.Context) error {
 
 func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	s := context.Bounds(b).Size()
-	tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(s.X, math.MaxInt))).X
+	tw := b.text.Measure(context, guigui.FixedWidthConstraints(s.X)).X
 	imgSize := b.iconSize(context)
 	ds := b.defaultSize(context, guigui.Constraints{}, false)
 
@@ -126,7 +125,7 @@ func (b *Button) Layout(context *guigui.Context, widget guigui.Widget) image.Rec
 			Max: contentP.Add(s),
 		}
 	case &b.text:
-		tw := b.text.Measure(context, guigui.MaxSizeConstraints(image.Pt(s.X, math.MaxInt))).X
+		tw := b.text.Measure(context, guigui.FixedWidthConstraints(s.X)).X
 		textP := context.Bounds(b).Min
 		if b.icon.HasImage() {
 			textP.X += (s.X - ds.X) / 2

@@ -476,8 +476,7 @@ func (t *Text) setKeepTailingSpace(keep bool) {
 
 func (t *Text) actualTextBounds(context *guigui.Context) image.Rectangle {
 	b := context.Bounds(t)
-
-	ts := t.Measure(context, guigui.MaxSizeConstraints(image.Pt(context.Bounds(t).Dx(), math.MaxInt)))
+	ts := t.Measure(context, guigui.FixedWidthConstraints(b.Dx()))
 
 	switch t.vAlign {
 	case VerticalAlignTop:
