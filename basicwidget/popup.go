@@ -106,12 +106,12 @@ func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
 }
 
 func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	// Append children even if openingRate is 0, so that the Build methods of the children are invoked.
-	// The children's state might affect their size and position.
-	appender.AppendChildWidget(&p.background)
-	appender.AppendChildWidget(&p.shadow)
-	appender.AppendChildWidget(&p.content)
-	appender.AppendChildWidget(&p.frame)
+	if p.openingRate() > 0 {
+		appender.AppendChildWidget(&p.background)
+		appender.AppendChildWidget(&p.shadow)
+		appender.AppendChildWidget(&p.content)
+		appender.AppendChildWidget(&p.frame)
+	}
 }
 
 func (p *Popup) Build(context *guigui.Context) error {
