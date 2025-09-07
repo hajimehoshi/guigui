@@ -170,6 +170,8 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 	}
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
+		itemW := cs.X - 2*RoundedCornerRadius(context)
+
 		if b.checkmarkIndexPlus1 == i+1 {
 			mode := context.ColorMode()
 			if b.checkmarkIndexPlus1 == hoveredItemIndex+1 {
@@ -183,7 +185,7 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 
 			imgSize := listItemCheckmarkSize(context)
 			imgP := p
-			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
+			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
 			b.itemBoundsForLayout[&b.checkmark] = image.Rectangle{
@@ -199,10 +201,10 @@ func (b *baseList[T]) Build(context *guigui.Context) error {
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 		b.itemBoundsForLayout[item.Content] = image.Rectangle{
 			Min: itemP,
-			Max: itemP.Add(item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X))),
+			Max: itemP.Add(item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))),
 		}
 
-		p.Y += item.Content.Measure(context, guigui.FixedWidthConstraints(cs.X)).Y
+		p.Y += item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
