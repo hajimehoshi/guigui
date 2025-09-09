@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	abstractNumberInputEventValueChanged       = "valueChanged"
 	abstractNumberInputEventValueChangedString = "valueChangedString"
 	abstractNumberInputEventValueChangedBigInt = "valueChangedBigInt"
 	abstractNumberInputEventValueChangedInt64  = "valueChangedInt64"
@@ -26,6 +27,10 @@ type abstractNumberInput struct {
 	maxSet  bool
 	step    big.Int
 	stepSet bool
+}
+
+func (a *abstractNumberInput) SetOnValueChanged(widget guigui.Widget, f func(value int, committed bool)) {
+	guigui.RegisterEventHandler(widget, abstractNumberInputEventValueChanged, f)
 }
 
 func (a *abstractNumberInput) SetOnValueChangedString(widget guigui.Widget, f func(value string, force bool)) {
@@ -45,10 +50,24 @@ func (a *abstractNumberInput) SetOnValueChangedUint64(widget guigui.Widget, f fu
 }
 
 func (a *abstractNumberInput) fireValueChangeEvents(widget guigui.Widget, force bool, committed bool) {
+	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChanged, a.Value(), committed)
 	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedString, a.value.String(), force)
 	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedBigInt, a.ValueBigInt(), committed)
 	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedInt64, a.ValueInt64(), committed)
 	guigui.DispatchEventHandler(widget, abstractNumberInputEventValueChangedUint64, a.ValueUint64(), committed)
+}
+
+func (a *abstractNumberInput) Value() int {
+	if a.value.Cmp(&maxInt) > 0 {
+		return math.MaxInt
+	}
+	if a.value.Cmp(&minInt) < 0 {
+		return math.MinInt
+	}
+	if a.value.IsInt64() {
+		return int(a.value.Int64())
+	}
+	return 0
 }
 
 func (a *abstractNumberInput) ValueString() string {
@@ -85,6 +104,10 @@ func (a *abstractNumberInput) ValueUint64() uint64 {
 	return 0
 }
 
+func (a *abstractNumberInput) SetValue(widget guigui.Widget, value int, committed bool) {
+	a.setValue(widget, (&big.Int{}).SetInt64(int64(value)), false, committed)
+}
+
 func (a *abstractNumberInput) SetValueBigInt(widget guigui.Widget, value *big.Int, committed bool) {
 	a.setValue(widget, value, false, committed)
 }
@@ -95,6 +118,10 @@ func (a *abstractNumberInput) SetValueInt64(widget guigui.Widget, value int64, c
 
 func (a *abstractNumberInput) SetValueUint64(widget guigui.Widget, value uint64, committed bool) {
 	a.setValue(widget, (&big.Int{}).SetUint64(value), false, committed)
+}
+
+func (a *abstractNumberInput) ForceSetValue(widget guigui.Widget, value int, committed bool) {
+	a.setValue(widget, (&big.Int{}).SetInt64(int64(value)), true, committed)
 }
 
 func (a *abstractNumberInput) ForceSetValueBigInt(widget guigui.Widget, value *big.Int, committed bool) {
@@ -123,6 +150,12 @@ func (a *abstractNumberInput) MinimumValueBigInt() *big.Int {
 		return nil
 	}
 	return (&big.Int{}).Set(&a.min)
+}
+
+func (a *abstractNumberInput) SetMinimumValue(widget guigui.Widget, minimum int) {
+	a.min.SetInt64(int64(minimum))
+	a.minSet = true
+	a.SetValueBigInt(widget, (&big.Int{}).Set(&a.value), true)
 }
 
 func (a *abstractNumberInput) SetMinimumValueBigInt(widget guigui.Widget, minimum *big.Int) {
@@ -155,6 +188,12 @@ func (a *abstractNumberInput) MaximumValueBigInt() *big.Int {
 	return (&big.Int{}).Set(&a.max)
 }
 
+func (a *abstractNumberInput) SetMaximumValue(widget guigui.Widget, maximum int) {
+	a.max.SetInt64(int64(maximum))
+	a.maxSet = true
+	a.SetValueBigInt(widget, (&big.Int{}).Set(&a.value), true)
+}
+
 func (a *abstractNumberInput) SetMaximumValueBigInt(widget guigui.Widget, maximum *big.Int) {
 	if maximum == nil {
 		a.max = big.Int{}
@@ -176,6 +215,11 @@ func (a *abstractNumberInput) SetMaximumValueUint64(widget guigui.Widget, maximu
 	a.max.SetUint64(maximum)
 	a.maxSet = true
 	a.SetValueBigInt(widget, (&big.Int{}).Set(&a.value), true)
+}
+
+func (a *abstractNumberInput) SetStep(step int) {
+	a.step.SetInt64(int64(step))
+	a.stepSet = true
 }
 
 func (a *abstractNumberInput) SetStepBigInt(step *big.Int) {

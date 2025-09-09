@@ -15,12 +15,16 @@ import (
 )
 
 var (
+	minInt    big.Int
+	maxInt    big.Int
 	minInt64  big.Int
 	maxInt64  big.Int
 	maxUint64 big.Int
 )
 
 func init() {
+	minInt.SetInt64(math.MinInt)
+	maxInt.SetInt64(math.MaxInt)
 	minInt64.SetInt64(math.MinInt64)
 	maxInt64.SetInt64(math.MaxInt64)
 	maxUint64.SetUint64(math.MaxUint64)
@@ -45,6 +49,10 @@ func (n *NumberInput) SetEditable(editable bool) {
 	n.textInput.SetEditable(editable)
 }
 
+func (n *NumberInput) SetOnValueChanged(f func(value int, committed bool)) {
+	n.abstractNumberInput.SetOnValueChanged(n, f)
+}
+
 func (n *NumberInput) SetOnValueChangedBigInt(f func(value *big.Int, committed bool)) {
 	n.abstractNumberInput.SetOnValueChangedBigInt(n, f)
 }
@@ -61,6 +69,22 @@ func (n *NumberInput) SetOnKeyJustPressed(f func(key ebiten.Key) (handled bool))
 	n.textInput.SetOnKeyJustPressed(f)
 }
 
+func (n *NumberInput) Value() int {
+	if n.nextValue != nil {
+		if n.nextValue.Cmp(&maxInt) > 0 {
+			return math.MaxInt
+		}
+		if n.nextValue.Cmp(&minInt) < 0 {
+			return math.MinInt
+		}
+		if n.nextValue.IsInt64() {
+			return int(n.nextValue.Int64())
+		}
+		return 0
+	}
+	return n.abstractNumberInput.Value()
+}
+
 func (n *NumberInput) ValueBigInt() *big.Int {
 	if n.nextValue != nil {
 		return n.nextValue
@@ -70,13 +94,25 @@ func (n *NumberInput) ValueBigInt() *big.Int {
 
 func (n *NumberInput) ValueInt64() int64 {
 	if n.nextValue != nil {
-		return n.nextValue.Int64()
+		if n.nextValue.IsInt64() {
+			return n.nextValue.Int64()
+		}
+		if n.nextValue.Cmp(&maxInt64) > 0 {
+			return math.MaxInt64
+		}
+		return math.MinInt64
 	}
 	return n.abstractNumberInput.ValueInt64()
 }
 
 func (n *NumberInput) ValueUint64() uint64 {
 	if n.nextValue != nil {
+		if n.nextValue.Cmp(&maxUint64) > 0 {
+			return math.MaxUint64
+		}
+		if n.nextValue.Sign() < 0 {
+			return 0
+		}
 		return n.nextValue.Uint64()
 	}
 	return n.abstractNumberInput.ValueUint64()
@@ -92,12 +128,20 @@ func (n *NumberInput) SetValueBigInt(value *big.Int) {
 	n.nextValue.Set(value)
 }
 
+func (n *NumberInput) SetValue(value int) {
+	n.SetValueBigInt((&big.Int{}).SetInt64(int64(value)))
+}
+
 func (n *NumberInput) SetValueInt64(value int64) {
 	n.SetValueBigInt((&big.Int{}).SetInt64(value))
 }
 
 func (n *NumberInput) SetValueUint64(value uint64) {
 	n.SetValueBigInt((&big.Int{}).SetUint64(value))
+}
+
+func (n *NumberInput) ForceSetValue(value int) {
+	n.abstractNumberInput.ForceSetValue(n, value, true)
 }
 
 func (n *NumberInput) ForceSetValueBigInt(value *big.Int) {
@@ -116,6 +160,10 @@ func (n *NumberInput) MinimumValueBigInt() *big.Int {
 	return n.abstractNumberInput.MinimumValueBigInt()
 }
 
+func (n *NumberInput) SetMinimumValue(minimum int) {
+	n.abstractNumberInput.SetMinimumValue(n, minimum)
+}
+
 func (n *NumberInput) SetMinimumValueBigInt(minimum *big.Int) {
 	n.abstractNumberInput.SetMinimumValueBigInt(n, minimum)
 }
@@ -132,6 +180,10 @@ func (n *NumberInput) MaximumValueBigInt() *big.Int {
 	return n.abstractNumberInput.MaximumValueBigInt()
 }
 
+func (n *NumberInput) SetMaximumValue(maximum int) {
+	n.abstractNumberInput.SetMaximumValue(n, maximum)
+}
+
 func (n *NumberInput) SetMaximumValueBigInt(maximum *big.Int) {
 	n.abstractNumberInput.SetMaximumValueBigInt(n, maximum)
 }
@@ -142,6 +194,10 @@ func (n *NumberInput) SetMaximumValueInt64(maximum int64) {
 
 func (n *NumberInput) SetMaximumValueUint64(maximum uint64) {
 	n.abstractNumberInput.SetMaximumValueUint64(n, maximum)
+}
+
+func (n *NumberInput) SetStep(step int) {
+	n.abstractNumberInput.SetStep(step)
 }
 
 func (n *NumberInput) SetStepBigInt(step *big.Int) {

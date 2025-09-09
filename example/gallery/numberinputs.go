@@ -50,7 +50,7 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 	// Number Inputs
 	width := 12 * u
 
-	n.numberInput1Text.SetValue("Number input")
+	n.numberInput1Text.SetValue("Number input (BigInt)")
 	n.numberInput1.Widget().SetOnValueChangedBigInt(func(value *big.Int, committed bool) {
 		if !committed {
 			return
@@ -83,21 +83,21 @@ func (n *NumberInputs) Build(context *guigui.Context) error {
 		}
 		model.NumberInputs().SetNumberInputValue3(int(value))
 	})
-	n.numberInput3.Widget().SetMinimumValueInt64(-100)
-	n.numberInput3.Widget().SetMaximumValueInt64(100)
-	n.numberInput3.Widget().SetStepInt64(5)
-	n.numberInput3.Widget().SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
+	n.numberInput3.Widget().SetMinimumValue(-100)
+	n.numberInput3.Widget().SetMaximumValue(100)
+	n.numberInput3.Widget().SetStep(5)
+	n.numberInput3.Widget().SetValue(model.NumberInputs().NumberInputValue3())
 	n.numberInput3.Widget().SetEditable(model.NumberInputs().Editable())
 	context.SetEnabled(&n.numberInput3, model.NumberInputs().Enabled())
 	n.numberInput3.SetFixedWidth(width)
 
 	n.sliderText.SetValue("Slider (Range: [-100, 100])")
-	n.slider.Widget().SetOnValueChangedInt64(func(value int64) {
-		model.NumberInputs().SetNumberInputValue3(int(value))
+	n.slider.Widget().SetOnValueChanged(func(value int) {
+		model.NumberInputs().SetNumberInputValue3(value)
 	})
-	n.slider.Widget().SetMinimumValueInt64(-100)
-	n.slider.Widget().SetMaximumValueInt64(100)
-	n.slider.Widget().SetValueInt64(int64(model.NumberInputs().NumberInputValue3()))
+	n.slider.Widget().SetMinimumValue(-100)
+	n.slider.Widget().SetMaximumValue(100)
+	n.slider.Widget().SetValue(model.NumberInputs().NumberInputValue3())
 	context.SetEnabled(&n.slider, model.NumberInputs().Enabled())
 	n.slider.SetFixedWidth(width)
 

@@ -27,6 +27,16 @@ type Slider struct {
 	prevThumbHovered bool
 }
 
+func (s *Slider) SetOnValueChanged(f func(value int)) {
+	if f == nil {
+		s.abstractNumberInput.SetOnValueChanged(s, nil)
+		return
+	}
+	s.abstractNumberInput.SetOnValueChanged(s, func(value int, committed bool) {
+		f(value)
+	})
+}
+
 func (s *Slider) SetOnValueChangedBigInt(f func(value *big.Int)) {
 	if f == nil {
 		s.abstractNumberInput.SetOnValueChangedBigInt(s, nil)
@@ -57,6 +67,10 @@ func (s *Slider) SetOnValueChangedUint64(f func(value uint64)) {
 	})
 }
 
+func (s *Slider) Value() int {
+	return s.abstractNumberInput.Value()
+}
+
 func (s *Slider) ValueBigInt() *big.Int {
 	return s.abstractNumberInput.ValueBigInt()
 }
@@ -67,6 +81,14 @@ func (s *Slider) ValueInt64() int64 {
 
 func (s *Slider) ValueUint64() uint64 {
 	return s.abstractNumberInput.ValueUint64()
+}
+
+func (s *Slider) SetValue(value int) {
+	changed := value != s.abstractNumberInput.Value()
+	s.abstractNumberInput.SetValue(s, value, true)
+	if changed {
+		guigui.RequestRedraw(s)
+	}
 }
 
 func (s *Slider) SetValueBigInt(value *big.Int) {
@@ -97,6 +119,10 @@ func (s *Slider) MinimumValueBigInt() *big.Int {
 	return s.abstractNumberInput.MinimumValueBigInt()
 }
 
+func (s *Slider) SetMinimumValue(minimum int) {
+	s.abstractNumberInput.SetMinimumValue(s, minimum)
+}
+
 func (s *Slider) SetMinimumValueBigInt(minimum *big.Int) {
 	s.abstractNumberInput.SetMinimumValueBigInt(s, minimum)
 }
@@ -111,6 +137,10 @@ func (s *Slider) SetMinimumValueUint64(minimum uint64) {
 
 func (s *Slider) MaximumValueBigInt() *big.Int {
 	return s.abstractNumberInput.MaximumValueBigInt()
+}
+
+func (s *Slider) SetMaximumValue(maximum int) {
+	s.abstractNumberInput.SetMaximumValue(s, maximum)
 }
 
 func (s *Slider) SetMaximumValueBigInt(maximum *big.Int) {
