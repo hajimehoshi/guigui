@@ -154,7 +154,7 @@ func (b *panelBorder) SetAutoBorder(auto bool) {
 }
 
 func (p *panelBorder) Draw(context *guigui.Context, dst *ebiten.Image) {
-	if p.scrollOverlay == nil {
+	if p.scrollOverlay == nil && p.borders == (PanelBorder{}) {
 		return
 	}
 
@@ -165,19 +165,23 @@ func (p *panelBorder) Draw(context *guigui.Context, dst *ebiten.Image) {
 	x1 := float32(bounds.Max.X)
 	y0 := float32(bounds.Min.Y)
 	y1 := float32(bounds.Max.Y)
-	offsetX, offsetY := p.scrollOverlay.Offset()
-	r := p.scrollOverlay.scrollRange(context)
+	var offsetX, offsetY float64
+	var r image.Rectangle
+	if p.scrollOverlay != nil {
+		offsetX, offsetY = p.scrollOverlay.Offset()
+		r = p.scrollOverlay.scrollRange(context)
+	}
 	clr := draw.Color(context.ColorMode(), draw.ColorTypeBase, 0.8)
-	if (p.autoBorder && offsetX < float64(r.Max.X)) || p.borders.Start {
+	if (p.scrollOverlay != nil && p.autoBorder && offsetX < float64(r.Max.X)) || p.borders.Start {
 		vector.StrokeLine(dst, x0+strokeWidth/2, y0, x0+strokeWidth/2, y1, strokeWidth, clr, false)
 	}
-	if (p.autoBorder && offsetY < float64(r.Max.Y)) || p.borders.Top {
+	if (p.scrollOverlay != nil && p.autoBorder && offsetY < float64(r.Max.Y)) || p.borders.Top {
 		vector.StrokeLine(dst, x0, y0+strokeWidth/2, x1, y0+strokeWidth/2, strokeWidth, clr, false)
 	}
-	if (p.autoBorder && offsetX > float64(r.Min.X)) || p.borders.End {
+	if (p.scrollOverlay != nil && p.autoBorder && offsetX > float64(r.Min.X)) || p.borders.End {
 		vector.StrokeLine(dst, x1-strokeWidth/2, y0, x1-strokeWidth/2, y1, strokeWidth, clr, false)
 	}
-	if (p.autoBorder && offsetY > float64(r.Min.Y)) || p.borders.Bottom {
+	if (p.scrollOverlay != nil && p.autoBorder && offsetY > float64(r.Min.Y)) || p.borders.Bottom {
 		vector.StrokeLine(dst, x0, y1-strokeWidth/2, x1, y1-strokeWidth/2, strokeWidth, clr, false)
 	}
 }
