@@ -23,7 +23,7 @@ func (r *RightPanel) AppendChildWidgets(context *guigui.Context, appender *guigu
 
 func (r *RightPanel) Build(context *guigui.Context) error {
 	r.panel.SetStyle(basicwidget.PanelStyleSide)
-	r.panel.SetBorder(basicwidget.PanelBorder{
+	r.panel.SetBorders(basicwidget.PanelBorder{
 		Start: true,
 	})
 	r.content.SetFixedSize(context.Bounds(r).Size())

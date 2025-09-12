@@ -53,7 +53,7 @@ func (p *Panel) SetStyle(typ PanelStyle) {
 	guigui.RequestRedraw(p)
 }
 
-func (p *Panel) SetBorder(borders PanelBorder) {
+func (p *Panel) SetBorders(borders PanelBorder) {
 	p.border.setBorders(borders)
 }
 

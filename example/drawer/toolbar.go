@@ -24,7 +24,7 @@ func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 
 func (t *Toolbar) Build(context *guigui.Context) error {
 	t.panel.SetStyle(basicwidget.PanelStyleSide)
-	t.panel.SetBorder(basicwidget.PanelBorder{
+	t.panel.SetBorders(basicwidget.PanelBorder{
 		Bottom: true,
 	})
 	t.content.SetFixedSize(context.Bounds(t).Size())
