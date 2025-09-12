@@ -66,8 +66,11 @@ func (b *baseButton) Build(context *guigui.Context) error {
 }
 
 func (b *baseButton) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
-	if b.isHovered(context) && !b.keepPressed {
+	if b.isHovered(context) {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if b.keepPressed {
+				return guigui.AbortHandlingInputByWidget(b)
+			}
 			context.SetFocused(b, true)
 			b.setPressed(true)
 			guigui.DispatchEventHandler(b, baseButtonEventDown)
