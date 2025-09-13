@@ -345,7 +345,9 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	if b.isHoveringVisible() || b.hasMovableItems() {
 		if hoveredItemIndex := b.hoveredItemIndex(context); b.lastHoverredItemIndexPlus1 != hoveredItemIndex+1 {
 			b.lastHoverredItemIndexPlus1 = hoveredItemIndex + 1
-			guigui.RequestRedraw(b)
+			if b.isHoveringVisible() {
+				guigui.RequestRedraw(b)
+			}
 		}
 	}
 
