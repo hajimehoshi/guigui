@@ -105,12 +105,12 @@ func (p *Popup) SetOnClosed(f func(reason PopupClosedReason)) {
 	guigui.RegisterEventHandler(p, popupEventClosed, f)
 }
 
-func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (p *Popup) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	if p.openingRate() > 0 {
-		appender.AppendChildWidget(&p.background)
-		appender.AppendChildWidget(&p.shadow)
-		appender.AppendChildWidget(&p.content)
-		appender.AppendChildWidget(&p.frame)
+		adder.AddChild(&p.background)
+		adder.AddChild(&p.shadow)
+		adder.AddChild(&p.content)
+		adder.AddChild(&p.frame)
 	}
 }
 
@@ -270,9 +270,9 @@ func (p *popupContent) setContent(widget guigui.Widget) {
 	p.content = widget
 }
 
-func (p *popupContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (p *popupContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	if p.content != nil {
-		appender.AppendChildWidget(p.content)
+		adder.AddChild(p.content)
 	}
 }
 

@@ -47,12 +47,12 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&r.background)
-	appender.AppendChildWidget(&r.toolbar)
-	appender.AppendChildWidget(&r.leftPanel)
-	appender.AppendChildWidget(&r.contentPanel)
-	appender.AppendChildWidget(&r.rightPanel)
+func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&r.background)
+	adder.AddChild(&r.toolbar)
+	adder.AddChild(&r.leftPanel)
+	adder.AddChild(&r.contentPanel)
+	adder.AddChild(&r.rightPanel)
 }
 
 func (r *Root) Update(context *guigui.Context) error {

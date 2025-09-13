@@ -37,9 +37,9 @@ type NumberInputs struct {
 	layout layout.GridLayout
 }
 
-func (n *NumberInputs) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&n.numberInputForm)
-	appender.AppendChildWidget(&n.configForm)
+func (n *NumberInputs) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&n.numberInputForm)
+	adder.AddChild(&n.configForm)
 }
 
 func (n *NumberInputs) Update(context *guigui.Context) error {

@@ -65,28 +65,28 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&r.background)
-	appender.AppendChildWidget(&r.sidebar)
+func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&r.background)
+	adder.AddChild(&r.sidebar)
 	switch r.model.Mode() {
 	case "settings":
-		appender.AppendChildWidget(&r.settings)
+		adder.AddChild(&r.settings)
 	case "basic":
-		appender.AppendChildWidget(&r.basic)
+		adder.AddChild(&r.basic)
 	case "buttons":
-		appender.AppendChildWidget(&r.buttons)
+		adder.AddChild(&r.buttons)
 	case "texts":
-		appender.AppendChildWidget(&r.texts)
+		adder.AddChild(&r.texts)
 	case "textinputs":
-		appender.AppendChildWidget(&r.textInputs)
+		adder.AddChild(&r.textInputs)
 	case "numberinputs":
-		appender.AppendChildWidget(&r.numberInputs)
+		adder.AddChild(&r.numberInputs)
 	case "lists":
-		appender.AppendChildWidget(&r.lists)
+		adder.AddChild(&r.lists)
 	case "tables":
-		appender.AppendChildWidget(&r.tables)
+		adder.AddChild(&r.tables)
 	case "popups":
-		appender.AppendChildWidget(&r.popups)
+		adder.AddChild(&r.popups)
 	}
 }
 

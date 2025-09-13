@@ -361,7 +361,7 @@ func (a *app) build() error {
 		return nil
 	})
 
-	var appender ChildWidgetAppender
+	var adder ChildAdder
 	if err := traverseWidget(a.root, func(widget Widget) error {
 		widgetState := widget.widgetState()
 
@@ -374,9 +374,9 @@ func (a *app) build() error {
 		widgetState.visibleBoundsCache = image.Rectangle{}
 
 		widgetState.children = slices.Delete(widgetState.children, 0, len(widgetState.children))
-		appender.app = a
-		appender.widget = widget
-		widget.AppendChildWidgets(&a.context, &appender)
+		adder.app = a
+		adder.widget = widget
+		widget.AddChildren(&a.context, &adder)
 
 		if err := widget.Update(&a.context); err != nil {
 			return err

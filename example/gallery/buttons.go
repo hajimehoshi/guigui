@@ -37,9 +37,9 @@ type Buttons struct {
 	layout layout.GridLayout
 }
 
-func (b *Buttons) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&b.buttonsForm)
-	appender.AppendChildWidget(&b.configForm)
+func (b *Buttons) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&b.buttonsForm)
+	adder.AddChild(&b.configForm)
 }
 
 func (b *Buttons) Update(context *guigui.Context) error {

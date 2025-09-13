@@ -216,10 +216,10 @@ func (n *NumberInput) CommitWithCurrentInputValue() {
 	n.textInput.CommitWithCurrentInputValue()
 }
 
-func (n *NumberInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&n.textInput)
-	appender.AppendChildWidget(&n.upButton)
-	appender.AppendChildWidget(&n.downButton)
+func (n *NumberInput) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&n.textInput)
+	adder.AddChild(&n.upButton)
+	adder.AddChild(&n.downButton)
 }
 
 func (n *NumberInput) Update(context *guigui.Context) error {

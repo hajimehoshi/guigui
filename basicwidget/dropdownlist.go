@@ -47,9 +47,9 @@ func (d *DropdownList[T]) updateButtonContent() {
 	d.button.SetContent(&d.buttonContent)
 }
 
-func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&d.button)
-	appender.AppendChildWidget(&d.popupMenu)
+func (d *DropdownList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&d.button)
+	adder.AddChild(&d.popupMenu)
 }
 
 func (d *DropdownList[T]) Update(context *guigui.Context) error {
@@ -157,12 +157,12 @@ type dropdownListButtonContent struct {
 	image   Image
 }
 
-func (d *dropdownListButtonContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (d *dropdownListButtonContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	if d.content != nil {
-		appender.AppendChildWidget(d.content)
+		adder.AddChild(d.content)
 	}
-	appender.AppendChildWidget(&d.text)
-	appender.AppendChildWidget(&d.image)
+	adder.AddChild(&d.text)
+	adder.AddChild(&d.image)
 }
 
 func (d *dropdownListButtonContent) Update(context *guigui.Context) error {

@@ -84,13 +84,13 @@ func (b *Button) setKeepPressed(keep bool) {
 	b.button.setKeepPressed(keep)
 }
 
-func (b *Button) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&b.button)
+func (b *Button) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&b.button)
 	if b.content != nil {
-		appender.AppendChildWidget(b.content)
+		adder.AddChild(b.content)
 	}
-	appender.AppendChildWidget(&b.text)
-	appender.AppendChildWidget(&b.icon)
+	adder.AddChild(&b.text)
+	adder.AddChild(&b.icon)
 }
 
 func (b *Button) Update(context *guigui.Context) error {

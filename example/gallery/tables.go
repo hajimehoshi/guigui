@@ -33,9 +33,9 @@ type Tables struct {
 	layout layout.GridLayout
 }
 
-func (t *Tables) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.table)
-	appender.AppendChildWidget(&t.configForm)
+func (t *Tables) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.table)
+	adder.AddChild(&t.configForm)
 }
 
 func (t *Tables) Update(context *guigui.Context) error {

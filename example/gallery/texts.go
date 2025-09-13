@@ -34,9 +34,9 @@ type Texts struct {
 	layout layout.GridLayout
 }
 
-func (t *Texts) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.sampleText)
-	appender.AppendChildWidget(&t.form)
+func (t *Texts) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.sampleText)
+	adder.AddChild(&t.form)
 }
 
 func (t *Texts) Update(context *guigui.Context) error {

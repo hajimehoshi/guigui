@@ -43,8 +43,8 @@ func (p *PopupMenu[T]) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, 
 	return p.popup.IsWidgetOrBackgroundHitAtCursor(context, widget)
 }
 
-func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&p.popup)
+func (p *PopupMenu[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&p.popup)
 }
 
 func (p *PopupMenu[T]) Update(context *guigui.Context) error {

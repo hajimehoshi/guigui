@@ -60,11 +60,11 @@ func (r *Root) Model(key any) any {
 	}
 }
 
-func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&r.background)
-	appender.AppendChildWidget(&r.textInput)
-	appender.AppendChildWidget(&r.createButton)
-	appender.AppendChildWidget(&r.tasksPanel)
+func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&r.background)
+	adder.AddChild(&r.textInput)
+	adder.AddChild(&r.createButton)
+	adder.AddChild(&r.tasksPanel)
 }
 
 func (r *Root) Update(context *guigui.Context) error {
@@ -154,9 +154,9 @@ func (t *taskWidget) SetText(text string) {
 	t.text.SetValue(text)
 }
 
-func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.doneButton)
-	appender.AppendChildWidget(&t.text)
+func (t *taskWidget) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.doneButton)
+	adder.AddChild(&t.text)
 }
 
 func (t *taskWidget) Update(context *guigui.Context) error {
@@ -216,7 +216,7 @@ func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 	guigui.RegisterEventHandler(t, tasksPanelContentEventDeleted, f)
 }
 
-func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (t *tasksPanelContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	model := context.Model(t, modelKeyModel).(*Model)
 	if model.TaskCount() > len(t.taskWidgets) {
 		t.taskWidgets = slices.Grow(t.taskWidgets, model.TaskCount()-len(t.taskWidgets))[:model.TaskCount()]
@@ -224,7 +224,7 @@ func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender
 		t.taskWidgets = slices.Delete(t.taskWidgets, model.TaskCount(), len(t.taskWidgets))
 	}
 	for i := range t.taskWidgets {
-		appender.AppendChildWidget(&t.taskWidgets[i])
+		adder.AddChild(&t.taskWidgets[i])
 	}
 }
 

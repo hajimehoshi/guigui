@@ -134,18 +134,18 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	return image.Pt(w, h)
 }
 
-func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
-			appender.AppendChildWidget(&b.checkmark)
+			adder.AddChild(&b.checkmark)
 		}
-		appender.AppendChildWidget(item.Content)
+		adder.AddChild(item.Content)
 	}
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
-		appender.AppendChildWidget(&b.listFrame)
+		adder.AddChild(&b.listFrame)
 	}
-	appender.AppendChildWidget(&b.scrollOverlay)
+	adder.AddChild(&b.scrollOverlay)
 }
 
 func (b *baseList[T]) Update(context *guigui.Context) error {

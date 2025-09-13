@@ -75,12 +75,12 @@ func (p *Panel) SetScrollOffsetByDelta(offsetXDelta, offsetYDelta float64) {
 	p.isNextOffsetDelta = true
 }
 
-func (p *Panel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (p *Panel) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	if p.content != nil {
-		appender.AppendChildWidget(p.content)
+		adder.AddChild(p.content)
 	}
-	appender.AppendChildWidget(&p.scollOverlay)
-	appender.AppendChildWidget(&p.border)
+	adder.AddChild(&p.scollOverlay)
+	adder.AddChild(&p.border)
 }
 
 func (p *Panel) Update(context *guigui.Context) error {

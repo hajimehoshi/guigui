@@ -31,8 +31,8 @@ type Basic struct {
 	layout layout.GridLayout
 }
 
-func (b *Basic) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&b.form)
+func (b *Basic) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&b.form)
 }
 
 func (b *Basic) Update(context *guigui.Context) error {

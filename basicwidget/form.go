@@ -40,13 +40,13 @@ func (f *Form) SetItems(items []FormItem) {
 	f.items = append(f.items, items...)
 }
 
-func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (f *Form) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	for _, item := range f.items {
 		if item.PrimaryWidget != nil {
-			appender.AppendChildWidget(item.PrimaryWidget)
+			adder.AddChild(item.PrimaryWidget)
 		}
 		if item.SecondaryWidget != nil {
-			appender.AppendChildWidget(item.SecondaryWidget)
+			adder.AddChild(item.SecondaryWidget)
 		}
 	}
 }

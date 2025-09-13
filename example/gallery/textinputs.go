@@ -39,9 +39,9 @@ type TextInputs struct {
 	layout layout.GridLayout
 }
 
-func (t *TextInputs) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.textInputForm)
-	appender.AppendChildWidget(&t.configForm)
+func (t *TextInputs) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.textInputForm)
+	adder.AddChild(&t.configForm)
 }
 
 func (t *TextInputs) Update(context *guigui.Context) error {
@@ -269,8 +269,8 @@ func (c *inlineTextInputContainer) SetHorizontalAlign(align basicwidget.Horizont
 	c.textInput.SetHorizontalAlign(align)
 }
 
-func (c *inlineTextInputContainer) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&c.textInput)
+func (c *inlineTextInputContainer) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&c.textInput)
 }
 
 func (c *inlineTextInputContainer) Update(context *guigui.Context) error {

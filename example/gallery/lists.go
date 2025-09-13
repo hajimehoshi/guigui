@@ -36,9 +36,9 @@ type Lists struct {
 	layout layout.GridLayout
 }
 
-func (l *Lists) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&l.listForm)
-	appender.AppendChildWidget(&l.configForm)
+func (l *Lists) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&l.listForm)
+	adder.AddChild(&l.configForm)
 }
 
 func (l *Lists) Update(context *guigui.Context) error {

@@ -29,12 +29,12 @@ type Root struct {
 	footerLayout layout.GridLayout
 }
 
-func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&r.background)
-	appender.AppendChildWidget(&r.counterText)
-	appender.AppendChildWidget(&r.resetButton)
-	appender.AppendChildWidget(&r.decButton)
-	appender.AppendChildWidget(&r.incButton)
+func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&r.background)
+	adder.AddChild(&r.counterText)
+	adder.AddChild(&r.resetButton)
+	adder.AddChild(&r.decButton)
+	adder.AddChild(&r.incButton)
 }
 
 func (r *Root) Update(context *guigui.Context) error {

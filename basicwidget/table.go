@@ -81,12 +81,12 @@ func (t *Table[T]) updateTableItems() {
 	t.list.SetItems(t.baseListItems)
 }
 
-func (t *Table[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.list)
+func (t *Table[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.list)
 	for i := range t.columnTexts {
-		appender.AppendChildWidget(&t.columnTexts[i])
+		adder.AddChild(&t.columnTexts[i])
 	}
-	appender.AppendChildWidget(&t.tableHeader)
+	adder.AddChild(&t.tableHeader)
 }
 
 func (t *Table[T]) Update(context *guigui.Context) error {
@@ -235,10 +235,10 @@ func (t *tableItemWidget[T]) setListItem(listItem TableItem[T]) {
 	t.item = listItem
 }
 
-func (t *tableItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (t *tableItemWidget[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	for _, content := range t.item.Contents {
 		if content != nil {
-			appender.AppendChildWidget(content)
+			adder.AddChild(content)
 		}
 	}
 }

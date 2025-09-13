@@ -18,8 +18,8 @@ type Toolbar struct {
 	content guigui.WidgetWithSize[*toolbarContent]
 }
 
-func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.panel)
+func (t *Toolbar) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.panel)
 }
 
 func (t *Toolbar) Update(context *guigui.Context) error {
@@ -55,9 +55,9 @@ type toolbarContent struct {
 	layout layout.GridLayout
 }
 
-func (t *toolbarContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.leftPanelButton)
-	appender.AppendChildWidget(&t.rightPanelButton)
+func (t *toolbarContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.leftPanelButton)
+	adder.AddChild(&t.rightPanelButton)
 }
 
 func (t *toolbarContent) Update(context *guigui.Context) error {

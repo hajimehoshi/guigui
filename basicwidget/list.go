@@ -85,8 +85,8 @@ func (l *List[T]) updateListItems() {
 	l.list.SetItems(l.baseListItems)
 }
 
-func (l *List[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&l.list)
+func (l *List[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&l.list)
 }
 
 func (l *List[T]) Update(context *guigui.Context) error {
@@ -216,12 +216,12 @@ func (l *listItemWidget[T]) setStyle(style ListStyle) {
 	l.style = style
 }
 
-func (l *listItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
+func (l *listItemWidget[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	if l.item.Content != nil {
-		appender.AppendChildWidget(l.item.Content)
+		adder.AddChild(l.item.Content)
 		return
 	}
-	appender.AppendChildWidget(&l.text)
+	adder.AddChild(&l.text)
 }
 
 func (l *listItemWidget[T]) Update(context *guigui.Context) error {

@@ -17,8 +17,8 @@ type LeftPanel struct {
 	content guigui.WidgetWithSize[*leftPanelContent]
 }
 
-func (l *LeftPanel) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&l.panel)
+func (l *LeftPanel) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&l.panel)
 }
 
 func (l *LeftPanel) Update(context *guigui.Context) error {
@@ -46,8 +46,8 @@ type leftPanelContent struct {
 	text basicwidget.Text
 }
 
-func (l *leftPanelContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&l.text)
+func (l *leftPanelContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&l.text)
 }
 
 func (l *leftPanelContent) Update(context *guigui.Context) error {

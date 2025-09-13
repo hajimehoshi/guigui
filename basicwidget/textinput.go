@@ -171,17 +171,17 @@ func (t *TextInput) isFocused(context *guigui.Context) bool {
 	return context.IsFocused(t) || context.IsFocused(&t.text)
 }
 
-func (t *TextInput) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&t.background)
-	appender.AppendChildWidget(&t.text)
+func (t *TextInput) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&t.background)
+	adder.AddChild(&t.text)
 	if t.icon.HasImage() {
-		appender.AppendChildWidget(&t.iconBackground)
-		appender.AppendChildWidget(&t.icon)
+		adder.AddChild(&t.iconBackground)
+		adder.AddChild(&t.icon)
 	}
-	appender.AppendChildWidget(&t.frame)
-	appender.AppendChildWidget(&t.scrollOverlay)
+	adder.AddChild(&t.frame)
+	adder.AddChild(&t.scrollOverlay)
 	if t.style != TextInputStyleInline && (context.IsFocused(t) || context.IsFocused(&t.text)) {
-		appender.AppendChildWidget(&t.focus)
+		adder.AddChild(&t.focus)
 	}
 }
 

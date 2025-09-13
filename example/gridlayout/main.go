@@ -35,12 +35,12 @@ type Root struct {
 	contentLayout layout.GridLayout
 }
 
-func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&r.background)
-	appender.AppendChildWidget(&r.configForm)
+func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&r.background)
+	adder.AddChild(&r.configForm)
 	for i := range r.buttons {
 		if r.buttons[i] != nil {
-			appender.AppendChildWidget(r.buttons[i])
+			adder.AddChild(r.buttons[i])
 		}
 	}
 }

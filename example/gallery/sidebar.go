@@ -17,8 +17,8 @@ type Sidebar struct {
 	panelContent sidebarContent
 }
 
-func (s *Sidebar) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&s.panel)
+func (s *Sidebar) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&s.panel)
 }
 
 func (s *Sidebar) Update(context *guigui.Context) error {
@@ -51,8 +51,8 @@ func (s *sidebarContent) setSize(size image.Point) {
 	s.size = size
 }
 
-func (s *sidebarContent) AppendChildWidgets(context *guigui.Context, appender *guigui.ChildWidgetAppender) {
-	appender.AppendChildWidget(&s.list)
+func (s *sidebarContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	adder.AddChild(&s.list)
 }
 
 func (s *sidebarContent) Update(context *guigui.Context) error {
