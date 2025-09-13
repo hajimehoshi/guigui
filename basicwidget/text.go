@@ -535,14 +535,19 @@ func (t *Text) HandlePointingInput(context *guigui.Context) guigui.HandleInputRe
 			if t.selectionDragEndPlus1-1 >= 0 {
 				end = max(idx, t.selectionDragEndPlus1-1)
 			}
-			t.setTextAndSelection(t.field.Text(), start, end, -1)
+			if t.setTextAndSelection(t.field.Text(), start, end, -1) {
+				return guigui.HandleInputByWidget(t)
+			} else {
+				return guigui.AbortHandlingInputByWidget(t)
+			}
 		}
 		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 			t.dragging = false
 			t.selectionDragStartPlus1 = 0
 			t.selectionDragEndPlus1 = 0
+			return guigui.HandleInputByWidget(t)
 		}
-		return guigui.HandleInputByWidget(t)
+		return guigui.AbortHandlingInputByWidget(t)
 	}
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
