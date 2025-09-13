@@ -37,7 +37,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	appender.AppendChildWidget(&r.incButton)
 }
 
-func (r *Root) Build(context *guigui.Context) error {
+func (r *Root) Update(context *guigui.Context) error {
 	r.counterText.SetSelectable(true)
 	r.counterText.SetBold(true)
 	r.counterText.SetHorizontalAlign(basicwidget.HorizontalAlignCenter)

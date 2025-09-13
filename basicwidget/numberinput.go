@@ -222,7 +222,7 @@ func (n *NumberInput) AppendChildWidgets(context *guigui.Context, appender *guig
 	appender.AppendChildWidget(&n.downButton)
 }
 
-func (n *NumberInput) Build(context *guigui.Context) error {
+func (n *NumberInput) Update(context *guigui.Context) error {
 	if n.nextValue != nil && !n.textInput.isFocused(context) && !context.IsFocused(n) {
 		n.abstractNumberInput.SetValueBigInt(n, n.nextValue, true)
 		n.nextValue = nil

@@ -89,7 +89,7 @@ func (l *List[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 	appender.AppendChildWidget(&l.list)
 }
 
-func (l *List[T]) Build(context *guigui.Context) error {
+func (l *List[T]) Update(context *guigui.Context) error {
 	l.updateListItems()
 	for i := range l.listItemWidgets {
 		item := &l.listItemWidgets[i]
@@ -224,7 +224,7 @@ func (l *listItemWidget[T]) AppendChildWidgets(context *guigui.Context, appender
 	appender.AppendChildWidget(&l.text)
 }
 
-func (l *listItemWidget[T]) Build(context *guigui.Context) error {
+func (l *listItemWidget[T]) Update(context *guigui.Context) error {
 	l.text.SetValue(l.item.Text)
 	l.text.SetVerticalAlign(VerticalAlignMiddle)
 	return nil

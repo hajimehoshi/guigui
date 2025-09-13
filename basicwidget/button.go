@@ -93,7 +93,7 @@ func (b *Button) AppendChildWidgets(context *guigui.Context, appender *guigui.Ch
 	appender.AppendChildWidget(&b.icon)
 }
 
-func (b *Button) Build(context *guigui.Context) error {
+func (b *Button) Update(context *guigui.Context) error {
 	if b.textColor != nil {
 		b.text.SetColor(b.textColor)
 	} else {

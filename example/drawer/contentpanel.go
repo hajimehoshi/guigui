@@ -21,7 +21,7 @@ func (c *ContentPanel) AppendChildWidgets(context *guigui.Context, appender *gui
 	appender.AppendChildWidget(&c.panel)
 }
 
-func (c *ContentPanel) Build(context *guigui.Context) error {
+func (c *ContentPanel) Update(context *guigui.Context) error {
 	c.content.SetFixedSize(context.Bounds(c).Size())
 	c.panel.SetContent(&c.content)
 	return nil
@@ -45,7 +45,7 @@ func (c *contentPanelContent) AppendChildWidgets(context *guigui.Context, append
 	appender.AppendChildWidget(&c.text)
 }
 
-func (c *contentPanelContent) Build(context *guigui.Context) error {
+func (c *contentPanelContent) Update(context *guigui.Context) error {
 	c.text.SetValue("Content panel: " + dummyText)
 	c.text.SetAutoWrap(true)
 	c.text.SetSelectable(true)

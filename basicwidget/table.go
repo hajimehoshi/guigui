@@ -89,7 +89,7 @@ func (t *Table[T]) AppendChildWidgets(context *guigui.Context, appender *guigui.
 	appender.AppendChildWidget(&t.tableHeader)
 }
 
-func (t *Table[T]) Build(context *guigui.Context) error {
+func (t *Table[T]) Update(context *guigui.Context) error {
 	t.list.SetHeaderHeight(tableHeaderHeight(context))
 	t.list.SetStyle(ListStyleNormal)
 	t.list.SetStripeVisible(true)
@@ -243,7 +243,7 @@ func (t *tableItemWidget[T]) AppendChildWidgets(context *guigui.Context, appende
 	}
 }
 
-func (t *tableItemWidget[T]) Build(context *guigui.Context) error {
+func (t *tableItemWidget[T]) Update(context *guigui.Context) error {
 	b := context.Bounds(t)
 	x := b.Min.X
 	clear(t.contentBounds)

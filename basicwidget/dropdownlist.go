@@ -52,7 +52,7 @@ func (d *DropdownList[T]) AppendChildWidgets(context *guigui.Context, appender *
 	appender.AppendChildWidget(&d.popupMenu)
 }
 
-func (d *DropdownList[T]) Build(context *guigui.Context) error {
+func (d *DropdownList[T]) Update(context *guigui.Context) error {
 	d.updateButtonContent()
 
 	d.button.SetOnDown(func() {
@@ -165,7 +165,7 @@ func (d *dropdownListButtonContent) AppendChildWidgets(context *guigui.Context, 
 	appender.AppendChildWidget(&d.image)
 }
 
-func (d *dropdownListButtonContent) Build(context *guigui.Context) error {
+func (d *dropdownListButtonContent) Update(context *guigui.Context) error {
 	img, err := theResourceImages.Get("unfold_more", context.ColorMode())
 	if err != nil {
 		return err

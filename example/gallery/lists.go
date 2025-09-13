@@ -41,7 +41,7 @@ func (l *Lists) AppendChildWidgets(context *guigui.Context, appender *guigui.Chi
 	appender.AppendChildWidget(&l.configForm)
 }
 
-func (l *Lists) Build(context *guigui.Context) error {
+func (l *Lists) Update(context *guigui.Context) error {
 	model := context.Model(l, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)

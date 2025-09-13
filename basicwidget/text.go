@@ -177,7 +177,7 @@ func (t *Text) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	}
 }
 
-func (t *Text) Build(context *guigui.Context) error {
+func (t *Text) Update(context *guigui.Context) error {
 	if f := t.face(context, false); t.lastFace != f {
 		t.lastFace = f
 		t.resetCachedTextSize()

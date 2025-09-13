@@ -378,7 +378,7 @@ func (a *app) build() error {
 		appender.widget = widget
 		widget.AppendChildWidgets(&a.context, &appender)
 
-		if err := widget.Build(&a.context); err != nil {
+		if err := widget.Update(&a.context); err != nil {
 			return err
 		}
 

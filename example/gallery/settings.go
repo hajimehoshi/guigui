@@ -33,7 +33,7 @@ func (s *Settings) AppendChildWidgets(context *guigui.Context, appender *guigui.
 	appender.AppendChildWidget(&s.form)
 }
 
-func (s *Settings) Build(context *guigui.Context) error {
+func (s *Settings) Update(context *guigui.Context) error {
 	lightModeImg, err := theImageCache.GetMonochrome("light_mode", context.ColorMode())
 	if err != nil {
 		return err
@@ -216,7 +216,7 @@ func (t *textWithSubText) AppendChildWidgets(context *guigui.Context, appender *
 	appender.AppendChildWidget(&t.subText)
 }
 
-func (t *textWithSubText) Build(context *guigui.Context) error {
+func (t *textWithSubText) Update(context *guigui.Context) error {
 	t.subText.SetScale(0.875)
 	t.subText.SetMultiline(true)
 	t.subText.SetAutoWrap(true)

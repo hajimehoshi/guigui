@@ -44,7 +44,7 @@ func (t *TextInputs) AppendChildWidgets(context *guigui.Context, appender *guigu
 	appender.AppendChildWidget(&t.configForm)
 }
 
-func (t *TextInputs) Build(context *guigui.Context) error {
+func (t *TextInputs) Update(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	imgAlignStart, err := theImageCache.GetMonochrome("format_align_left", context.ColorMode())
@@ -273,7 +273,7 @@ func (c *inlineTextInputContainer) AppendChildWidgets(context *guigui.Context, a
 	appender.AppendChildWidget(&c.textInput)
 }
 
-func (c *inlineTextInputContainer) Build(context *guigui.Context) error {
+func (c *inlineTextInputContainer) Update(context *guigui.Context) error {
 	c.textInput.SetStyle(basicwidget.TextInputStyleInline)
 	return nil
 }

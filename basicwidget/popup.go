@@ -114,7 +114,7 @@ func (p *Popup) AppendChildWidgets(context *guigui.Context, appender *guigui.Chi
 	}
 }
 
-func (p *Popup) Build(context *guigui.Context) error {
+func (p *Popup) Update(context *guigui.Context) error {
 	if (p.showing || p.hiding) && p.openingCount > 0 {
 		p.nextContentPosition = context.Bounds(p).Min
 		p.hasNextContentPosition = true

@@ -51,7 +51,7 @@ func (f *Form) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	}
 }
 
-func (f *Form) Build(context *guigui.Context) error {
+func (f *Form) Update(context *guigui.Context) error {
 	f.cachedItemBounds = slices.Delete(f.cachedItemBounds, 0, len(f.cachedItemBounds))
 	clear(f.cachedContentBounds)
 	f.cachedItemBounds, f.cachedContentBounds = f.appendItemBounds(f.cachedItemBounds, f.cachedContentBounds, context, context.Bounds(f).Dx())

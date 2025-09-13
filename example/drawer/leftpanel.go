@@ -21,7 +21,7 @@ func (l *LeftPanel) AppendChildWidgets(context *guigui.Context, appender *guigui
 	appender.AppendChildWidget(&l.panel)
 }
 
-func (l *LeftPanel) Build(context *guigui.Context) error {
+func (l *LeftPanel) Update(context *guigui.Context) error {
 	l.panel.SetStyle(basicwidget.PanelStyleSide)
 	l.panel.SetBorders(basicwidget.PanelBorder{
 		End: true,
@@ -50,7 +50,7 @@ func (l *leftPanelContent) AppendChildWidgets(context *guigui.Context, appender 
 	appender.AppendChildWidget(&l.text)
 }
 
-func (l *leftPanelContent) Build(context *guigui.Context) error {
+func (l *leftPanelContent) Update(context *guigui.Context) error {
 	l.text.SetValue("Left panel: " + dummyText)
 	l.text.SetAutoWrap(true)
 	l.text.SetSelectable(true)

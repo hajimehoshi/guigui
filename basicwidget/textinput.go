@@ -207,7 +207,7 @@ func (t *TextInput) textBounds(context *guigui.Context) image.Rectangle {
 	return b
 }
 
-func (t *TextInput) Build(context *guigui.Context) error {
+func (t *TextInput) Update(context *guigui.Context) error {
 	if t.prevFocused != (context.IsFocused(t) || context.IsFocused(&t.text)) {
 		t.prevFocused = (context.IsFocused(t) || context.IsFocused(&t.text))
 		guigui.RequestRedraw(t)

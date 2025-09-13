@@ -21,7 +21,7 @@ func (s *Sidebar) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 	appender.AppendChildWidget(&s.panel)
 }
 
-func (s *Sidebar) Build(context *guigui.Context) error {
+func (s *Sidebar) Update(context *guigui.Context) error {
 	s.panel.SetStyle(basicwidget.PanelStyleSide)
 	s.panel.SetBorders(basicwidget.PanelBorder{
 		End: true,
@@ -55,7 +55,7 @@ func (s *sidebarContent) AppendChildWidgets(context *guigui.Context, appender *g
 	appender.AppendChildWidget(&s.list)
 }
 
-func (s *sidebarContent) Build(context *guigui.Context) error {
+func (s *sidebarContent) Update(context *guigui.Context) error {
 	model := context.Model(s, modelKeyModel).(*Model)
 
 	s.list.SetStyle(basicwidget.ListStyleSidebar)

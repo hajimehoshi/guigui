@@ -67,7 +67,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	appender.AppendChildWidget(&r.tasksPanel)
 }
 
-func (r *Root) Build(context *guigui.Context) error {
+func (r *Root) Update(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
 
 	r.textInput.SetOnKeyJustPressed(func(key ebiten.Key) bool {
@@ -159,7 +159,7 @@ func (t *taskWidget) AppendChildWidgets(context *guigui.Context, appender *guigu
 	appender.AppendChildWidget(&t.text)
 }
 
-func (t *taskWidget) Build(context *guigui.Context) error {
+func (t *taskWidget) Update(context *guigui.Context) error {
 	t.doneButton.SetText("Done")
 	t.doneButton.SetOnUp(func() {
 		guigui.DispatchEventHandler(t, taskWidgetEventDoneButtonPressed)
@@ -228,7 +228,7 @@ func (t *tasksPanelContent) AppendChildWidgets(context *guigui.Context, appender
 	}
 }
 
-func (t *tasksPanelContent) Build(context *guigui.Context) error {
+func (t *tasksPanelContent) Update(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 	for i := range model.TaskCount() {
 		task := model.TaskByIndex(i)

@@ -35,7 +35,7 @@ func (b *Basic) AppendChildWidgets(context *guigui.Context, appender *guigui.Chi
 	appender.AppendChildWidget(&b.form)
 }
 
-func (b *Basic) Build(context *guigui.Context) error {
+func (b *Basic) Update(context *guigui.Context) error {
 	b.buttonText.SetValue("Button")
 	b.button.SetText("Click me!")
 	b.toggleText.SetValue("Toggle")

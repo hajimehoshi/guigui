@@ -42,7 +42,7 @@ func (n *NumberInputs) AppendChildWidgets(context *guigui.Context, appender *gui
 	appender.AppendChildWidget(&n.configForm)
 }
 
-func (n *NumberInputs) Build(context *guigui.Context) error {
+func (n *NumberInputs) Update(context *guigui.Context) error {
 	model := context.Model(n, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)

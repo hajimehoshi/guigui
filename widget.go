@@ -14,7 +14,7 @@ import (
 type Widget interface {
 	Model(key any) any
 	AppendChildWidgets(context *Context, appender *ChildWidgetAppender)
-	Build(context *Context) error
+	Update(context *Context) error
 	Layout(context *Context, widget Widget) image.Rectangle
 	HandlePointingInput(context *Context) HandleInputResult
 	HandleButtonInput(context *Context) HandleInputResult

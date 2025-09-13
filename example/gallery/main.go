@@ -90,7 +90,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	}
 }
 
-func (r *Root) Build(context *guigui.Context) error {
+func (r *Root) Update(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
 	r.layout = layout.GridLayout{
 		Bounds: context.Bounds(r),

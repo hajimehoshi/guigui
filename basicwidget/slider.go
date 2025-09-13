@@ -155,7 +155,7 @@ func (s *Slider) SetMaximumValueUint64(maximum uint64) {
 	s.abstractNumberInput.SetMaximumValueUint64(s, maximum)
 }
 
-func (s *Slider) Build(context *guigui.Context) error {
+func (s *Slider) Update(context *guigui.Context) error {
 	if hovered := s.isThumbHovered(context); s.prevThumbHovered != hovered {
 		s.prevThumbHovered = hovered
 		guigui.RequestRedraw(s)

@@ -148,7 +148,7 @@ func (b *baseList[T]) AppendChildWidgets(context *guigui.Context, appender *guig
 	appender.AppendChildWidget(&b.scrollOverlay)
 }
 
-func (b *baseList[T]) Build(context *guigui.Context) error {
+func (b *baseList[T]) Update(context *guigui.Context) error {
 	cs := b.contentSize(context)
 	b.scrollOverlay.SetContentSize(context, cs)
 

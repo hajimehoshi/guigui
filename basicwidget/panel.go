@@ -83,7 +83,7 @@ func (p *Panel) AppendChildWidgets(context *guigui.Context, appender *guigui.Chi
 	appender.AppendChildWidget(&p.border)
 }
 
-func (p *Panel) Build(context *guigui.Context) error {
+func (p *Panel) Update(context *guigui.Context) error {
 	if p.content == nil {
 		return nil
 	}

@@ -45,7 +45,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	}
 }
 
-func (r *Root) Build(context *guigui.Context) error {
+func (r *Root) Update(context *guigui.Context) error {
 	r.fillText.SetValue("Fill Widgets into Grid Cells")
 	r.fillToggle.SetValue(r.fill)
 	r.fillToggle.SetOnValueChanged(func(value bool) {

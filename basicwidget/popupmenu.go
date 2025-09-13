@@ -47,7 +47,7 @@ func (p *PopupMenu[T]) AppendChildWidgets(context *guigui.Context, appender *gui
 	appender.AppendChildWidget(&p.popup)
 }
 
-func (p *PopupMenu[T]) Build(context *guigui.Context) error {
+func (p *PopupMenu[T]) Update(context *guigui.Context) error {
 	list := p.list.Widget()
 	list.SetStyle(ListStyleMenu)
 	list.list.SetOnItemSelected(func(index int) {

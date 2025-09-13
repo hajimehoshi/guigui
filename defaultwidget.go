@@ -22,7 +22,7 @@ func (*DefaultWidget) Model(key any) any {
 func (*DefaultWidget) AppendChildWidgets(context *Context, appender *ChildWidgetAppender) {
 }
 
-func (*DefaultWidget) Build(context *Context) error {
+func (*DefaultWidget) Update(context *Context) error {
 	return nil
 }
 

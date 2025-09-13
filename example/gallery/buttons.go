@@ -42,7 +42,7 @@ func (b *Buttons) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 	appender.AppendChildWidget(&b.configForm)
 }
 
-func (b *Buttons) Build(context *guigui.Context) error {
+func (b *Buttons) Update(context *guigui.Context) error {
 	model := context.Model(b, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)

@@ -88,7 +88,7 @@ func (s *SegmentedControl[T]) AppendChildWidgets(context *guigui.Context, append
 	}
 }
 
-func (s *SegmentedControl[T]) Build(context *guigui.Context) error {
+func (s *SegmentedControl[T]) Update(context *guigui.Context) error {
 	s.buttons = adjustSliceSize(s.buttons, s.abstractList.ItemCount())
 
 	for i := range s.abstractList.ItemCount() {

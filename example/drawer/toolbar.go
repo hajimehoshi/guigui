@@ -22,7 +22,7 @@ func (t *Toolbar) AppendChildWidgets(context *guigui.Context, appender *guigui.C
 	appender.AppendChildWidget(&t.panel)
 }
 
-func (t *Toolbar) Build(context *guigui.Context) error {
+func (t *Toolbar) Update(context *guigui.Context) error {
 	t.panel.SetStyle(basicwidget.PanelStyleSide)
 	t.panel.SetBorders(basicwidget.PanelBorder{
 		Bottom: true,
@@ -60,7 +60,7 @@ func (t *toolbarContent) AppendChildWidgets(context *guigui.Context, appender *g
 	appender.AppendChildWidget(&t.rightPanelButton)
 }
 
-func (t *toolbarContent) Build(context *guigui.Context) error {
+func (t *toolbarContent) Update(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)

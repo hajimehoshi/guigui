@@ -38,7 +38,7 @@ func (t *Tables) AppendChildWidgets(context *guigui.Context, appender *guigui.Ch
 	appender.AppendChildWidget(&t.configForm)
 }
 
-func (t *Tables) Build(context *guigui.Context) error {
+func (t *Tables) Update(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
 	u := basicwidget.UnitSize(context)

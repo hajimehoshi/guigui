@@ -55,7 +55,7 @@ func (r *Root) AppendChildWidgets(context *guigui.Context, appender *guigui.Chil
 	appender.AppendChildWidget(&r.rightPanel)
 }
 
-func (r *Root) Build(context *guigui.Context) error {
+func (r *Root) Update(context *guigui.Context) error {
 	r.mainLayout = layout.GridLayout{
 		Bounds: context.Bounds(r),
 		Heights: []layout.Size{

@@ -44,7 +44,7 @@ func (p *Popups) AppendChildWidgets(context *guigui.Context, appender *guigui.Ch
 	appender.AppendChildWidget(&p.contextMenuPopup)
 }
 
-func (p *Popups) Build(context *guigui.Context) error {
+func (p *Popups) Update(context *guigui.Context) error {
 	p.blurBackgroundText.SetValue("Blur background")
 	p.closeByClickingOutsideText.SetValue("Close by clicking outside")
 	p.showButton.SetText("Show")
@@ -167,7 +167,7 @@ func (s *simplePopupContent) AppendChildWidgets(context *guigui.Context, appende
 	appender.AppendChildWidget(&s.closeButton)
 }
 
-func (s *simplePopupContent) Build(context *guigui.Context) error {
+func (s *simplePopupContent) Update(context *guigui.Context) error {
 	u := basicwidget.UnitSize(context)
 
 	s.titleText.SetValue("Hello!")
