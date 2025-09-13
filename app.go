@@ -624,7 +624,7 @@ func (a *app) drawDebugIfNeeded(screen *ebiten.Image) {
 	screen.DrawImage(a.debugScreen, nil)
 }
 
-func (a *app) isWidgetHitAt(widget Widget) bool {
+func (a *app) isWidgetHit(widget Widget) bool {
 	// Now this condition is removed temporarily.
 	// For example, this affects a detection of hovering a child widget in a parent widget.
 	// TODO: Revisit this condition.

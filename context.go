@@ -370,7 +370,7 @@ func (c *Context) SetOpacity(widget Widget, opacity float64) {
 }
 
 func (c *Context) IsWidgetHitAtCursor(widget Widget) bool {
-	return c.app.isWidgetHitAt(widget)
+	return c.app.isWidgetHit(widget)
 }
 
 func (c *Context) SetCustomDraw(widget Widget, customDraw CustomDrawFunc) {
