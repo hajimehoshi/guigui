@@ -195,10 +195,11 @@ func (a *app) Update() error {
 
 	// Construct the widget tree.
 	a.context.inBuild = true
-	if err := a.build(); err != nil {
+	if err := a.updateWidgets(); err != nil {
 		return err
 	}
 	a.context.inBuild = false
+	a.updateHitWidgets()
 
 	// Handle user inputs.
 	// TODO: Handle this in Ebitengine's HandleInput in the future (hajimehoshi/ebiten#1704)
@@ -215,10 +216,11 @@ func (a *app) Update() error {
 
 	// Construct the widget tree again to reflect the latest state.
 	a.context.inBuild = true
-	if err := a.build(); err != nil {
+	if err := a.updateWidgets(); err != nil {
 		return err
 	}
 	a.context.inBuild = false
+	a.updateHitWidgets()
 
 	if !a.cursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
@@ -346,7 +348,7 @@ func (a *app) requestRedrawIfDifferentParentZ(widget Widget) {
 	}
 }
 
-func (a *app) build() error {
+func (a *app) updateWidgets() error {
 	a.buildCount++
 
 	clear(a.visitedZs)
@@ -397,14 +399,16 @@ func (a *app) build() error {
 	a.zs = slices.AppendSeq(a.zs, maps.Keys(a.visitedZs))
 	slices.Sort(a.zs)
 
+	return nil
+}
+
+func (a *app) updateHitWidgets() {
 	a.hitWidgets = slices.Delete(a.hitWidgets, 0, len(a.hitWidgets))
 	pt := image.Pt(ebiten.CursorPosition())
 	a.hitWidgets = a.appendWidgetsAt(a.hitWidgets, pt, a.root, true)
 	slices.SortStableFunc(a.hitWidgets, func(a, b widgetAndZ) int {
 		return b.z - a.z
 	})
-
-	return nil
 }
 
 type handleInputType int
