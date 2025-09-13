@@ -92,12 +92,13 @@ type widgetState struct {
 	children []Widget
 	prev     widgetsAndVisibleBounds
 
-	hidden        bool
-	disabled      bool
-	transparency  float64
-	customDraw    CustomDrawFunc
-	eventHandlers map[string]any
-	tmpArgs       []reflect.Value
+	hidden          bool
+	disabled        bool
+	transparency    float64
+	customDraw      CustomDrawFunc
+	eventHandlers   map[string]any
+	tmpArgs         []reflect.Value
+	eventDispatched bool
 
 	offscreen *ebiten.Image
 
@@ -219,6 +220,7 @@ func dispatchEventHandler(widgetState *widgetState, eventName string, args ...an
 	for _, ret := range returns {
 		v = append(v, ret.Interface())
 	}
+	widgetState.eventDispatched = true
 	return v, true
 }
 

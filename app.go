@@ -22,6 +22,7 @@ import (
 
 type debugMode struct {
 	showRenderingRegions bool
+	showBuildLogs        bool
 	showInputLogs        bool
 	deviceScale          float64
 }
@@ -33,6 +34,8 @@ func init() {
 		switch {
 		case token == "showrenderingregions":
 			theDebugMode.showRenderingRegions = true
+		case token == "showbuildlogs":
+			theDebugMode.showBuildLogs = true
 		case token == "showinputlogs":
 			theDebugMode.showInputLogs = true
 		case strings.HasPrefix(token, "devicescale="):
@@ -65,6 +68,7 @@ type app struct {
 	visitedZs  map[int]struct{}
 	zs         []int
 	buildCount int64
+	skipBuild  bool
 
 	// hitWidgets are widgets and their z values at the cursor position.
 	// hitWidgets are ordered by descending z values.
@@ -180,78 +184,22 @@ func (a *app) focusWidget(widgetState *widgetState) {
 	}
 }
 
-func (a *app) Update() error {
-	if a.focusedWidgetState == nil {
-		a.focusWidget(a.root.widgetState())
-	}
-
-	if s := deviceScaleFactor(); a.deviceScale != s {
-		a.deviceScale = s
-		a.requestRedraw(a.bounds())
-	}
-
-	rootState := a.root.widgetState()
-	rootState.bounds = a.bounds()
-
-	// Construct the widget tree.
-	a.context.inBuild = true
-	if err := a.updateWidgets(); err != nil {
-		return err
-	}
-	a.context.inBuild = false
-	a.updateHitWidgets()
-
-	// Handle user inputs.
-	// TODO: Handle this in Ebitengine's HandleInput in the future (hajimehoshi/ebiten#1704)
-	if r := a.handleInputWidget(handleInputTypePointing); r.widget != nil {
-		if theDebugMode.showInputLogs {
-			slog.Info("pointing input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
+func (a *app) updateEventDispatchStates() Widget {
+	var dispatchedWidget Widget
+	_ = traverseWidget(a.root, func(widget Widget) error {
+		ws := widget.widgetState()
+		if ws.eventDispatched {
+			if dispatchedWidget == nil {
+				dispatchedWidget = widget
+			}
+			ws.eventDispatched = false
 		}
-	}
-	if r := a.handleInputWidget(handleInputTypeButton); r.widget != nil {
-		if theDebugMode.showInputLogs {
-			slog.Info("keyboard input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
-		}
-	}
+		return nil
+	})
+	return dispatchedWidget
+}
 
-	// Construct the widget tree again to reflect the latest state.
-	a.context.inBuild = true
-	if err := a.updateWidgets(); err != nil {
-		return err
-	}
-	a.context.inBuild = false
-	a.updateHitWidgets()
-
-	if !a.cursorShape() {
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-	}
-
-	// Tick
-	if err := a.tickWidgets(a.root); err != nil {
-		return err
-	}
-
-	// Invalidate the engire screen if the screen size is changed.
-	var invalidated bool
-	if a.lastScreenWidth != a.screenWidth {
-		invalidated = true
-		a.lastScreenWidth = a.screenWidth
-	}
-	if a.lastScreenHeight != a.screenHeight {
-		invalidated = true
-		a.lastScreenHeight = a.screenHeight
-	}
-	if invalidated {
-		a.requestRedraw(a.bounds())
-	} else {
-		// Invalidate regions if a widget's children state is changed.
-		// A widget's bounds might be changed in Update, so do this after updating.
-		a.requestRedrawIfTreeChanged(a.root)
-	}
-
-	a.resetPrevWidgets(a.root)
-
-	// Resolve dirty widgets.
+func (a *app) updateInvalidatedRegions() {
 	_ = traverseWidget(a.root, func(widget Widget) error {
 		if !widget.widgetState().dirty {
 			return nil
@@ -268,6 +216,123 @@ func (a *app) Update() error {
 		widget.widgetState().dirtyAt = ""
 		return nil
 	})
+}
+
+func (a *app) Update() error {
+	if a.focusedWidgetState == nil {
+		a.focusWidget(a.root.widgetState())
+	}
+
+	if s := deviceScaleFactor(); a.deviceScale != s {
+		a.deviceScale = s
+		a.requestRedraw(a.bounds())
+	}
+
+	rootState := a.root.widgetState()
+	rootState.bounds = a.bounds()
+
+	// Call the first buildWidgets.
+	a.context.inBuild = true
+	if err := a.buildWidgets(); err != nil {
+		return err
+	}
+	a.context.inBuild = false
+	a.updateHitWidgets()
+
+	// Handle user inputs.
+	// TODO: Handle this in Ebitengine's HandleInput in the future (hajimehoshi/ebiten#1704)
+	var inputHandled bool
+	if r := a.handleInputWidget(handleInputTypePointing); r.widget != nil {
+		if !r.aborted {
+			inputHandled = true
+		}
+		if theDebugMode.showInputLogs {
+			slog.Info("pointing input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
+		}
+	}
+	if r := a.handleInputWidget(handleInputTypeButton); r.widget != nil {
+		if !r.aborted {
+			inputHandled = true
+		}
+		if theDebugMode.showInputLogs {
+			slog.Info("keyboard input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
+		}
+	}
+
+	dispatchedWidget := a.updateEventDispatchStates()
+	a.updateInvalidatedRegions()
+	a.skipBuild = true
+	if dispatchedWidget != nil {
+		a.skipBuild = false
+		if theDebugMode.showBuildLogs {
+			slog.Info("rebuilding tree next time: event dispatched", "widget", fmt.Sprintf("%T", dispatchedWidget))
+		}
+	}
+	if !a.invalidatedRegions.Empty() {
+		a.skipBuild = false
+		if theDebugMode.showBuildLogs {
+			slog.Info("rebuilding tree next time: region invalidated", "region", a.invalidatedRegions)
+		}
+	}
+	if inputHandled {
+		a.skipBuild = false
+		if theDebugMode.showBuildLogs {
+			slog.Info("rebuilding tree next time: input handled")
+		}
+	}
+
+	// Call the second buildWidgets to construct the widget tree again to reflect the latest state.
+	a.context.inBuild = true
+	if err := a.buildWidgets(); err != nil {
+		return err
+	}
+	a.context.inBuild = false
+	a.updateHitWidgets()
+
+	if !a.cursorShape() {
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+	}
+
+	// Tick
+	if err := a.tickWidgets(a.root); err != nil {
+		return err
+	}
+
+	// Invalidate the engire screen if the screen size is changed.
+	var screenInvalidated bool
+	if a.lastScreenWidth != a.screenWidth {
+		screenInvalidated = true
+		a.lastScreenWidth = a.screenWidth
+	}
+	if a.lastScreenHeight != a.screenHeight {
+		screenInvalidated = true
+		a.lastScreenHeight = a.screenHeight
+	}
+	if screenInvalidated {
+		a.requestRedraw(a.bounds())
+	} else {
+		// Invalidate regions if a widget's children state is changed.
+		// A widget's bounds might be changed in Update, so do this after updating.
+		a.requestRedrawIfTreeChanged(a.root)
+	}
+
+	a.resetPrevWidgets(a.root)
+
+	dispatchedWidget = a.updateEventDispatchStates()
+	a.updateInvalidatedRegions()
+	a.skipBuild = true
+	if dispatchedWidget != nil {
+		a.skipBuild = false
+		if theDebugMode.showBuildLogs {
+			slog.Info("rebuilding tree next time: event dispatched", "widget", fmt.Sprintf("%T", dispatchedWidget))
+		}
+	}
+	if !a.invalidatedRegions.Empty() {
+		a.skipBuild = false
+		if theDebugMode.showBuildLogs {
+			slog.Info("rebuilding tree next time: region invalidated", "region", a.invalidatedRegions)
+		}
+	}
 
 	if theDebugMode.showRenderingRegions {
 		// Update the regions in the reversed order to remove items.
@@ -348,7 +413,11 @@ func (a *app) requestRedrawIfDifferentParentZ(widget Widget) {
 	}
 }
 
-func (a *app) updateWidgets() error {
+func (a *app) buildWidgets() error {
+	if a.skipBuild {
+		return nil
+	}
+
 	a.buildCount++
 
 	clear(a.visitedZs)
@@ -375,15 +444,18 @@ func (a *app) updateWidgets() error {
 		widgetState.hasVisibleBoundsCache = false
 		widgetState.visibleBoundsCache = image.Rectangle{}
 
+		// Call AddChildren.
 		widgetState.children = slices.Delete(widgetState.children, 0, len(widgetState.children))
 		adder.app = a
 		adder.widget = widget
 		widget.AddChildren(&a.context, &adder)
 
+		// Call Update.
 		if err := widget.Update(&a.context); err != nil {
 			return err
 		}
 
+		// Call Layout.
 		for _, child := range widget.widgetState().children {
 			child.widgetState().bounds = widget.Layout(&a.context, child)
 		}
