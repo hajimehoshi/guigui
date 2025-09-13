@@ -129,13 +129,6 @@ func (p *Popup) Update(context *guigui.Context) error {
 	p.content.popup = p
 	p.frame.popup = p
 
-	// SetOpacity cannot be called for p.background so far.
-	// If opacity is less than 1, the dst argument of Draw will an empty image in the current implementation.
-	// TODO: This is too tricky. Refactor this.
-	context.SetOpacity(&p.shadow, p.openingRate())
-	context.SetOpacity(&p.content, p.openingRate())
-	context.SetOpacity(&p.frame, p.openingRate())
-
 	return nil
 }
 
@@ -247,6 +240,14 @@ func (p *Popup) Tick(context *guigui.Context) error {
 			}
 		}
 	}
+
+	// SetOpacity cannot be called for p.background so far.
+	// If opacity is less than 1, the dst argument of Draw will an empty image in the current implementation.
+	// TODO: This is too tricky. Refactor this.
+	context.SetOpacity(&p.shadow, p.openingRate())
+	context.SetOpacity(&p.content, p.openingRate())
+	context.SetOpacity(&p.frame, p.openingRate())
+
 	return nil
 }
 
