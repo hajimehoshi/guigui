@@ -224,8 +224,8 @@ func (a *app) Update() error {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	}
 
-	// Update
-	if err := a.updateWidget(a.root); err != nil {
+	// Tick
+	if err := a.tickWidgets(a.root); err != nil {
 		return err
 	}
 
@@ -489,14 +489,14 @@ func (a *app) cursorShape() bool {
 	return false
 }
 
-func (a *app) updateWidget(widget Widget) error {
+func (a *app) tickWidgets(widget Widget) error {
 	widgetState := widget.widgetState()
 	if err := widget.Tick(&a.context); err != nil {
 		return err
 	}
 
 	for _, child := range widgetState.children {
-		if err := a.updateWidget(child); err != nil {
+		if err := a.tickWidgets(child); err != nil {
 			return err
 		}
 	}
