@@ -391,7 +391,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		case left || right:
 			item, _ := b.abstractList.ItemByIndex(index)
 			if !item.Selectable {
-				return guigui.HandleInputByWidget(b)
+				return guigui.AbortHandlingInputByWidget(b)
 			}
 
 			wasFocused := context.IsFocusedOrHasFocusedChild(b)
@@ -412,8 +412,9 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			item, _ := b.abstractList.ItemByIndex(index)
 			if item.Movable && b.SelectedItemIndex() == index && b.startPressingIndexPlus1-1 == index && (b.pressStartPlus1 != c.Add(image.Pt(1, 1))) {
 				b.dragSrcIndexPlus1 = index + 1
+				return guigui.HandleInputByWidget(b)
 			}
-			return guigui.HandleInputByWidget(b)
+			return guigui.AbortHandlingInputByWidget(b)
 
 		case inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft):
 			b.pressStartPlus1 = image.Point{}
