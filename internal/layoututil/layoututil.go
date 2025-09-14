@@ -12,7 +12,8 @@ type Size struct {
 type sizeType int
 
 const (
-	sizeTypeFixed sizeType = iota
+	sizeTypeNone sizeType = iota
+	sizeTypeFixed
 	sizeTypeFlexible
 	sizeTypeLazy
 )

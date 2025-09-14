@@ -12,7 +12,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Root struct {
@@ -24,9 +23,7 @@ type Root struct {
 	incButton   basicwidget.Button
 	counterText basicwidget.Text
 
-	counter      int
-	mainLayout   layout.GridLayout
-	footerLayout layout.GridLayout
+	counter int
 }
 
 func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -61,26 +58,6 @@ func (r *Root) Update(context *guigui.Context) error {
 		r.counter++
 	})
 
-	u := basicwidget.UnitSize(context)
-	r.mainLayout = layout.GridLayout{
-		Bounds: context.Bounds(r).Inset(u),
-		Heights: []layout.Size{
-			layout.FlexibleSize(1),
-			layout.FixedSize(u),
-		},
-		RowGap: u,
-	}
-	r.footerLayout = layout.GridLayout{
-		Bounds: r.mainLayout.CellBounds(0, 1),
-		Widths: []layout.Size{
-			layout.FixedSize(6 * u),
-			layout.FlexibleSize(1),
-			layout.FixedSize(6 * u),
-			layout.FixedSize(6 * u),
-		},
-		ColumnGap: u / 2,
-	}
-
 	return nil
 }
 
@@ -88,16 +65,43 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 	switch widget {
 	case &r.background:
 		return context.Bounds(r)
-	case &r.counterText:
-		return r.mainLayout.CellBounds(0, 0)
-	case &r.resetButton:
-		return r.footerLayout.CellBounds(0, 0)
-	case &r.decButton:
-		return r.footerLayout.CellBounds(2, 0)
-	case &r.incButton:
-		return r.footerLayout.CellBounds(3, 0)
 	}
-	return image.Rectangle{}
+
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &r.counterText,
+				Size:   guigui.FlexibleSize(1),
+			},
+			{
+				Size: guigui.FixedSize(u),
+				LinearLayout: guigui.LinearLayout{
+					Direction: guigui.LayoutDirectionHorizontal,
+					Items: []guigui.LinearLayoutItem{
+						{
+							Widget: &r.resetButton,
+							Size:   guigui.FixedSize(6 * u),
+						},
+						{
+							Size: guigui.FlexibleSize(1),
+						},
+						{
+							Widget: &r.decButton,
+							Size:   guigui.FixedSize(6 * u),
+						},
+						{
+							Widget: &r.incButton,
+							Size:   guigui.FixedSize(6 * u),
+						},
+					},
+					Gap: u / 2,
+				},
+			},
+		},
+		Gap: u,
+	}).WidgetBounds(context.Bounds(r).Inset(u), widget)
 }
 
 func main() {

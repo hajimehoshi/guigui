@@ -12,7 +12,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type modelKey int
@@ -33,9 +32,6 @@ type Root struct {
 	rightPanel   RightPanel
 
 	model Model
-
-	mainLayout    layout.GridLayout
-	contentLayout layout.GridLayout
 }
 
 func (r *Root) Model(key any) any {
@@ -55,43 +51,41 @@ func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	adder.AddChild(&r.rightPanel)
 }
 
-func (r *Root) Update(context *guigui.Context) error {
-	r.mainLayout = layout.GridLayout{
-		Bounds: context.Bounds(r),
-		Heights: []layout.Size{
-			layout.FixedSize(r.toolbar.Measure(context, guigui.Constraints{}).Y),
-			layout.FlexibleSize(1),
-		},
-	}
-	r.contentLayout = layout.GridLayout{
-		Bounds: r.mainLayout.CellBounds(0, 1),
-		Widths: []layout.Size{
-			layout.FixedSize(r.model.LeftPanelWidth(context)),
-			layout.FlexibleSize(1),
-			layout.FixedSize(r.model.RightPanelWidth(context)),
-		},
-	}
-	return nil
-}
-
 func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	switch widget {
 	case &r.background:
 		return context.Bounds(r)
-	case &r.toolbar:
-		return r.mainLayout.CellBounds(0, 0)
-	case &r.leftPanel:
-		b := r.contentLayout.CellBounds(0, 0)
-		b.Min.X = b.Max.X - r.model.DefaultPanelWidth(context)
-		return b
-	case &r.contentPanel:
-		return r.contentLayout.CellBounds(1, 0)
-	case &r.rightPanel:
-		b := r.contentLayout.CellBounds(2, 0)
-		b.Max.X = b.Min.X + r.model.DefaultPanelWidth(context)
-		return b
 	}
-	return image.Rectangle{}
+
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &r.toolbar,
+				Size:   guigui.FixedSize(r.toolbar.Measure(context, guigui.Constraints{}).Y),
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+				LinearLayout: guigui.LinearLayout{
+					Direction: guigui.LayoutDirectionHorizontal,
+					Items: []guigui.LinearLayoutItem{
+						{
+							Widget: &r.leftPanel,
+							Size:   guigui.FixedSize(r.model.LeftPanelWidth(context)),
+						},
+						{
+							Widget: &r.contentPanel,
+							Size:   guigui.FlexibleSize(1),
+						},
+						{
+							Widget: &r.rightPanel,
+							Size:   guigui.FixedSize(r.model.RightPanelWidth(context)),
+						},
+					},
+				},
+			},
+		},
+	}).WidgetBounds(context.Bounds(r), widget)
 }
 
 func (r *Root) Tick(context *guigui.Context) error {

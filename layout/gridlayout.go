@@ -9,20 +9,25 @@ import (
 	"github.com/hajimehoshi/guigui/internal/layoututil"
 )
 
+// Deprecated: use [github.com/hajimehoshi/guigui.Size] instead.
 type Size = layoututil.Size
 
+// Deprecated: use [github.com/hajimehoshi/guigui.FixedSize] instead.
 func FixedSize(value int) Size {
 	return layoututil.FixedSize(value)
 }
 
+// Deprecated: use [github.com/hajimehoshi/guigui.FlexibleSize] instead.
 func FlexibleSize(value int) Size {
 	return layoututil.FlexibleSize(value)
 }
 
+// Deprecated: use [github.com/hajimehoshi/guigui.LinearLayout] instead.
 func LazySize(f func(rowOrColumn int) Size) Size {
 	return layoututil.LazySize(f)
 }
 
+// Deprecated: use [github.com/hajimehoshi/guigui.LinearLayout] instead.
 type GridLayout struct {
 	Bounds    image.Rectangle
 	Widths    []Size
