@@ -368,8 +368,9 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			if i := b.calcDropDstIndex(context); b.dragDstIndexPlus1-1 != i {
 				b.dragDstIndexPlus1 = i + 1
 				guigui.RequestRedraw(b)
+				return guigui.HandleInputByWidget(b)
 			}
-			return guigui.HandleInputByWidget(b)
+			return guigui.AbortHandlingInputByWidget(b)
 		}
 		if b.dragDstIndexPlus1 > 0 {
 			// TODO: Implement multiple items drop.
@@ -420,7 +421,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			b.pressStartPlus1 = image.Point{}
 			b.startPressingIndexPlus1 = 0
 			b.startPressingLeft = false
-			return guigui.HandleInputByWidget(b)
+			return guigui.AbortHandlingInputByWidget(b)
 		}
 	}
 
