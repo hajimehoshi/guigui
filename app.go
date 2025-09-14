@@ -241,10 +241,10 @@ func (a *app) Update() error {
 
 	// Handle user inputs.
 	// TODO: Handle this in Ebitengine's HandleInput in the future (hajimehoshi/ebiten#1704)
-	var inputHandled bool
+	var inputHandledWidget Widget
 	if r := a.handleInputWidget(handleInputTypePointing); r.widget != nil {
 		if !r.aborted {
-			inputHandled = true
+			inputHandledWidget = r.widget
 		}
 		if theDebugMode.showInputLogs {
 			slog.Info("pointing input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
@@ -252,7 +252,7 @@ func (a *app) Update() error {
 	}
 	if r := a.handleInputWidget(handleInputTypeButton); r.widget != nil {
 		if !r.aborted {
-			inputHandled = true
+			inputHandledWidget = r.widget
 		}
 		if theDebugMode.showInputLogs {
 			slog.Info("keyboard input handled", "widget", fmt.Sprintf("%T", r.widget), "aborted", r.aborted)
@@ -267,17 +267,15 @@ func (a *app) Update() error {
 		if theDebugMode.showBuildLogs {
 			slog.Info("rebuilding tree next time: event dispatched", "widget", fmt.Sprintf("%T", dispatchedWidget))
 		}
-	}
-	if !a.invalidatedRegions.Empty() {
+	} else if !a.invalidatedRegions.Empty() {
 		a.skipBuild = false
 		if theDebugMode.showBuildLogs {
 			slog.Info("rebuilding tree next time: region invalidated", "region", a.invalidatedRegions)
 		}
-	}
-	if inputHandled {
+	} else if inputHandledWidget != nil {
 		a.skipBuild = false
 		if theDebugMode.showBuildLogs {
-			slog.Info("rebuilding tree next time: input handled")
+			slog.Info("rebuilding tree next time: input handled", "widget", fmt.Sprintf("%T", inputHandledWidget))
 		}
 	}
 
@@ -326,8 +324,7 @@ func (a *app) Update() error {
 		if theDebugMode.showBuildLogs {
 			slog.Info("rebuilding tree next time: event dispatched", "widget", fmt.Sprintf("%T", dispatchedWidget))
 		}
-	}
-	if !a.invalidatedRegions.Empty() {
+	} else if !a.invalidatedRegions.Empty() {
 		a.skipBuild = false
 		if theDebugMode.showBuildLogs {
 			slog.Info("rebuilding tree next time: region invalidated", "region", a.invalidatedRegions)
