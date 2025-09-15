@@ -8,7 +8,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Toolbar struct {
@@ -51,8 +50,6 @@ type toolbarContent struct {
 
 	leftPanelButton  basicwidget.Button
 	rightPanelButton basicwidget.Button
-
-	layout layout.GridLayout
 }
 
 func (t *toolbarContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -63,15 +60,6 @@ func (t *toolbarContent) AddChildren(context *guigui.Context, adder *guigui.Chil
 func (t *toolbarContent) Update(context *guigui.Context) error {
 	model := context.Model(t, modelKeyModel).(*Model)
 
-	u := basicwidget.UnitSize(context)
-	t.layout = layout.GridLayout{
-		Bounds: context.Bounds(t).Inset(u / 4),
-		Widths: []layout.Size{
-			layout.FixedSize(u * 3 / 2),
-			layout.FlexibleSize(1),
-			layout.FixedSize(u * 3 / 2),
-		},
-	}
 	if model.IsLeftPanelOpen() {
 		img, err := theImageCache.GetMonochrome("left_panel_close", context.ColorMode())
 		if err != nil {
@@ -109,11 +97,21 @@ func (t *toolbarContent) Update(context *guigui.Context) error {
 }
 
 func (t *toolbarContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &t.leftPanelButton:
-		return t.layout.CellBounds(0, 0)
-	case &t.rightPanelButton:
-		return t.layout.CellBounds(2, 0)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionHorizontal,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &t.leftPanelButton,
+				Size:   guigui.FixedSize(u * 3 / 2),
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+			},
+			{
+				Widget: &t.rightPanelButton,
+				Size:   guigui.FixedSize(u * 3 / 2),
+			},
+		},
+	}).WidgetBounds(context, context.Bounds(t).Inset(u/4), widget)
 }
