@@ -15,7 +15,6 @@ import (
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 	"github.com/hajimehoshi/guigui/basicwidget/cjkfont"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type modelKey int
@@ -43,8 +42,6 @@ type Root struct {
 
 	locales           []language.Tag
 	faceSourceEntries []basicwidget.FaceSourceEntry
-
-	layout layout.GridLayout
 }
 
 func (r *Root) updateFontFaceSources(context *guigui.Context) {
@@ -92,13 +89,6 @@ func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 
 func (r *Root) Update(context *guigui.Context) error {
 	r.updateFontFaceSources(context)
-	r.layout = layout.GridLayout{
-		Bounds: context.Bounds(r),
-		Widths: []layout.Size{
-			layout.FixedSize(8 * basicwidget.UnitSize(context)),
-			layout.FlexibleSize(1),
-		},
-	}
 	return nil
 }
 
@@ -106,28 +96,24 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 	switch widget {
 	case &r.background:
 		return context.Bounds(r)
-	case &r.sidebar:
-		return r.layout.CellBounds(0, 0)
-	case &r.settings:
-		return r.layout.CellBounds(1, 0)
-	case &r.basic:
-		return r.layout.CellBounds(1, 0)
-	case &r.buttons:
-		return r.layout.CellBounds(1, 0)
-	case &r.texts:
-		return r.layout.CellBounds(1, 0)
-	case &r.textInputs:
-		return r.layout.CellBounds(1, 0)
-	case &r.numberInputs:
-		return r.layout.CellBounds(1, 0)
-	case &r.lists:
-		return r.layout.CellBounds(1, 0)
-	case &r.tables:
-		return r.layout.CellBounds(1, 0)
-	case &r.popups:
-		return r.layout.CellBounds(1, 0)
 	}
-	return image.Rectangle{}
+
+	layout := guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionHorizontal,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &r.sidebar,
+				Size:   guigui.FixedSize(8 * basicwidget.UnitSize(context)),
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+			},
+		},
+	}
+	if widget == &r.sidebar {
+		return layout.WidgetBounds(context, context.Bounds(r), widget)
+	}
+	return layout.ItemBounds(context, context.Bounds(r), 1)
 }
 
 func main() {

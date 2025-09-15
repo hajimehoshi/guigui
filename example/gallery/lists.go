@@ -9,7 +9,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Lists struct {
@@ -32,8 +31,6 @@ type Lists struct {
 	enabledToggle    basicwidget.Toggle
 
 	items []basicwidget.ListItem[int]
-
-	layout layout.GridLayout
 }
 
 func (l *Lists) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -129,25 +126,24 @@ func (l *Lists) Update(context *guigui.Context) error {
 		},
 	})
 
-	l.layout = layout.GridLayout{
-		Bounds: context.Bounds(l).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.FixedSize(l.listForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(l).Dx()-u)).Y),
-			layout.FlexibleSize(1),
-			layout.FixedSize(l.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(l).Dx()-u)).Y),
-		},
-		RowGap: u / 2,
-	}
-
 	return nil
 }
 
 func (l *Lists) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &l.listForm:
-		return l.layout.CellBounds(0, 0)
-	case &l.configForm:
-		return l.layout.CellBounds(0, 2)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &l.listForm,
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+			},
+			{
+				Widget: &l.configForm,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(l).Inset(u/2), widget)
 }

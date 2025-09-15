@@ -11,7 +11,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Popups struct {
@@ -32,7 +31,6 @@ type Popups struct {
 
 	contextMenuPopup basicwidget.PopupMenu[int]
 
-	layout                   layout.GridLayout
 	contextMenuPopupPosition image.Point
 }
 
@@ -76,20 +74,6 @@ func (p *Popups) Update(context *guigui.Context) error {
 		},
 	})
 
-	u := basicwidget.UnitSize(context)
-	p.layout = layout.GridLayout{
-		Bounds: context.Bounds(p).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.LazySize(func(row int) layout.Size {
-				if row >= len(p.forms) {
-					return layout.FixedSize(0)
-				}
-				return layout.FixedSize(p.forms[row].Measure(context, guigui.FixedWidthConstraints(context.Bounds(p).Dx()-u)).Y)
-			}),
-		},
-		RowGap: u / 2,
-	}
-
 	p.simplePopupContent.Widget().SetPopup(&p.simplePopup)
 	p.simplePopup.SetContent(&p.simplePopupContent)
 	p.simplePopup.SetBackgroundBlurred(p.blurBackgroundToggle.Value())
@@ -111,10 +95,6 @@ func (p *Popups) contentSize(context *guigui.Context) image.Point {
 
 func (p *Popups) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
 	switch widget {
-	case &p.forms[0]:
-		return p.layout.CellBounds(0, 0)
-	case &p.forms[1]:
-		return p.layout.CellBounds(0, 1)
 	case &p.simplePopup:
 		appBounds := context.AppBounds()
 		contentSize := p.contentSize(context)
@@ -132,7 +112,21 @@ func (p *Popups) Layout(context *guigui.Context, widget guigui.Widget) image.Rec
 			Max: p.contextMenuPopupPosition.Add(p.contextMenuPopup.Measure(context, guigui.Constraints{})),
 		}
 	}
-	return image.Rectangle{}
+
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &p.forms[0],
+			},
+			{
+				Widget: &p.forms[1],
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(p).Inset(u/2), widget)
+
 }
 
 func (p *Popups) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
@@ -153,9 +147,6 @@ type simplePopupContent struct {
 
 	titleText   basicwidget.Text
 	closeButton basicwidget.Button
-
-	mainLayout   layout.GridLayout
-	footerLayout layout.GridLayout
 }
 
 func (s *simplePopupContent) SetPopup(popup *basicwidget.Popup) {
@@ -168,8 +159,6 @@ func (s *simplePopupContent) AddChildren(context *guigui.Context, adder *guigui.
 }
 
 func (s *simplePopupContent) Update(context *guigui.Context) error {
-	u := basicwidget.UnitSize(context)
-
 	s.titleText.SetValue("Hello!")
 	s.titleText.SetBold(true)
 
@@ -178,35 +167,32 @@ func (s *simplePopupContent) Update(context *guigui.Context) error {
 		s.popup.Close()
 	})
 
-	s.mainLayout = layout.GridLayout{
-		Bounds: context.Bounds(s).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.FlexibleSize(1),
-			layout.LazySize(func(row int) layout.Size {
-				if row != 1 {
-					return layout.FixedSize(0)
-				}
-				return layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).Y)
-			}),
-		},
-	}
-	s.footerLayout = layout.GridLayout{
-		Bounds: s.mainLayout.CellBounds(0, 1),
-		Widths: []layout.Size{
-			layout.FlexibleSize(1),
-			layout.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).X),
-		},
-	}
-
 	return nil
 }
 
 func (s *simplePopupContent) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &s.titleText:
-		return s.mainLayout.CellBounds(0, 0)
-	case &s.closeButton:
-		return s.footerLayout.CellBounds(1, 0)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &s.titleText,
+				Size:   guigui.FlexibleSize(1),
+			},
+			{
+				Size: guigui.FixedSize(s.closeButton.Measure(context, guigui.Constraints{}).Y),
+				Layout: guigui.LinearLayout{
+					Direction: guigui.LayoutDirectionHorizontal,
+					Items: []guigui.LinearLayoutItem{
+						{
+							Size: guigui.FlexibleSize(1),
+						},
+						{
+							Widget: &s.closeButton,
+						},
+					},
+				},
+			},
+		},
+	}).WidgetBounds(context, context.Bounds(s).Inset(u/2), widget)
 }

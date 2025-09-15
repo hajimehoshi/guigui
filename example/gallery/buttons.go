@@ -8,7 +8,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Buttons struct {
@@ -33,8 +32,6 @@ type Buttons struct {
 	configForm    basicwidget.Form
 	enabledText   basicwidget.Text
 	enabledToggle basicwidget.Toggle
-
-	layout layout.GridLayout
 }
 
 func (b *Buttons) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -154,25 +151,24 @@ func (b *Buttons) Update(context *guigui.Context) error {
 		},
 	})
 
-	b.layout = layout.GridLayout{
-		Bounds: context.Bounds(b).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.FixedSize(b.buttonsForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y),
-			layout.FlexibleSize(1),
-			layout.FixedSize(b.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y),
-		},
-		RowGap: u / 2,
-	}
-
 	return nil
 }
 
 func (b *Buttons) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &b.buttonsForm:
-		return b.layout.CellBounds(0, 0)
-	case &b.configForm:
-		return b.layout.CellBounds(0, 2)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &b.buttonsForm,
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+			},
+			{
+				Widget: &b.configForm,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(b).Inset(u/2), widget)
 }

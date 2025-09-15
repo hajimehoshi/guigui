@@ -10,7 +10,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Settings struct {
@@ -23,8 +22,6 @@ type Settings struct {
 	localeDropdownList        basicwidget.DropdownList[language.Tag]
 	scaleText                 basicwidget.Text
 	scaleSegmentedControl     basicwidget.SegmentedControl[float64]
-
-	layout layout.GridLayout
 }
 
 var hongKongChinese = language.MustParse("zh-HK")
@@ -179,29 +176,20 @@ func (s *Settings) Update(context *guigui.Context) error {
 		},
 	})
 
-	u := basicwidget.UnitSize(context)
-	s.layout = layout.GridLayout{
-		Bounds: context.Bounds(s).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.LazySize(func(row int) layout.Size {
-				if row >= 1 {
-					return layout.FixedSize(0)
-				}
-				return layout.FixedSize(s.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(s).Dx()-u)).Y)
-			}),
-		},
-		RowGap: u / 2,
-	}
-
 	return nil
 }
 
 func (s *Settings) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &s.form:
-		return s.layout.CellBounds(0, 0)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &s.form,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(s).Inset(u/2), widget)
 }
 
 type textWithSubText struct {

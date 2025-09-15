@@ -10,7 +10,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Texts struct {
@@ -30,8 +29,6 @@ type Texts struct {
 	editableText                    basicwidget.Text
 	editableToggle                  basicwidget.Toggle
 	sampleText                      basicwidget.Text
-
-	layout layout.GridLayout
 }
 
 func (t *Texts) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -192,25 +189,22 @@ func (t *Texts) Update(context *guigui.Context) error {
 	})
 	t.sampleText.SetValue(model.Texts().Text())
 
-	u := basicwidget.UnitSize(context)
-	t.layout = layout.GridLayout{
-		Bounds: context.Bounds(t).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.FlexibleSize(1),
-			layout.FixedSize(t.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
-		},
-		RowGap: u / 2,
-	}
-
 	return nil
 }
 
 func (t *Texts) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &t.sampleText:
-		return t.layout.CellBounds(0, 0)
-	case &t.form:
-		return t.layout.CellBounds(0, 1)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &t.sampleText,
+				Size:   guigui.FlexibleSize(1),
+			},
+			{
+				Widget: &t.form,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(t).Inset(u/2), widget)
 }

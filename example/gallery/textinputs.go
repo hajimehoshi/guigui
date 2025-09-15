@@ -8,7 +8,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type TextInputs struct {
@@ -35,8 +34,6 @@ type TextInputs struct {
 	editableToggle                  basicwidget.Toggle
 	enabledText                     basicwidget.Text
 	enabledToggle                   basicwidget.Toggle
-
-	layout layout.GridLayout
 }
 
 func (t *TextInputs) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -235,26 +232,26 @@ func (t *TextInputs) Update(context *guigui.Context) error {
 		},
 	})
 
-	t.layout = layout.GridLayout{
-		Bounds: context.Bounds(t).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.FixedSize(t.textInputForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
-			layout.FlexibleSize(1),
-			layout.FixedSize(t.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(t).Dx()-u)).Y),
-		},
-		RowGap: u / 2,
-	}
 	return nil
 }
 
 func (t *TextInputs) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &t.textInputForm:
-		return t.layout.CellBounds(0, 0)
-	case &t.configForm:
-		return t.layout.CellBounds(0, 2)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &t.textInputForm,
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+			},
+			{
+				Widget: &t.configForm,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(t).Inset(u/2), widget)
 }
 
 type inlineTextInputContainer struct {

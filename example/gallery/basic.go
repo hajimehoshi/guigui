@@ -8,7 +8,6 @@ import (
 
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Basic struct {
@@ -27,8 +26,6 @@ type Basic struct {
 	slider          basicwidget.Slider
 	listText        basicwidget.Text
 	list            basicwidget.List[int]
-
-	layout layout.GridLayout
 }
 
 func (b *Basic) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -75,27 +72,18 @@ func (b *Basic) Update(context *guigui.Context) error {
 		},
 	})
 
-	u := basicwidget.UnitSize(context)
-	b.layout = layout.GridLayout{
-		Bounds: context.Bounds(b).Inset(u / 2),
-		Heights: []layout.Size{
-			layout.LazySize(func(row int) layout.Size {
-				if row >= 1 {
-					return layout.FixedSize(0)
-				}
-				return layout.FixedSize(b.form.Measure(context, guigui.FixedWidthConstraints(context.Bounds(b).Dx()-u)).Y)
-			}),
-		},
-		RowGap: u / 2,
-	}
-
 	return nil
 }
 
 func (b *Basic) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case &b.form:
-		return b.layout.CellBounds(0, 0)
-	}
-	return image.Rectangle{}
+	u := basicwidget.UnitSize(context)
+	return (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &b.form,
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(b).Inset(u/2), widget)
 }
