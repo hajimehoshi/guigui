@@ -194,7 +194,7 @@ type LinearLayoutItem struct {
 	Layout Layout
 }
 
-func (l *LinearLayoutItem) cacheIdentity(direction LayoutDirection, acrossSize int) linearLayoutItemCacheIdentity {
+func (l *LinearLayoutItem) cacheIdentity(context *Context, direction LayoutDirection, acrossSize int) linearLayoutItemCacheIdentity {
 	identity := linearLayoutItemCacheIdentity{
 		size: l.Size,
 	}
@@ -204,9 +204,9 @@ func (l *LinearLayoutItem) cacheIdentity(direction LayoutDirection, acrossSize i
 	if l.Size.typ == sizeTypeIntrinsic {
 		switch direction {
 		case LayoutDirectionHorizontal:
-			identity.widgetIntrinsicSize = l.Widget.Measure(nil, FixedHeightConstraints(acrossSize)).X
+			identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X
 		case LayoutDirectionVertical:
-			identity.widgetIntrinsicSize = l.Widget.Measure(nil, FixedWidthConstraints(acrossSize)).Y
+			identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
 		}
 	}
 	return identity
@@ -225,7 +225,7 @@ type cachedLinearLayoutValues struct {
 	atime int64
 }
 
-func (c *cachedLinearLayoutValues) matches(linearLayout *LinearLayout, alongSize, acrossSize int) bool {
+func (c *cachedLinearLayoutValues) matches(context *Context, linearLayout *LinearLayout, alongSize, acrossSize int) bool {
 	if c.alongSize != alongSize {
 		return false
 	}
@@ -239,7 +239,7 @@ func (c *cachedLinearLayoutValues) matches(linearLayout *LinearLayout, alongSize
 		return false
 	}
 	for i, item := range linearLayout.Items {
-		if c.items[i] != item.cacheIdentity(linearLayout.Direction, acrossSize) {
+		if c.items[i] != item.cacheIdentity(context, linearLayout.Direction, acrossSize) {
 			return false
 		}
 	}
@@ -304,7 +304,7 @@ func (c *cachedLinearLayouts) get(context *Context, linearLayout *LinearLayout, 
 	acrossSize := linearLayout.acrossSize(bounds)
 
 	for _, v := range c.values {
-		if !v.matches(linearLayout, alongSize, acrossSize) {
+		if !v.matches(context, linearLayout, alongSize, acrossSize) {
 			continue
 		}
 		v.atime = ebiten.Tick()
@@ -330,7 +330,7 @@ func (c *cachedLinearLayouts) get(context *Context, linearLayout *LinearLayout, 
 	if len(linearLayout.Items) > 0 {
 		v.items = make([]linearLayoutItemCacheIdentity, len(linearLayout.Items))
 		for i, item := range linearLayout.Items {
-			v.items[i] = item.cacheIdentity(linearLayout.Direction, alongSize)
+			v.items[i] = item.cacheIdentity(context, linearLayout.Direction, alongSize)
 			if item.Widget != nil {
 				if v.widgetIndices == nil {
 					v.widgetIndices = map[Widget]int{}
