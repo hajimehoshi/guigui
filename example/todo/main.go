@@ -123,7 +123,7 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 			},
 		},
 		Gap: u / 2,
-	}).WidgetBounds(context.Bounds(r).Inset(u/2), widget)
+	}).WidgetBounds(context, context.Bounds(r).Inset(u/2), widget)
 }
 
 func (r *Root) tryCreateTask(text string) {
@@ -182,7 +182,7 @@ func (t *taskWidget) Layout(context *guigui.Context, widget guigui.Widget) image
 			},
 		},
 		Gap: u / 2,
-	}).WidgetBounds(context.Bounds(t), widget)
+	}).WidgetBounds(context, context.Bounds(t), widget)
 }
 
 func (t *taskWidget) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
@@ -242,7 +242,7 @@ func (t *tasksPanelContent) Layout(context *guigui.Context, widget guigui.Widget
 			Size:   guigui.FixedSize(h),
 		}
 	}
-	return layout.WidgetBounds(context.Bounds(t), widget)
+	return layout.WidgetBounds(context, context.Bounds(t), widget)
 }
 
 func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {

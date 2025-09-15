@@ -12,7 +12,7 @@ import (
 )
 
 type Layout interface {
-	WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle
+	WidgetBounds(context *Context, bounds image.Rectangle, widget Widget) image.Rectangle
 }
 
 type Size struct {
@@ -74,16 +74,16 @@ type linearLayoutItemCacheIdentity struct {
 	size Size
 }
 
-func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle {
-	if b, ok := theCachedLinearLayouts.widgetBounds(&l, bounds, widget); ok {
+func (l LinearLayout) WidgetBounds(context *Context, bounds image.Rectangle, widget Widget) image.Rectangle {
+	if b, ok := theCachedLinearLayouts.widgetBounds(context, &l, bounds, widget); ok {
 		return b
 	}
 	for i, item := range l.Items {
 		if item.Layout == nil {
 			continue
 		}
-		b := theCachedLinearLayouts.itemBounds(&l, bounds, i)
-		if r := item.Layout.WidgetBounds(b, widget); !r.Empty() {
+		b := theCachedLinearLayouts.itemBounds(context, &l, bounds, i)
+		if r := item.Layout.WidgetBounds(context, b, widget); !r.Empty() {
 			return r
 		}
 	}
@@ -115,8 +115,8 @@ type positionAndSize struct {
 	size     int
 }
 
-func (l *LinearLayout) appendWidgetAlongPositionAndSizes(widgetAlongPositions []positionAndSize, alongSize, acrossSize int) []positionAndSize {
-	sizesInPixels := l.appendSizesInPixels(nil, alongSize, acrossSize)
+func (l *LinearLayout) appendWidgetAlongPositionAndSizes(widgetAlongPositions []positionAndSize, context *Context, alongSize, acrossSize int) []positionAndSize {
+	sizesInPixels := l.appendSizesInPixels(nil, context, alongSize, acrossSize)
 
 	var progress int
 	for i := range l.Items {
@@ -130,7 +130,7 @@ func (l *LinearLayout) appendWidgetAlongPositionAndSizes(widgetAlongPositions []
 	return widgetAlongPositions
 }
 
-func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, alongSize, acrossSize int) []int {
+func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context, alongSize, acrossSize int) []int {
 	rest := alongSize
 	rest -= (len(l.Items) - 1) * l.Gap
 	if rest < 0 {
@@ -144,9 +144,9 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, alongSize, acros
 		case sizeTypeIntrinsic:
 			switch l.Direction {
 			case LayoutDirectionHorizontal:
-				sizesInPixels = append(sizesInPixels, item.Widget.Measure(nil, FixedHeightConstraints(acrossSize)).X)
+				sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X)
 			case LayoutDirectionVertical:
-				sizesInPixels = append(sizesInPixels, item.Widget.Measure(nil, FixedWidthConstraints(acrossSize)).Y)
+				sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y)
 			}
 		case sizeTypeFixed:
 			sizesInPixels = append(sizesInPixels, item.Size.value)
@@ -257,20 +257,20 @@ type cachedLinearLayouts struct {
 
 var theCachedLinearLayouts cachedLinearLayouts
 
-func (c *cachedLinearLayouts) itemBounds(linearLayout *LinearLayout, bounds image.Rectangle, index int) image.Rectangle {
+func (c *cachedLinearLayouts) itemBounds(context *Context, linearLayout *LinearLayout, bounds image.Rectangle, index int) image.Rectangle {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	v := c.get(linearLayout, bounds)
+	v := c.get(context, linearLayout, bounds)
 	ps := v.itemAlongPositionAndSizes[index]
 	return positionAndSizeToBounds(linearLayout, bounds, ps)
 }
 
-func (c *cachedLinearLayouts) widgetBounds(linearLayout *LinearLayout, bounds image.Rectangle, widget Widget) (image.Rectangle, bool) {
+func (c *cachedLinearLayouts) widgetBounds(context *Context, linearLayout *LinearLayout, bounds image.Rectangle, widget Widget) (image.Rectangle, bool) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	v := c.get(linearLayout, bounds)
+	v := c.get(context, linearLayout, bounds)
 	idx, ok := v.widgetIndices[widget]
 	if !ok {
 		return image.Rectangle{}, false
@@ -299,7 +299,7 @@ func positionAndSizeToBounds(linearLayout *LinearLayout, bounds image.Rectangle,
 	return image.Rectangle{}
 }
 
-func (c *cachedLinearLayouts) get(linearLayout *LinearLayout, bounds image.Rectangle) *cachedLinearLayoutValues {
+func (c *cachedLinearLayouts) get(context *Context, linearLayout *LinearLayout, bounds image.Rectangle) *cachedLinearLayoutValues {
 	alongSize := linearLayout.alongSize(bounds)
 	acrossSize := linearLayout.acrossSize(bounds)
 
@@ -340,7 +340,7 @@ func (c *cachedLinearLayouts) get(linearLayout *LinearLayout, bounds image.Recta
 		}
 
 		v.itemAlongPositionAndSizes = make([]positionAndSize, 0, len(linearLayout.Items))
-		v.itemAlongPositionAndSizes = linearLayout.appendWidgetAlongPositionAndSizes(v.itemAlongPositionAndSizes, alongSize, acrossSize)
+		v.itemAlongPositionAndSizes = linearLayout.appendWidgetAlongPositionAndSizes(v.itemAlongPositionAndSizes, context, alongSize, acrossSize)
 	}
 	c.values = append(c.values, v)
 

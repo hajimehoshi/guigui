@@ -85,7 +85,7 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 				},
 			},
 		},
-	}).WidgetBounds(context.Bounds(r), widget)
+	}).WidgetBounds(context, context.Bounds(r), widget)
 }
 
 func (r *Root) Tick(context *guigui.Context) error {

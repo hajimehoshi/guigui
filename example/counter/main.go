@@ -101,7 +101,7 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 			},
 		},
 		Gap: u,
-	}).WidgetBounds(context.Bounds(r).Inset(u), widget)
+	}).WidgetBounds(context, context.Bounds(r).Inset(u), widget)
 }
 
 func main() {
