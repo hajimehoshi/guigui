@@ -31,7 +31,7 @@ type Root struct {
 	createButton      basicwidget.Button
 	textInput         basicwidget.TextInput
 	tasksPanel        basicwidget.Panel
-	tasksPanelContent tasksPanelContent
+	tasksPanelContent guigui.WidgetWithSize[*tasksPanelContent]
 
 	model Model
 
@@ -84,7 +84,7 @@ func (r *Root) Update(context *guigui.Context) error {
 	})
 	context.SetEnabled(&r.createButton, r.model.CanAddTask(r.textInput.Value()))
 
-	r.tasksPanelContent.SetOnDeleted(func(id int) {
+	r.tasksPanelContent.Widget().SetOnDeleted(func(id int) {
 		r.model.DeleteTaskByID(id)
 	})
 	r.tasksPanel.SetContent(&r.tasksPanelContent)
@@ -108,7 +108,7 @@ func (r *Root) Update(context *guigui.Context) error {
 		ColumnGap: u / 2,
 	}
 
-	r.tasksPanelContent.SetWidth(r.mainLayout.CellBounds(0, 1).Dx())
+	r.tasksPanelContent.SetFixedWidth(r.mainLayout.CellBounds(0, 1).Dx())
 
 	return nil
 }
@@ -199,18 +199,12 @@ type tasksPanelContent struct {
 
 	taskWidgets []taskWidget
 
-	width int
-
 	layout layout.GridLayout
 }
 
 const (
 	tasksPanelContentEventDeleted = "deleted"
 )
-
-func (t *tasksPanelContent) SetWidth(width int) {
-	t.width = width
-}
 
 func (t *tasksPanelContent) SetOnDeleted(f func(id int)) {
 	guigui.RegisterEventHandler(t, tasksPanelContentEventDeleted, f)
@@ -275,7 +269,8 @@ func (t *tasksPanelContent) Measure(context *guigui.Context, constraints guigui.
 		h += t.taskWidgets[i].Measure(context, constraints).Y
 		h += int(u / 4)
 	}
-	return image.Pt(t.width, h)
+	w := t.DefaultWidget.Measure(context, constraints).X
+	return image.Pt(w, h)
 }
 
 func main() {
