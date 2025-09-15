@@ -46,24 +46,24 @@ func (t *Tables) Update(context *guigui.Context) error {
 		{
 			HeaderText:                "ID",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
-			Width:                     layout.FlexibleSize(1),
+			Width:                     guigui.FlexibleSize(1),
 			MinWidth:                  2 * u,
 		},
 		{
 			HeaderText: "Name",
-			Width:      layout.FlexibleSize(2),
+			Width:      guigui.FlexibleSize(2),
 			MinWidth:   4 * u,
 		},
 		{
 			HeaderText:                "Amount",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
-			Width:                     layout.FlexibleSize(1),
+			Width:                     guigui.FlexibleSize(1),
 			MinWidth:                  2 * u,
 		},
 		{
 			HeaderText:                "Cost",
 			HeaderTextHorizontalAlign: basicwidget.HorizontalAlignRight,
-			Width:                     layout.FlexibleSize(1),
+			Width:                     guigui.FlexibleSize(1),
 			MinWidth:                  2 * u,
 		},
 	})

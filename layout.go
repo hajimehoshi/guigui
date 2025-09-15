@@ -90,6 +90,10 @@ func (l LinearLayout) WidgetBounds(context *Context, bounds image.Rectangle, wid
 	return image.Rectangle{}
 }
 
+func (l LinearLayout) ItemBounds(context *Context, bounds image.Rectangle, index int) image.Rectangle {
+	return theCachedLinearLayouts.itemBounds(context, &l, bounds, index)
+}
+
 func (l *LinearLayout) alongSize(bounds image.Rectangle) int {
 	switch l.Direction {
 	case LayoutDirectionHorizontal:

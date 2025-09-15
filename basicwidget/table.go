@@ -12,8 +12,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
-	"github.com/hajimehoshi/guigui/internal/layoututil"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Table[T comparable] struct {
@@ -27,14 +25,14 @@ type Table[T comparable] struct {
 	tableHeader      tableHeader[T]
 
 	columns              []TableColumn
-	columnSizes          []layout.Size
+	columnLayoutItems    []guigui.LinearLayoutItem
 	columnWidthsInPixels []int
 }
 
 type TableColumn struct {
 	HeaderText                string
 	HeaderTextHorizontalAlign HorizontalAlign
-	Width                     layout.Size
+	Width                     guigui.Size
 	MinWidth                  int
 }
 
@@ -96,19 +94,29 @@ func (t *Table[T]) Update(context *guigui.Context) error {
 
 	t.updateTableItems()
 
-	w := context.Bounds(t).Dx() - 2*listItemPadding(context)
 	t.columnWidthsInPixels = adjustSliceSize(t.columnWidthsInPixels, len(t.columns))
-	t.columnSizes = adjustSliceSize(t.columnSizes, len(t.columns))
+	t.columnLayoutItems = adjustSliceSize(t.columnLayoutItems, len(t.columns))
 	t.columnTexts = adjustSliceSize(t.columnTexts, len(t.columns))
 	for i, column := range t.columns {
-		t.columnSizes[i] = column.Width
+		t.columnLayoutItems[i] = guigui.LinearLayoutItem{
+			Size: column.Width,
+		}
 		t.columnTexts[i].SetValue(column.HeaderText)
 		t.columnTexts[i].SetHorizontalAlign(column.HeaderTextHorizontalAlign)
 		t.columnTexts[i].SetVerticalAlign(VerticalAlignMiddle)
 	}
-	layoututil.WidthsInPixels(t.columnWidthsInPixels, t.columnSizes, w, tableColumnGap(context))
-	for i, width := range t.columnWidthsInPixels {
-		t.columnWidthsInPixels[i] = max(t.columns[i].MinWidth, width)
+	layout := guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionHorizontal,
+		Items:     t.columnLayoutItems,
+		Gap:       tableColumnGap(context),
+		Padding: guigui.Padding{
+			Start: listItemPadding(context),
+			End:   listItemPadding(context),
+		},
+	}
+	for i := range t.columnWidthsInPixels {
+		t.columnWidthsInPixels[i] = layout.ItemBounds(context, context.Bounds(t), i).Dx()
+		t.columnWidthsInPixels[i] = max(t.columnWidthsInPixels[i], t.columns[i].MinWidth)
 	}
 	var contentWidth int
 	if len(t.columnWidthsInPixels) > 0 {
