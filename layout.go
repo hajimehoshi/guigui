@@ -63,9 +63,15 @@ type LinearLayout struct {
 	Padding   Padding
 }
 
-type linearLayoutItemCacheInfo struct {
+// linearLayoutItemCacheIdentity represents the identity of a cache.
+// If and only if two linearLayoutItemCacheIdentity values are equal, the cache can be reused.
+type linearLayoutItemCacheIdentity struct {
 	widgetIntrinsicSize int
-	size                Size
+
+	// widgetState is needed to make widgetIndices valid.
+	widgetState *widgetState
+
+	size Size
 }
 
 func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle {
@@ -188,19 +194,22 @@ type LinearLayoutItem struct {
 	Layout Layout
 }
 
-func (l *LinearLayoutItem) cacheInfo(direction LayoutDirection, acrossSize int) linearLayoutItemCacheInfo {
-	info := linearLayoutItemCacheInfo{
+func (l *LinearLayoutItem) cacheIdentity(direction LayoutDirection, acrossSize int) linearLayoutItemCacheIdentity {
+	identity := linearLayoutItemCacheIdentity{
 		size: l.Size,
+	}
+	if l.Widget != nil {
+		identity.widgetState = l.Widget.widgetState()
 	}
 	if l.Size.typ == sizeTypeIntrinsic {
 		switch direction {
 		case LayoutDirectionHorizontal:
-			info.widgetIntrinsicSize = l.Widget.Measure(nil, FixedHeightConstraints(acrossSize)).X
+			identity.widgetIntrinsicSize = l.Widget.Measure(nil, FixedHeightConstraints(acrossSize)).X
 		case LayoutDirectionVertical:
-			info.widgetIntrinsicSize = l.Widget.Measure(nil, FixedWidthConstraints(acrossSize)).Y
+			identity.widgetIntrinsicSize = l.Widget.Measure(nil, FixedWidthConstraints(acrossSize)).Y
 		}
 	}
-	return info
+	return identity
 }
 
 type cachedLinearLayoutValues struct {
@@ -210,7 +219,7 @@ type cachedLinearLayoutValues struct {
 	direction  LayoutDirection
 	alongSize  int
 	acrossSize int
-	items      []linearLayoutItemCacheInfo
+	items      []linearLayoutItemCacheIdentity
 	gap        int
 
 	atime int64
@@ -230,7 +239,7 @@ func (c *cachedLinearLayoutValues) matches(linearLayout *LinearLayout, alongSize
 		return false
 	}
 	for i, item := range linearLayout.Items {
-		if c.items[i] != item.cacheInfo(linearLayout.Direction, acrossSize) {
+		if c.items[i] != item.cacheIdentity(linearLayout.Direction, acrossSize) {
 			return false
 		}
 	}
@@ -319,9 +328,9 @@ func (c *cachedLinearLayouts) get(linearLayout *LinearLayout, bounds image.Recta
 	}
 
 	if len(linearLayout.Items) > 0 {
-		v.items = make([]linearLayoutItemCacheInfo, len(linearLayout.Items))
+		v.items = make([]linearLayoutItemCacheIdentity, len(linearLayout.Items))
 		for i, item := range linearLayout.Items {
-			v.items[i] = item.cacheInfo(linearLayout.Direction, alongSize)
+			v.items[i] = item.cacheIdentity(linearLayout.Direction, alongSize)
 			if item.Widget != nil {
 				if v.widgetIndices == nil {
 					v.widgetIndices = map[Widget]int{}
