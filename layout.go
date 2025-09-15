@@ -78,6 +78,9 @@ func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.
 		}
 	}
 	for i, item := range l.Items {
+		if item.Layout == nil {
+			continue
+		}
 		b := theCachedLinearLayouts.get(&l, bounds, i)
 		if r := item.Layout.WidgetBounds(b, widget); !r.Empty() {
 			return r
