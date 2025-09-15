@@ -70,8 +70,12 @@ type linearLayoutItemCacheInfo struct {
 
 func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle {
 	// Do a breadth-first search.
+	// TODO: This takes O(n) time. Use a map to speed this up.
 	for i, item := range l.Items {
-		if item.Widget == widget {
+		if item.Widget == nil {
+			continue
+		}
+		if item.Widget.widgetState() == widget.widgetState() {
 			return theCachedLinearLayouts.itemBounds(&l, bounds, i)
 		}
 	}
