@@ -69,15 +69,8 @@ type linearLayoutItemCacheInfo struct {
 }
 
 func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle {
-	// Do a breadth-first search.
-	// TODO: This takes O(n) time. Use a map to speed this up.
-	for i, item := range l.Items {
-		if item.Widget == nil {
-			continue
-		}
-		if item.Widget.widgetState() == widget.widgetState() {
-			return theCachedLinearLayouts.itemBounds(&l, bounds, i)
-		}
+	if b, ok := theCachedLinearLayouts.widgetBounds(&l, bounds, widget); ok {
+		return b
 	}
 	for i, item := range l.Items {
 		if item.Layout == nil {
@@ -212,6 +205,7 @@ func (l *LinearLayoutItem) cacheInfo(direction LayoutDirection, acrossSize int) 
 
 type cachedLinearLayoutValues struct {
 	itemAlongPositionAndSizes []positionAndSize
+	widgetIndices             map[Widget]int
 
 	direction  LayoutDirection
 	alongSize  int
@@ -258,53 +252,27 @@ func (c *cachedLinearLayouts) itemBounds(linearLayout *LinearLayout, bounds imag
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	alongSize := linearLayout.alongSize(bounds)
-	acrossSize := linearLayout.acrossSize(bounds)
+	v := c.get(linearLayout, bounds)
+	ps := v.itemAlongPositionAndSizes[index]
+	return positionAndSizeToBounds(linearLayout, bounds, ps)
+}
 
-	var ps positionAndSize
-	var found bool
-	for idx, v := range c.values {
-		if !v.matches(linearLayout, alongSize, acrossSize) {
-			continue
-		}
-		ps = v.itemAlongPositionAndSizes[index]
-		found = true
-		c.values[idx].atime = ebiten.Tick()
-		break
+func (c *cachedLinearLayouts) widgetBounds(linearLayout *LinearLayout, bounds image.Rectangle, widget Widget) (image.Rectangle, bool) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	v := c.get(linearLayout, bounds)
+	idx, ok := v.widgetIndices[widget]
+	if !ok {
+		return image.Rectangle{}, false
 	}
+	ps := v.itemAlongPositionAndSizes[idx]
+	return positionAndSizeToBounds(linearLayout, bounds, ps), true
+}
 
-	if !found {
-		// GC old results.
-		now := ebiten.Tick()
-		for i := len(c.values) - 1; i >= 0; i-- {
-			if now-c.values[i].atime > int64(ebiten.TPS()) {
-				c.values = slices.Delete(c.values, i, i+1)
-			}
-		}
-
-		v := &cachedLinearLayoutValues{
-			alongSize:  alongSize,
-			acrossSize: acrossSize,
-			direction:  linearLayout.Direction,
-			gap:        linearLayout.Gap,
-			atime:      now,
-		}
-
-		if len(linearLayout.Items) > 0 {
-			v.items = make([]linearLayoutItemCacheInfo, len(linearLayout.Items))
-			for i, item := range linearLayout.Items {
-				v.items[i] = item.cacheInfo(linearLayout.Direction, alongSize)
-			}
-
-			v.itemAlongPositionAndSizes = make([]positionAndSize, 0, len(linearLayout.Items))
-			v.itemAlongPositionAndSizes = linearLayout.appendWidgetAlongPositionAndSizes(v.itemAlongPositionAndSizes, alongSize, acrossSize)
-		}
-		c.values = append(c.values, v)
-
-		ps = v.itemAlongPositionAndSizes[index]
-	}
-
+func positionAndSizeToBounds(linearLayout *LinearLayout, bounds image.Rectangle, ps positionAndSize) image.Rectangle {
 	pt := bounds.Min.Add(image.Pt(linearLayout.Padding.Start, linearLayout.Padding.Top))
+	acrossSize := linearLayout.acrossSize(bounds)
 	switch linearLayout.Direction {
 	case LayoutDirectionHorizontal:
 		pt.X += ps.position
@@ -320,4 +288,52 @@ func (c *cachedLinearLayouts) itemBounds(linearLayout *LinearLayout, bounds imag
 		}
 	}
 	return image.Rectangle{}
+}
+
+func (c *cachedLinearLayouts) get(linearLayout *LinearLayout, bounds image.Rectangle) *cachedLinearLayoutValues {
+	alongSize := linearLayout.alongSize(bounds)
+	acrossSize := linearLayout.acrossSize(bounds)
+
+	for _, v := range c.values {
+		if !v.matches(linearLayout, alongSize, acrossSize) {
+			continue
+		}
+		v.atime = ebiten.Tick()
+		return v
+	}
+
+	// GC old results.
+	now := ebiten.Tick()
+	for i := len(c.values) - 1; i >= 0; i-- {
+		if now-c.values[i].atime > int64(ebiten.TPS()) {
+			c.values = slices.Delete(c.values, i, i+1)
+		}
+	}
+
+	v := &cachedLinearLayoutValues{
+		alongSize:  alongSize,
+		acrossSize: acrossSize,
+		direction:  linearLayout.Direction,
+		gap:        linearLayout.Gap,
+		atime:      now,
+	}
+
+	if len(linearLayout.Items) > 0 {
+		v.items = make([]linearLayoutItemCacheInfo, len(linearLayout.Items))
+		for i, item := range linearLayout.Items {
+			v.items[i] = item.cacheInfo(linearLayout.Direction, alongSize)
+			if item.Widget != nil {
+				if v.widgetIndices == nil {
+					v.widgetIndices = map[Widget]int{}
+				}
+				v.widgetIndices[item.Widget] = i
+			}
+		}
+
+		v.itemAlongPositionAndSizes = make([]positionAndSize, 0, len(linearLayout.Items))
+		v.itemAlongPositionAndSizes = linearLayout.appendWidgetAlongPositionAndSizes(v.itemAlongPositionAndSizes, alongSize, acrossSize)
+	}
+	c.values = append(c.values, v)
+
+	return v
 }
