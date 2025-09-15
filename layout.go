@@ -11,6 +11,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type Layout interface {
+	WidgetBounds(bounds image.Rectangle, widget Widget) image.Rectangle
+}
+
 type Size struct {
 	typ   sizeType
 	value int
@@ -75,7 +79,7 @@ func (l LinearLayout) WidgetBounds(bounds image.Rectangle, widget Widget) image.
 	}
 	for i, item := range l.Items {
 		b := theCachedLinearLayouts.get(&l, bounds, i)
-		if r := item.LinearLayout.WidgetBounds(b, widget); !r.Empty() {
+		if r := item.Layout.WidgetBounds(b, widget); !r.Empty() {
 			return r
 		}
 	}
@@ -193,9 +197,9 @@ func (l *LinearLayout) sizesInPixels(bounds image.Rectangle, sizesInPixels []int
 }
 
 type LinearLayoutItem struct {
-	Widget       Widget
-	Size         Size
-	LinearLayout LinearLayout
+	Widget Widget
+	Size   Size
+	Layout Layout
 }
 
 func (l *LinearLayoutItem) cacheInfo(direction LayoutDirection, fixedSideSize int) linearLayoutItemCacheInfo {

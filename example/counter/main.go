@@ -77,7 +77,7 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 			},
 			{
 				Size: guigui.FixedSize(u),
-				LinearLayout: guigui.LinearLayout{
+				Layout: guigui.LinearLayout{
 					Direction: guigui.LayoutDirectionHorizontal,
 					Items: []guigui.LinearLayoutItem{
 						{
