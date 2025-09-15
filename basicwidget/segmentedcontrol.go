@@ -10,7 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type SegmentedControlDirection int
@@ -39,7 +38,7 @@ type SegmentedControl[T comparable] struct {
 	buttons      []Button
 
 	direction   SegmentedControlDirection
-	layoutSizes []layout.Size
+	layoutItems []guigui.LinearLayoutItem
 }
 
 func (s *SegmentedControl[T]) SetDirection(direction SegmentedControlDirection) {
@@ -146,43 +145,25 @@ func (s *SegmentedControl[T]) Update(context *guigui.Context) error {
 }
 
 func (s *SegmentedControl[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	s.layoutSizes = adjustSliceSize(s.layoutSizes, s.abstractList.ItemCount())
+	s.layoutItems = adjustSliceSize(s.layoutItems, s.abstractList.ItemCount())
 	for i := range s.abstractList.ItemCount() {
-		s.layoutSizes[i] = layout.FlexibleSize(1)
+		s.layoutItems[i] = guigui.LinearLayoutItem{
+			Widget: &s.buttons[i],
+			Size:   guigui.FlexibleSize(1),
+		}
 	}
 
-	var g layout.GridLayout
+	var direction guigui.LayoutDirection
 	switch s.direction {
 	case SegmentedControlDirectionHorizontal:
-		g = layout.GridLayout{
-			Bounds: context.Bounds(s),
-			Widths: s.layoutSizes,
-		}
+		direction = guigui.LayoutDirectionHorizontal
 	case SegmentedControlDirectionVertical:
-		g = layout.GridLayout{
-			Bounds:  context.Bounds(s),
-			Heights: s.layoutSizes,
-		}
+		direction = guigui.LayoutDirectionVertical
 	}
-
-	idx := -1
-	for i := range s.buttons {
-		if &s.buttons[i] == widget {
-			idx = i
-			break
-		}
-
-	}
-	if idx >= 0 {
-		switch s.direction {
-		case SegmentedControlDirectionHorizontal:
-			return g.CellBounds(idx, 0)
-		case SegmentedControlDirectionVertical:
-			return g.CellBounds(0, idx)
-		}
-	}
-
-	return image.Rectangle{}
+	return (guigui.LinearLayout{
+		Direction: direction,
+		Items:     s.layoutItems,
+	}).WidgetBounds(context, context.Bounds(s), widget)
 }
 
 func (s *SegmentedControl[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
