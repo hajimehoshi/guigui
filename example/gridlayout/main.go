@@ -13,7 +13,6 @@ import (
 	"github.com/hajimehoshi/guigui"
 	"github.com/hajimehoshi/guigui/basicwidget"
 	_ "github.com/hajimehoshi/guigui/basicwidget/cjkfont"
-	"github.com/hajimehoshi/guigui/layout"
 )
 
 type Root struct {
@@ -29,19 +28,14 @@ type Root struct {
 	gapToggle  basicwidget.Toggle
 
 	background basicwidget.Background
-	buttons    [16]guigui.Widget
-
-	mainLayout    layout.GridLayout
-	contentLayout layout.GridLayout
+	buttons    [16]basicwidget.Button
 }
 
 func (r *Root) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	adder.AddChild(&r.background)
 	adder.AddChild(&r.configForm)
 	for i := range r.buttons {
-		if r.buttons[i] != nil {
-			adder.AddChild(r.buttons[i])
-		}
+		adder.AddChild(&r.buttons[i])
 	}
 }
 
@@ -67,57 +61,8 @@ func (r *Root) Update(context *guigui.Context) error {
 		},
 	})
 
-	u := basicwidget.UnitSize(context)
-	r.mainLayout = layout.GridLayout{
-		Bounds: context.Bounds(r).Inset(int(u / 2)),
-		Heights: []layout.Size{
-			layout.LazySize(func(row int) layout.Size {
-				if row == 0 {
-					return layout.FixedSize(r.configForm.Measure(context, guigui.FixedWidthConstraints(context.Bounds(r).Dx()-u)).Y)
-				}
-				return layout.FixedSize(0)
-			}),
-			layout.FlexibleSize(1),
-		},
-		RowGap: int(u / 2),
-	}
-
 	for i := range r.buttons {
-		if r.buttons[i] == nil {
-			r.buttons[i] = &basicwidget.Button{}
-		}
-		t := r.buttons[i].(*basicwidget.Button)
-		t.SetText(fmt.Sprintf("Button %d", i))
-	}
-
-	var firstColumnWidth int
-	for j := range 4 {
-		firstColumnWidth = max(firstColumnWidth, r.buttons[4*j].Measure(context, guigui.Constraints{}).X)
-	}
-	r.contentLayout = layout.GridLayout{
-		Bounds: r.mainLayout.CellBounds(0, 1),
-		Widths: []layout.Size{
-			layout.FixedSize(firstColumnWidth),
-			layout.FixedSize(200),
-			layout.FlexibleSize(1),
-			layout.FlexibleSize(2),
-		},
-		Heights: []layout.Size{
-			layout.LazySize(func(row int) layout.Size {
-				var height int
-				for i := range 4 {
-					height = max(height, r.buttons[4*row+i].Measure(context, guigui.Constraints{}).Y)
-				}
-				return layout.FixedSize(height)
-			}),
-			layout.FixedSize(100),
-			layout.FlexibleSize(1),
-			layout.FlexibleSize(2),
-		},
-	}
-	if r.gap {
-		r.contentLayout.ColumnGap = int(u / 2)
-		r.contentLayout.RowGap = int(u / 2)
+		r.buttons[i].SetText(fmt.Sprintf("Button %d", i))
 	}
 
 	return nil
@@ -127,28 +72,97 @@ func (r *Root) Layout(context *guigui.Context, widget guigui.Widget) image.Recta
 	switch widget {
 	case &r.background:
 		return context.Bounds(r)
-	case &r.configForm:
-		return r.mainLayout.CellBounds(0, 0)
 	}
-	// TODO: This is not efficient. Define a better layout utility to get bounds from a widget directly.
-	for i := range r.buttons {
-		if widget != r.buttons[i] {
-			continue
-		}
-		b := r.contentLayout.CellBounds(i%4, i/4)
-		if r.fill {
-			return b
-		}
-		pt := b.Min
-		s := widget.Measure(context, guigui.Constraints{})
-		pt.X += (b.Dx() - s.X) / 2
-		pt.Y += (b.Dy() - s.Y) / 2
-		return image.Rectangle{
-			Min: pt,
-			Max: pt.Add(s),
+
+	u := basicwidget.UnitSize(context)
+	var gridGap int
+	if r.gap {
+		gridGap = int(u / 2)
+	}
+
+	var firstColumnWidth int
+	for i := range 4 {
+		firstColumnWidth = max(firstColumnWidth, r.buttons[4*i].Measure(context, guigui.Constraints{}).X)
+	}
+	var firstRowHeight int
+	for i := range 4 {
+		firstRowHeight = max(firstRowHeight, r.buttons[i].Measure(context, guigui.Constraints{}).Y)
+	}
+
+	gridRowLayout := func(row int) guigui.LinearLayout {
+		return guigui.LinearLayout{
+			Direction: guigui.LayoutDirectionHorizontal,
+			Items: []guigui.LinearLayoutItem{
+				{
+					Widget: &r.buttons[4*row],
+					Size:   guigui.FixedSize(firstColumnWidth),
+				},
+				{
+					Widget: &r.buttons[4*row+1],
+					Size:   guigui.FixedSize(200),
+				},
+				{
+					Widget: &r.buttons[4*row+2],
+					Size:   guigui.FlexibleSize(1),
+				},
+				{
+					Widget: &r.buttons[4*row+3],
+					Size:   guigui.FlexibleSize(2),
+				},
+			},
+			Gap: gridGap,
 		}
 	}
-	return image.Rectangle{}
+
+	bounds := (guigui.LinearLayout{
+		Direction: guigui.LayoutDirectionVertical,
+		Items: []guigui.LinearLayoutItem{
+			{
+				Widget: &r.configForm,
+			},
+			{
+				Size: guigui.FlexibleSize(1),
+				Layout: guigui.LinearLayout{
+					Direction: guigui.LayoutDirectionVertical,
+					Items: []guigui.LinearLayoutItem{
+						{
+							Size:   guigui.FixedSize(firstRowHeight),
+							Layout: gridRowLayout(0),
+						},
+						{
+							Size:   guigui.FixedSize(100),
+							Layout: gridRowLayout(1),
+						},
+						{
+							Size:   guigui.FlexibleSize(1),
+							Layout: gridRowLayout(2),
+						},
+						{
+							Size:   guigui.FlexibleSize(2),
+							Layout: gridRowLayout(3),
+						},
+					},
+					Gap: gridGap,
+				},
+			},
+		},
+		Gap: u / 2,
+	}).WidgetBounds(context, context.Bounds(r).Inset(u/2), widget)
+
+	if !r.fill {
+		if _, ok := widget.(*basicwidget.Button); ok {
+			pt := bounds.Min
+			s := widget.Measure(context, guigui.Constraints{})
+			pt.X += (bounds.Dx() - s.X) / 2
+			pt.Y += (bounds.Dy() - s.Y) / 2
+			return image.Rectangle{
+				Min: pt,
+				Max: pt.Add(s),
+			}
+		}
+	}
+
+	return bounds
 }
 
 func main() {
