@@ -4,6 +4,7 @@
 package basicwidget
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,6 +21,14 @@ const (
 	PanelStyleSide
 )
 
+type PanelContentConstraints int
+
+const (
+	PanelContentConstraintsNone PanelContentConstraints = iota
+	PanelContentConstraintsFixedWidth
+	PanelContentConstraintsFixedHeight
+)
+
 type PanelBorder struct {
 	Start  bool
 	Top    bool
@@ -30,10 +39,11 @@ type PanelBorder struct {
 type Panel struct {
 	guigui.DefaultWidget
 
-	content      guigui.Widget
-	scollOverlay ScrollOverlay
-	border       panelBorder
-	style        PanelStyle
+	content            guigui.Widget
+	scollOverlay       ScrollOverlay
+	border             panelBorder
+	style              PanelStyle
+	contentConstraints PanelContentConstraints
 
 	hasNextOffset     bool
 	nextOffsetX       float64
@@ -51,6 +61,10 @@ func (p *Panel) SetStyle(typ PanelStyle) {
 	}
 	p.style = typ
 	guigui.RequestRedraw(p)
+}
+
+func (p *Panel) SetContentConstraints(c PanelContentConstraints) {
+	p.contentConstraints = c
 }
 
 func (p *Panel) SetBorders(borders PanelBorder) {
@@ -83,23 +97,39 @@ func (p *Panel) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	adder.AddChild(&p.border)
 }
 
+func (p *Panel) contentSize(context *guigui.Context) image.Point {
+	switch p.contentConstraints {
+	case PanelContentConstraintsNone:
+		return p.content.Measure(context, guigui.Constraints{})
+	case PanelContentConstraintsFixedWidth:
+		w := context.Bounds(p).Dx()
+		return p.content.Measure(context, guigui.FixedWidthConstraints(w))
+	case PanelContentConstraintsFixedHeight:
+		h := context.Bounds(p).Dy()
+		return p.content.Measure(context, guigui.FixedHeightConstraints(h))
+	default:
+		panic(fmt.Sprintf("basicwidget: unknown PanelContentConstraints value: %d", p.contentConstraints))
+	}
+}
+
 func (p *Panel) Update(context *guigui.Context) error {
 	if p.content == nil {
 		return nil
 	}
 
+	contentSize := p.contentSize(context)
 	if p.hasNextOffset {
 		if p.isNextOffsetDelta {
-			p.scollOverlay.SetOffsetByDelta(context, p.content.Measure(context, guigui.Constraints{}), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffsetByDelta(context, contentSize, p.nextOffsetX, p.nextOffsetY)
 		} else {
-			p.scollOverlay.SetOffset(context, p.content.Measure(context, guigui.Constraints{}), p.nextOffsetX, p.nextOffsetY)
+			p.scollOverlay.SetOffset(context, contentSize, p.nextOffsetX, p.nextOffsetY)
 		}
 		p.hasNextOffset = false
 		p.nextOffsetX = 0
 		p.nextOffsetY = 0
 	}
 
-	p.scollOverlay.SetContentSize(context, p.content.Measure(context, guigui.Constraints{}))
+	p.scollOverlay.SetContentSize(context, contentSize)
 	p.border.scrollOverlay = &p.scollOverlay
 
 	return nil
@@ -112,7 +142,7 @@ func (p *Panel) Layout(context *guigui.Context, widget guigui.Widget) image.Rect
 		pt := context.Bounds(p).Min.Add(image.Pt(int(offsetX), int(offsetY)))
 		return image.Rectangle{
 			Min: pt,
-			Max: pt.Add(p.content.Measure(context, guigui.Constraints{})),
+			Max: pt.Add(p.contentSize(context)),
 		}
 	case &p.scollOverlay:
 		return context.Bounds(p)

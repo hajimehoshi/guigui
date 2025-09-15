@@ -31,7 +31,7 @@ type Root struct {
 	createButton      basicwidget.Button
 	textInput         basicwidget.TextInput
 	tasksPanel        basicwidget.Panel
-	tasksPanelContent guigui.WidgetWithSize[*tasksPanelContent]
+	tasksPanelContent tasksPanelContent
 
 	model Model
 
@@ -84,11 +84,12 @@ func (r *Root) Update(context *guigui.Context) error {
 	})
 	context.SetEnabled(&r.createButton, r.model.CanAddTask(r.textInput.Value()))
 
-	r.tasksPanelContent.Widget().SetOnDeleted(func(id int) {
+	r.tasksPanelContent.SetOnDeleted(func(id int) {
 		r.model.DeleteTaskByID(id)
 	})
 	r.tasksPanel.SetContent(&r.tasksPanelContent)
 	r.tasksPanel.SetAutoBorder(true)
+	r.tasksPanel.SetContentConstraints(basicwidget.PanelContentConstraintsFixedWidth)
 
 	u := basicwidget.UnitSize(context)
 	r.mainLayout = layout.GridLayout{
@@ -107,8 +108,6 @@ func (r *Root) Update(context *guigui.Context) error {
 		},
 		ColumnGap: u / 2,
 	}
-
-	r.tasksPanelContent.SetFixedWidth(r.mainLayout.CellBounds(0, 1).Dx())
 
 	return nil
 }
