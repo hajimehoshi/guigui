@@ -146,11 +146,15 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context
 	for i, item := range l.Items {
 		switch item.Size.typ {
 		case sizeTypeIntrinsic:
-			switch l.Direction {
-			case LayoutDirectionHorizontal:
-				sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X)
-			case LayoutDirectionVertical:
-				sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y)
+			if item.Widget != nil {
+				switch l.Direction {
+				case LayoutDirectionHorizontal:
+					sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X)
+				case LayoutDirectionVertical:
+					sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y)
+				}
+			} else {
+				sizesInPixels = append(sizesInPixels, 0)
 			}
 		case sizeTypeFixed:
 			sizesInPixels = append(sizesInPixels, item.Size.value)
