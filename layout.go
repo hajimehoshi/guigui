@@ -204,13 +204,13 @@ func (l *LinearLayoutItem) cacheIdentity(context *Context, direction LayoutDirec
 	}
 	if l.Widget != nil {
 		identity.widgetState = l.Widget.widgetState()
-	}
-	if l.Size.typ == sizeTypeIntrinsic {
-		switch direction {
-		case LayoutDirectionHorizontal:
-			identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X
-		case LayoutDirectionVertical:
-			identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
+		if l.Size.typ == sizeTypeIntrinsic {
+			switch direction {
+			case LayoutDirectionHorizontal:
+				identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X
+			case LayoutDirectionVertical:
+				identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
+			}
 		}
 	}
 	return identity
