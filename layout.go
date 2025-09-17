@@ -13,6 +13,7 @@ import (
 
 type Layout interface {
 	WidgetBounds(context *Context, bounds image.Rectangle, widget Widget) image.Rectangle
+	Measure(context *Context, constraints Constraints) image.Point
 }
 
 type Size struct {
@@ -23,7 +24,7 @@ type Size struct {
 type sizeType int
 
 const (
-	sizeTypeIntrinsic sizeType = iota
+	sizeTypeDefault sizeType = iota
 	sizeTypeFixed
 	sizeTypeFlexible
 )
@@ -66,7 +67,7 @@ type LinearLayout struct {
 // linearLayoutItemCacheIdentity represents the identity of a cache.
 // If and only if two linearLayoutItemCacheIdentity values are equal, the cache can be reused.
 type linearLayoutItemCacheIdentity struct {
-	widgetIntrinsicSize int
+	defaultSize int
 
 	// widgetState is needed to make widgetIndices valid.
 	widgetState *widgetState
@@ -134,6 +135,38 @@ func (l *LinearLayout) appendWidgetAlongPositionAndSizes(widgetAlongPositions []
 	return widgetAlongPositions
 }
 
+func linearLayoutItemDefaultSize(context *Context, direction LayoutDirection, item *LinearLayoutItem, acrossSize int) int {
+	if item.Widget != nil {
+		switch direction {
+		case LayoutDirectionHorizontal:
+			if acrossSize <= 0 {
+				return item.Widget.Measure(context, Constraints{}).X
+			}
+			return item.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X
+		case LayoutDirectionVertical:
+			if acrossSize <= 0 {
+				return item.Widget.Measure(context, Constraints{}).Y
+			}
+			return item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
+		}
+	}
+	if item.Layout != nil {
+		switch direction {
+		case LayoutDirectionHorizontal:
+			if acrossSize <= 0 {
+				return item.Layout.Measure(context, Constraints{}).X
+			}
+			return item.Layout.Measure(context, FixedHeightConstraints(acrossSize)).X
+		case LayoutDirectionVertical:
+			if acrossSize <= 0 {
+				return item.Layout.Measure(context, Constraints{}).Y
+			}
+			return item.Layout.Measure(context, FixedWidthConstraints(acrossSize)).Y
+		}
+	}
+	return 0
+}
+
 func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context, alongSize, acrossSize int) []int {
 	rest := alongSize
 	rest -= (len(l.Items) - 1) * l.Gap
@@ -145,17 +178,8 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context
 	origLen := len(sizesInPixels)
 	for i, item := range l.Items {
 		switch item.Size.typ {
-		case sizeTypeIntrinsic:
-			if item.Widget != nil {
-				switch l.Direction {
-				case LayoutDirectionHorizontal:
-					sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X)
-				case LayoutDirectionVertical:
-					sizesInPixels = append(sizesInPixels, item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y)
-				}
-			} else {
-				sizesInPixels = append(sizesInPixels, 0)
-			}
+		case sizeTypeDefault:
+			sizesInPixels = append(sizesInPixels, linearLayoutItemDefaultSize(context, l.Direction, &item, acrossSize))
 		case sizeTypeFixed:
 			sizesInPixels = append(sizesInPixels, item.Size.value)
 		case sizeTypeFlexible:
@@ -196,6 +220,67 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context
 	return sizesInPixels
 }
 
+func (l LinearLayout) Measure(context *Context, constraints Constraints) image.Point {
+	var acrossSize int
+	switch l.Direction {
+	case LayoutDirectionHorizontal:
+		if fixedH, ok := constraints.FixedHeight(); ok {
+			acrossSize = fixedH - l.Padding.Top - l.Padding.Bottom
+			acrossSize = max(acrossSize, 0)
+		}
+	case LayoutDirectionVertical:
+		if fixedW, ok := constraints.FixedWidth(); ok {
+			acrossSize = fixedW - l.Padding.Start - l.Padding.End
+			acrossSize = max(acrossSize, 0)
+		}
+	}
+
+	finalAlongSize := 0
+	finalAcrossSize := acrossSize
+	for _, item := range l.Items {
+		var s int
+		switch item.Size.typ {
+		case sizeTypeDefault:
+			s = linearLayoutItemDefaultSize(context, l.Direction, &item, acrossSize)
+		case sizeTypeFixed:
+			s = item.Size.value
+		case sizeTypeFlexible:
+			// Ignore this.
+		}
+		finalAlongSize += s
+		if item.Widget != nil {
+			switch l.Direction {
+			case LayoutDirectionHorizontal:
+				if s <= 0 {
+					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, Constraints{}).Y)
+				} else {
+					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, FixedWidthConstraints(s)).Y)
+				}
+			case LayoutDirectionVertical:
+				if s <= 0 {
+					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, Constraints{}).X)
+				} else {
+					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, FixedHeightConstraints(s)).X)
+				}
+			}
+		}
+	}
+
+	if len(l.Items) > 0 {
+		finalAlongSize += (len(l.Items) - 1) * l.Gap
+	}
+	finalAlongSize += l.Padding.Start + l.Padding.End
+	finalAcrossSize += l.Padding.Top + l.Padding.Bottom
+
+	switch l.Direction {
+	case LayoutDirectionHorizontal:
+		return image.Pt(finalAlongSize, finalAcrossSize)
+	case LayoutDirectionVertical:
+		return image.Pt(finalAcrossSize, finalAlongSize)
+	}
+	return image.Point{}
+}
+
 type LinearLayoutItem struct {
 	Widget Widget
 	Size   Size
@@ -208,13 +293,8 @@ func (l *LinearLayoutItem) cacheIdentity(context *Context, direction LayoutDirec
 	}
 	if l.Widget != nil {
 		identity.widgetState = l.Widget.widgetState()
-		if l.Size.typ == sizeTypeIntrinsic {
-			switch direction {
-			case LayoutDirectionHorizontal:
-				identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedHeightConstraints(acrossSize)).X
-			case LayoutDirectionVertical:
-				identity.widgetIntrinsicSize = l.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
-			}
+		if l.Size.typ == sizeTypeDefault {
+			identity.defaultSize = linearLayoutItemDefaultSize(context, direction, l, acrossSize)
 		}
 	}
 	return identity
