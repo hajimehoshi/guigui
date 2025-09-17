@@ -21,6 +21,7 @@ type PopupMenuItem[T comparable] struct {
 	Content      guigui.Widget
 	Unselectable bool
 	Border       bool
+	Disabled     bool
 	Value        T
 }
 
@@ -123,6 +124,7 @@ func (p *PopupMenu[T]) SetItems(items []PopupMenuItem[T]) {
 			Content:      item.Content,
 			Unselectable: item.Unselectable,
 			Border:       item.Border,
+			Disabled:     item.Disabled,
 			Value:        item.Value,
 		})
 	}
@@ -145,6 +147,7 @@ func (p *PopupMenu[T]) SelectedItem() (PopupMenuItem[T], bool) {
 		Content:      listItem.Content,
 		Unselectable: listItem.Unselectable,
 		Border:       listItem.Border,
+		Disabled:     listItem.Disabled,
 		Value:        listItem.Value,
 	}, true
 }
@@ -161,6 +164,7 @@ func (p *PopupMenu[T]) ItemByIndex(index int) (PopupMenuItem[T], bool) {
 		Content:      listItem.Content,
 		Unselectable: listItem.Unselectable,
 		Border:       listItem.Border,
+		Disabled:     listItem.Disabled,
 		Value:        listItem.Value,
 	}, true
 }

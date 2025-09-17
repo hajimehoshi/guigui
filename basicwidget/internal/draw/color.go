@@ -25,6 +25,7 @@ func EqualColor(c0, c1 color.Color) bool {
 }
 
 var (
+	// TODO: Specify linear sRGB colors.
 	blue   = oklab.OklchModel.Convert(color.RGBA{R: 0x00, G: 0x5a, B: 0xff, A: 0xff}).(oklab.Oklch)
 	green  = oklab.OklchModel.Convert(color.RGBA{R: 0x03, G: 0xaf, B: 0x7a, A: 0xff}).(oklab.Oklch)
 	yellow = oklab.OklchModel.Convert(color.RGBA{R: 0xff, G: 0xf1, B: 0x00, A: 0xff}).(oklab.Oklch)
@@ -32,6 +33,7 @@ var (
 )
 
 var (
+	// TODO: Specify linear sRGB colors.
 	white = oklab.OklchModel.Convert(color.White).(oklab.Oklch)
 	black = oklab.OklchModel.Convert(oklab.Oklab{L: 0.2, A: 0, B: 0, Alpha: 1}).(oklab.Oklch)
 	gray  = oklab.OklchModel.Convert(oklab.Oklab{L: 0.6, A: 0, B: 0, Alpha: 1}).(oklab.Oklch)

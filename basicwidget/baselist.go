@@ -170,7 +170,7 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 	}
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		itemW := cs.X - 2*RoundedCornerRadius(context)
+		itemW := cs.X - 2*listItemPadding(context)
 
 		if b.checkmarkIndexPlus1 == i+1 {
 			mode := context.ColorMode()

@@ -21,6 +21,7 @@ type DropdownListItem[T comparable] struct {
 	Content      guigui.Widget
 	Unselectable bool
 	Border       bool
+	Disabled     bool
 	Value        T
 }
 

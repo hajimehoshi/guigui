@@ -82,7 +82,26 @@ func (p *Popups) Update(context *guigui.Context) error {
 
 	p.simplePopupContent.SetFixedSize(p.contentSize(context))
 
-	p.contextMenuPopup.SetItemsByStrings([]string{"Item 1", "Item 2", "Item 3"})
+	p.contextMenuPopup.SetItems(
+		[]basicwidget.PopupMenuItem[int]{
+			{
+				Text: "Item 1",
+			},
+			{
+				Text: "Item 2",
+			},
+			{
+				Text: "Item 3",
+			},
+			{
+				Border: true,
+			},
+			{
+				Text:     "Item 4",
+				Disabled: true,
+			},
+		},
+	)
 	// A context menu's position is updated at HandlePointingInput.
 
 	return nil

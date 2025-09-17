@@ -32,12 +32,13 @@ type ListItem[T comparable] struct {
 	Content      guigui.Widget
 	Unselectable bool
 	Border       bool
+	Disabled     bool
 	Movable      bool
 	Value        T
 }
 
 func (l *ListItem[T]) selectable() bool {
-	return !l.Header && !l.Unselectable && !l.Border
+	return !l.Header && !l.Unselectable && !l.Border && !l.Disabled
 }
 
 func (l *List[T]) SetStripeVisible(visible bool) {
@@ -95,6 +96,7 @@ func (l *List[T]) Update(context *guigui.Context) error {
 		item := &l.listItemWidgets[i]
 		item.text.SetBold(item.item.Header || l.list.style == ListStyleSidebar && l.SelectedItemIndex() == i)
 		item.text.SetColor(l.ItemTextColor(context, i))
+		context.SetEnabled(item, !item.item.Disabled)
 	}
 	return nil
 }
@@ -153,7 +155,7 @@ func (l *List[T]) SetItems(items []ListItem[T]) {
 	l.listItems = adjustSliceSize(l.listItems, len(items))
 	copy(l.listItems, items)
 
-	// Updating list items at Build might be too late, when the text list is not visible like a dropdown menu.
+	// Updating list items at Update might be too late, when the text list is not visible like a dropdown menu.
 	// Update it here.
 	l.updateListItems()
 }
@@ -286,7 +288,7 @@ func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.
 	// Assume that every item can use a bold font.
 	s.X = max(s.X, l.text.boldTextSize(context, constraints).X)
 
-	if l.style != ListStyleMenu {
+	if l.style != ListStyleMenu || l.item.Border {
 		if w, ok := constraints.FixedWidth(); ok {
 			s.X = max(s.X, w)
 		}
