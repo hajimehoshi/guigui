@@ -154,6 +154,7 @@ func (p *Popups) HandlePointingInput(context *guigui.Context) guigui.HandleInput
 		if p.contextMenuPopup.IsWidgetOrBackgroundHitAtCursor(context, &p.contextMenuPopupClickHereText) {
 			p.contextMenuPopupPosition = image.Pt(ebiten.CursorPosition())
 			p.contextMenuPopup.Open(context)
+			return guigui.HandleInputByWidget(p)
 		}
 	}
 	return guigui.HandleInputResult{}
