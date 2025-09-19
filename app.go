@@ -84,8 +84,9 @@ type app struct {
 	screenHeight float64
 	deviceScale  float64
 
-	lastScreenWidth  float64
-	lastScreenHeight float64
+	lastScreenWidth    float64
+	lastScreenHeight   float64
+	lastCursorPosition image.Point
 
 	focusedWidgetState *widgetState
 
@@ -472,8 +473,13 @@ func (a *app) buildWidgets() error {
 }
 
 func (a *app) updateHitWidgets() {
-	a.hitWidgets = slices.Delete(a.hitWidgets, 0, len(a.hitWidgets))
 	pt := image.Pt(ebiten.CursorPosition())
+	if a.skipBuild && pt == a.lastCursorPosition {
+		return
+	}
+	a.lastCursorPosition = pt
+
+	a.hitWidgets = slices.Delete(a.hitWidgets, 0, len(a.hitWidgets))
 	a.hitWidgets = a.appendWidgetsAt(a.hitWidgets, pt, a.root, true)
 	slices.SortStableFunc(a.hitWidgets, func(a, b widgetAndZ) int {
 		return b.z - a.z
