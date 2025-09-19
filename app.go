@@ -73,7 +73,7 @@ type app struct {
 	// hitWidgets are widgets and their z values at the cursor position.
 	// hitWidgets are ordered by descending z values.
 	//
-	// Z values are fixed values just after a tree construction, so they are not changed during Build.
+	// Z values are fixed values just after a tree construction, so they are not changed during buildWidgets.
 	hitWidgets []widgetAndZ
 
 	invalidatedRegions image.Rectangle
@@ -708,7 +708,7 @@ func (a *app) isWidgetHit(widget Widget) bool {
 	}*/
 
 	// hitWidgets are ordered by descending z values.
-	// Always use a fixed set hitWidgets, as the tree might be dynamically changed during Build.
+	// Always use a fixed set hitWidgets, as the tree might be dynamically changed during buildWidgets.
 	for _, wz := range a.hitWidgets {
 		z1 := wz.z
 		z2 := widget.widgetState().z
