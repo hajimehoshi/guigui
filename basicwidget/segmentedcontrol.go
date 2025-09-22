@@ -88,6 +88,11 @@ func (s *SegmentedControl[T]) AddChildren(context *guigui.Context, adder *guigui
 }
 
 func (s *SegmentedControl[T]) Update(context *guigui.Context) error {
+	s.updateButtons(context)
+	return nil
+}
+
+func (s *SegmentedControl[T]) updateButtons(context *guigui.Context) {
 	s.buttons = adjustSliceSize(s.buttons, s.abstractList.ItemCount())
 
 	for i := range s.abstractList.ItemCount() {
@@ -140,8 +145,6 @@ func (s *SegmentedControl[T]) Update(context *guigui.Context) error {
 			s.SelectItemByIndex(i)
 		})
 	}
-
-	return nil
 }
 
 func (s *SegmentedControl[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
@@ -167,6 +170,8 @@ func (s *SegmentedControl[T]) Layout(context *guigui.Context, widget guigui.Widg
 }
 
 func (s *SegmentedControl[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	s.updateButtons(context)
+
 	var w, h int
 	for i := range s.buttons {
 		size := s.buttons[i].defaultSize(context, constraints, true)
