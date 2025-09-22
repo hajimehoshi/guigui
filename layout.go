@@ -269,13 +269,15 @@ func (l LinearLayout) Measure(context *Context, constraints Constraints) image.P
 	if len(l.Items) > 0 {
 		finalAlongSize += (len(l.Items) - 1) * l.Gap
 	}
-	finalAlongSize += l.Padding.Start + l.Padding.End
-	finalAcrossSize += l.Padding.Top + l.Padding.Bottom
 
 	switch l.Direction {
 	case LayoutDirectionHorizontal:
+		finalAlongSize += l.Padding.Start + l.Padding.End
+		finalAcrossSize += l.Padding.Top + l.Padding.Bottom
 		return image.Pt(finalAlongSize, finalAcrossSize)
 	case LayoutDirectionVertical:
+		finalAlongSize += l.Padding.Top + l.Padding.Bottom
+		finalAcrossSize += l.Padding.Start + l.Padding.End
 		return image.Pt(finalAcrossSize, finalAlongSize)
 	}
 	return image.Point{}
