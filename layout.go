@@ -135,7 +135,7 @@ func (l *LinearLayout) appendWidgetAlongPositionAndSizes(widgetAlongPositions []
 	return widgetAlongPositions
 }
 
-func linearLayoutItemDefaultSize(context *Context, direction LayoutDirection, item *LinearLayoutItem, acrossSize int) int {
+func linearLayoutItemDefaultAlongSize(context *Context, direction LayoutDirection, item *LinearLayoutItem, acrossSize int) int {
 	if item.Widget != nil {
 		switch direction {
 		case LayoutDirectionHorizontal:
@@ -149,8 +149,7 @@ func linearLayoutItemDefaultSize(context *Context, direction LayoutDirection, it
 			}
 			return item.Widget.Measure(context, FixedWidthConstraints(acrossSize)).Y
 		}
-	}
-	if item.Layout != nil {
+	} else if item.Layout != nil {
 		switch direction {
 		case LayoutDirectionHorizontal:
 			if acrossSize <= 0 {
@@ -179,7 +178,7 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context
 	for i, item := range l.Items {
 		switch item.Size.typ {
 		case sizeTypeDefault:
-			sizesInPixels = append(sizesInPixels, linearLayoutItemDefaultSize(context, l.Direction, &item, acrossSize))
+			sizesInPixels = append(sizesInPixels, linearLayoutItemDefaultAlongSize(context, l.Direction, &item, acrossSize))
 		case sizeTypeFixed:
 			sizesInPixels = append(sizesInPixels, item.Size.value)
 		case sizeTypeFlexible:
@@ -241,7 +240,7 @@ func (l LinearLayout) Measure(context *Context, constraints Constraints) image.P
 		var s int
 		switch item.Size.typ {
 		case sizeTypeDefault:
-			s = linearLayoutItemDefaultSize(context, l.Direction, &item, acrossSize)
+			s = linearLayoutItemDefaultAlongSize(context, l.Direction, &item, acrossSize)
 		case sizeTypeFixed:
 			s = item.Size.value
 		case sizeTypeFlexible:
@@ -261,6 +260,21 @@ func (l LinearLayout) Measure(context *Context, constraints Constraints) image.P
 					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, Constraints{}).X)
 				} else {
 					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, FixedHeightConstraints(s)).X)
+				}
+			}
+		} else if item.Layout != nil {
+			switch l.Direction {
+			case LayoutDirectionHorizontal:
+				if s <= 0 {
+					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, Constraints{}).Y)
+				} else {
+					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, FixedWidthConstraints(s)).Y)
+				}
+			case LayoutDirectionVertical:
+				if s <= 0 {
+					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, Constraints{}).X)
+				} else {
+					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, FixedHeightConstraints(s)).X)
 				}
 			}
 		}
@@ -296,7 +310,7 @@ func (l *LinearLayoutItem) cacheIdentity(context *Context, direction LayoutDirec
 	if l.Widget != nil {
 		identity.widgetState = l.Widget.widgetState()
 		if l.Size.typ == sizeTypeDefault {
-			identity.defaultSize = linearLayoutItemDefaultSize(context, direction, l, acrossSize)
+			identity.defaultSize = linearLayoutItemDefaultAlongSize(context, direction, l, acrossSize)
 		}
 	}
 	return identity
