@@ -65,6 +65,7 @@ type baseList[T comparable] struct {
 	headerHeight            int
 	footerHeight            int
 	contentWidthPlus1       int
+	contentHeight           int
 
 	cachedDefaultWidth         int
 	cachedDefaultContentHeight int
@@ -128,10 +129,7 @@ func (b *baseList[T]) contentWidth(context *guigui.Context) int {
 
 func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	w := b.contentWidth(context)
-	h := b.defaultHeight(context, guigui.Constraints{})
-	h -= b.headerHeight
-	h -= b.footerHeight
-	return image.Pt(w, h)
+	return image.Pt(w, b.contentHeight)
 }
 
 func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -149,14 +147,7 @@ func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAd
 }
 
 func (b *baseList[T]) Update(context *guigui.Context) error {
-	cs := b.contentSize(context)
-	b.scrollOverlay.SetContentSize(context, cs)
-
-	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
-		y := b.itemYFromIndex(context, idx) - b.headerHeight - RoundedCornerRadius(context)
-		b.scrollOverlay.SetOffset(context, cs, 0, float64(-y))
-		b.indexToJumpPlus1 = 0
-	}
+	cw := b.contentWidth(context)
 
 	// TODO: Do not call HoveredItemIndex in Build (#52).
 	hoveredItemIndex := b.hoveredItemIndex(context)
@@ -164,13 +155,14 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 	offsetX, offsetY := b.scrollOverlay.Offset()
 	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
+	origY := p.Y
 	clear(b.itemBoundsForLayout)
 	if b.itemBoundsForLayout == nil {
 		b.itemBoundsForLayout = map[guigui.Widget]image.Rectangle{}
 	}
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		itemW := cs.X - 2*listItemPadding(context)
+		itemW := cw - 2*listItemPadding(context)
 
 		if b.checkmarkIndexPlus1 == i+1 {
 			mode := context.ColorMode()
@@ -210,6 +202,16 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
 		b.listFrame.list = b
+	}
+
+	b.contentHeight = p.Y - origY + 2*RoundedCornerRadius(context)
+	cs := image.Pt(cw, b.contentHeight)
+	b.scrollOverlay.SetContentSize(context, cs)
+
+	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
+		y := b.itemYFromIndex(context, idx) - b.headerHeight - RoundedCornerRadius(context)
+		b.scrollOverlay.SetOffset(context, cs, 0, float64(-y))
+		b.indexToJumpPlus1 = 0
 	}
 
 	return nil
@@ -589,45 +591,6 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		y += float32(offsetY)
 		vector.StrokeLine(dst, x0, y, x1, y, 2*float32(context.Scale()), draw.Color(context.ColorMode(), draw.ColorTypeAccent, 0.5), false)
 	}
-}
-
-func (b *baseList[T]) defaultWidth(context *guigui.Context, constraints guigui.Constraints) int {
-	// TODO: This cache works only for some constraints. Invalid the cache when constraints change.
-	if b.cachedDefaultWidth > 0 {
-		return b.cachedDefaultWidth
-	}
-	var w int
-	for i := range b.abstractList.ItemCount() {
-		item, _ := b.abstractList.ItemByIndex(i)
-		w = max(w, item.Content.Measure(context, constraints).X)
-	}
-	w += 2 * listItemPadding(context)
-	b.cachedDefaultWidth = w
-	return w
-}
-
-func (b *baseList[T]) defaultHeight(context *guigui.Context, constraints guigui.Constraints) int {
-	r := RoundedCornerRadius(context)
-	if b.cachedDefaultContentHeight > 0 {
-		return b.cachedDefaultContentHeight + 2*r + b.headerHeight + b.footerHeight
-	}
-
-	var h int
-	for i := range b.abstractList.ItemCount() {
-		item, _ := b.abstractList.ItemByIndex(i)
-		h += item.Content.Measure(context, constraints).Y
-	}
-	b.cachedDefaultContentHeight = h
-	return h + 2*r + b.headerHeight + b.footerHeight
-}
-
-func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	w := b.defaultWidth(context, constraints)
-	if b.checkmarkIndexPlus1 > 0 {
-		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
-	}
-	h := b.defaultHeight(context, constraints)
-	return image.Pt(w, h)
 }
 
 type listFrame[T comparable] struct {
