@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/atotto/clipboard v0.1.4
-	github.com/ebitengine/purego v0.9.0-alpha.10
+	github.com/ebitengine/purego v0.9.0-alpha.11
 	github.com/hajimehoshi/ebiten/v2 v2.9.0-alpha.16
 	github.com/hajimehoshi/oklab v0.1.0
 	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade
