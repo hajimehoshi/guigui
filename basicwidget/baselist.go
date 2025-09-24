@@ -70,7 +70,8 @@ type baseList[T comparable] struct {
 	cachedDefaultWidth         int
 	cachedDefaultContentHeight int
 
-	itemBoundsForLayout map[guigui.Widget]image.Rectangle
+	itemBoundsForLayoutFromWidget map[guigui.Widget]image.Rectangle
+	itemBoundsForLayoutFromIndex  []image.Rectangle
 }
 
 func listItemPadding(context *guigui.Context) int {
@@ -156,10 +157,11 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
 	origY := p.Y
-	clear(b.itemBoundsForLayout)
-	if b.itemBoundsForLayout == nil {
-		b.itemBoundsForLayout = map[guigui.Widget]image.Rectangle{}
+	clear(b.itemBoundsForLayoutFromWidget)
+	if b.itemBoundsForLayoutFromWidget == nil {
+		b.itemBoundsForLayoutFromWidget = map[guigui.Widget]image.Rectangle{}
 	}
+	b.itemBoundsForLayoutFromIndex = adjustSliceSize(b.itemBoundsForLayoutFromIndex, b.abstractList.ItemCount())
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		itemW := cw - 2*listItemPadding(context)
@@ -180,7 +182,7 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
-			b.itemBoundsForLayout[&b.checkmark] = image.Rectangle{
+			b.itemBoundsForLayoutFromWidget[&b.checkmark] = image.Rectangle{
 				Min: imgP,
 				Max: imgP.Add(image.Pt(imgSize, imgSize)),
 			}
@@ -192,10 +194,12 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 		}
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
-		b.itemBoundsForLayout[item.Content] = image.Rectangle{
+		r := image.Rectangle{
 			Min: itemP,
 			Max: itemP.Add(s),
 		}
+		b.itemBoundsForLayoutFromWidget[item.Content] = r
+		b.itemBoundsForLayoutFromIndex[i] = r
 
 		p.Y += s.Y
 	}
@@ -227,7 +231,7 @@ func (b *baseList[T]) Layout(context *guigui.Context, widget guigui.Widget) imag
 		bounds.Max.Y -= b.footerHeight
 		return bounds
 	}
-	if r, ok := b.itemBoundsForLayout[widget]; ok {
+	if r, ok := b.itemBoundsForLayoutFromWidget[widget]; ok {
 		return r
 	}
 	return image.Rectangle{}
@@ -334,10 +338,10 @@ func (b *baseList[T]) ScrollOffset() (float64, float64) {
 	return b.scrollOverlay.Offset()
 }
 
-func (b *baseList[T]) calcDropDstIndex(context *guigui.Context) int {
+func (b *baseList[T]) calcDropDstIndex() int {
 	_, y := ebiten.CursorPosition()
 	for i := range b.abstractList.ItemCount() {
-		if b := b.itemBounds(context, i); y < (b.Min.Y+b.Max.Y)/2 {
+		if b := b.itemBounds(i); y < (b.Min.Y+b.Max.Y)/2 {
 			return i
 		}
 	}
@@ -366,7 +370,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 				dy = float64(lowerY-y) / 4
 			}
 			b.scrollOverlay.SetOffsetByDelta(context, b.contentSize(context), 0, dy)
-			if i := b.calcDropDstIndex(context); b.dragDstIndexPlus1-1 != i {
+			if i := b.calcDropDstIndex(); b.dragDstIndexPlus1-1 != i {
 				b.dragDstIndexPlus1 = i + 1
 				guigui.RequestRedraw(b)
 				return guigui.HandleInputByWidget(b)
@@ -460,23 +464,11 @@ func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 	return y
 }
 
-func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Rectangle {
-	offsetX, offsetY := b.scrollOverlay.Offset()
-	bounds := context.Bounds(b)
-	bounds.Min.X += int(offsetX)
-	if b.contentWidthPlus1 > 0 {
-		bounds.Max.X = bounds.Min.X + b.contentWidthPlus1 - 1
-	} else {
-		bounds.Max.X += int(offsetX)
+func (b *baseList[T]) itemBounds(index int) image.Rectangle {
+	if index < 0 || index >= len(b.itemBoundsForLayoutFromIndex) {
+		return image.Rectangle{}
 	}
-	bounds.Min.X += listItemPadding(context)
-	bounds.Max.X -= listItemPadding(context)
-	bounds.Min.Y += b.itemYFromIndex(context, index)
-	bounds.Min.Y += int(offsetY)
-	if item, ok := b.abstractList.ItemByIndex(index); ok {
-		bounds.Max.Y = bounds.Min.Y + item.Content.Measure(context, guigui.Constraints{}).Y
-	}
-	return bounds
+	return b.itemBoundsForLayoutFromIndex[index]
 }
 
 func (b *baseList[T]) selectedItemColor(context *guigui.Context) color.Color {
@@ -518,7 +510,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			if i%2 == 0 {
 				continue
 			}
-			bounds := b.itemBounds(context, i)
+			bounds := b.itemBounds(i)
 			if bounds.Min.Y > vb.Max.Y {
 				break
 			}
@@ -534,7 +526,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	// Draw the selected item background.
 	if clr := b.selectedItemColor(context); clr != nil && b.SelectedItemIndex() >= 0 && b.SelectedItemIndex() < b.abstractList.ItemCount() {
-		bounds := b.itemBounds(context, b.SelectedItemIndex())
+		bounds := b.itemBounds(b.SelectedItemIndex())
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
 		if bounds.Overlaps(vb) {
@@ -545,7 +537,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	hoveredItem, ok := b.abstractList.ItemByIndex(hoveredItemIndex)
 	if ok && b.isHoveringVisible() && hoveredItemIndex >= 0 && hoveredItemIndex < b.abstractList.ItemCount() && hoveredItem.Selectable {
-		bounds := b.itemBounds(context, hoveredItemIndex)
+		bounds := b.itemBounds(hoveredItemIndex)
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
 		if bounds.Overlaps(vb) {
@@ -567,7 +559,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			s := float64(2*RoundedCornerRadius(context)) / float64(img.Bounds().Dy())
 			op.GeoM.Scale(s, s)
-			bounds := b.itemBounds(context, hoveredItemIndex)
+			bounds := b.itemBounds(hoveredItemIndex)
 			p := bounds.Min
 			p.X = context.Bounds(b).Min.X + listItemPadding(context)
 			op.GeoM.Translate(float64(p.X-2*RoundedCornerRadius(context)), float64(p.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
