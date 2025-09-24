@@ -600,13 +600,17 @@ func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constr
 	if len(b.itemBoundsForLayoutFromIndex) == 0 {
 		return image.Point{}
 	}
-	b0 := b.itemBoundsForLayoutFromIndex[0]
-	b1 := b.itemBoundsForLayoutFromIndex[len(b.itemBoundsForLayoutFromIndex)-1]
-	w := b1.Max.X - b0.Min.X
+	var w int
+	for _, r := range b.itemBoundsForLayoutFromIndex {
+		w = max(w, r.Dx())
+	}
 	if b.checkmarkIndexPlus1 > 0 {
 		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 	}
 	w += 2 * listItemPadding(context)
+
+	b0 := b.itemBoundsForLayoutFromIndex[0]
+	b1 := b.itemBoundsForLayoutFromIndex[len(b.itemBoundsForLayoutFromIndex)-1]
 	h := b1.Max.Y - b0.Min.Y
 	h += 2 * RoundedCornerRadius(context)
 	return image.Pt(w, h)
