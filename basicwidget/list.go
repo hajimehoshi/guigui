@@ -233,35 +233,18 @@ func (l *listItemWidget[T]) Update(context *guigui.Context) error {
 }
 
 func (l *listItemWidget[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	switch widget {
-	case l.item.Content:
-		b := context.Bounds(l)
-		s := l.item.Content.Measure(context, guigui.Constraints{})
-		if l.style != ListStyleMenu {
-			s.X = b.Dx()
-		}
-		if l.heightPlus1 > 0 {
-			s.Y = l.heightPlus1 - 1
-		}
-		return image.Rectangle{
-			Min: b.Min,
-			Max: b.Min.Add(s),
-		}
-	case &l.text:
-		b := context.Bounds(l)
-		s := l.text.Measure(context, guigui.Constraints{})
-		if l.style != ListStyleMenu {
-			s.X = b.Dx()
-		}
-		if l.heightPlus1 > 0 {
-			s.Y = l.heightPlus1 - 1
-		}
-		return image.Rectangle{
-			Min: b.Min,
-			Max: b.Min.Add(s),
-		}
+	b := context.Bounds(l)
+	s := widget.Measure(context, guigui.FixedWidthConstraints(b.Dx()))
+	if l.style != ListStyleMenu {
+		s.X = b.Dx()
 	}
-	return image.Rectangle{}
+	if l.heightPlus1 > 0 {
+		s.Y = l.heightPlus1 - 1
+	}
+	return image.Rectangle{
+		Min: b.Min,
+		Max: b.Min.Add(s),
+	}
 }
 
 func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
