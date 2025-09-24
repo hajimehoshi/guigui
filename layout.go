@@ -220,79 +220,91 @@ func (l *LinearLayout) appendSizesInPixels(sizesInPixels []int, context *Context
 }
 
 func (l LinearLayout) Measure(context *Context, constraints Constraints) image.Point {
-	var acrossSize int
+	var contentAcrossSize int
 	switch l.Direction {
 	case LayoutDirectionHorizontal:
 		if fixedH, ok := constraints.FixedHeight(); ok {
-			acrossSize = fixedH - l.Padding.Top - l.Padding.Bottom
-			acrossSize = max(acrossSize, 0)
+			contentAcrossSize = fixedH - l.Padding.Top - l.Padding.Bottom
+			contentAcrossSize = max(contentAcrossSize, 0)
 		}
 	case LayoutDirectionVertical:
 		if fixedW, ok := constraints.FixedWidth(); ok {
-			acrossSize = fixedW - l.Padding.Start - l.Padding.End
-			acrossSize = max(acrossSize, 0)
+			contentAcrossSize = fixedW - l.Padding.Start - l.Padding.End
+			contentAcrossSize = max(contentAcrossSize, 0)
 		}
 	}
 
-	finalAlongSize := 0
-	finalAcrossSize := acrossSize
+	autoAlongSize := 0
+	autoAcrossSize := 0
 	for _, item := range l.Items {
 		var s int
 		switch item.Size.typ {
 		case sizeTypeDefault:
-			s = linearLayoutItemDefaultAlongSize(context, l.Direction, &item, acrossSize)
+			s = linearLayoutItemDefaultAlongSize(context, l.Direction, &item, contentAcrossSize)
 		case sizeTypeFixed:
 			s = item.Size.value
 		case sizeTypeFlexible:
 			// Ignore this.
 		}
-		finalAlongSize += s
+		autoAlongSize += s
 		if item.Widget != nil {
 			switch l.Direction {
 			case LayoutDirectionHorizontal:
 				if s <= 0 {
-					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, Constraints{}).Y)
+					autoAcrossSize = max(autoAcrossSize, item.Widget.Measure(context, Constraints{}).Y)
 				} else {
-					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, FixedWidthConstraints(s)).Y)
+					autoAcrossSize = max(autoAcrossSize, item.Widget.Measure(context, FixedWidthConstraints(s)).Y)
 				}
 			case LayoutDirectionVertical:
 				if s <= 0 {
-					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, Constraints{}).X)
+					autoAcrossSize = max(autoAcrossSize, item.Widget.Measure(context, Constraints{}).X)
 				} else {
-					finalAcrossSize = max(finalAcrossSize, item.Widget.Measure(context, FixedHeightConstraints(s)).X)
+					autoAcrossSize = max(autoAcrossSize, item.Widget.Measure(context, FixedHeightConstraints(s)).X)
 				}
 			}
 		} else if item.Layout != nil {
 			switch l.Direction {
 			case LayoutDirectionHorizontal:
 				if s <= 0 {
-					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, Constraints{}).Y)
+					autoAcrossSize = max(autoAcrossSize, item.Layout.Measure(context, Constraints{}).Y)
 				} else {
-					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, FixedWidthConstraints(s)).Y)
+					autoAcrossSize = max(autoAcrossSize, item.Layout.Measure(context, FixedWidthConstraints(s)).Y)
 				}
 			case LayoutDirectionVertical:
 				if s <= 0 {
-					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, Constraints{}).X)
+					autoAcrossSize = max(autoAcrossSize, item.Layout.Measure(context, Constraints{}).X)
 				} else {
-					finalAcrossSize = max(finalAcrossSize, item.Layout.Measure(context, FixedHeightConstraints(s)).X)
+					autoAcrossSize = max(autoAcrossSize, item.Layout.Measure(context, FixedHeightConstraints(s)).X)
 				}
 			}
 		}
 	}
 
 	if len(l.Items) > 0 {
-		finalAlongSize += (len(l.Items) - 1) * l.Gap
+		autoAlongSize += (len(l.Items) - 1) * l.Gap
 	}
 
 	switch l.Direction {
 	case LayoutDirectionHorizontal:
-		finalAlongSize += l.Padding.Start + l.Padding.End
-		finalAcrossSize += l.Padding.Top + l.Padding.Bottom
-		return image.Pt(finalAlongSize, finalAcrossSize)
+		alongSize := autoAlongSize + l.Padding.Start + l.Padding.End
+		acrossSize := autoAcrossSize + l.Padding.Top + l.Padding.Bottom
+		if fixedWidth, ok := constraints.FixedWidth(); ok {
+			alongSize = fixedWidth
+		}
+		if fixedHeight, ok := constraints.FixedHeight(); ok {
+			acrossSize = fixedHeight
+		}
+		return image.Pt(alongSize, acrossSize)
 	case LayoutDirectionVertical:
-		finalAlongSize += l.Padding.Top + l.Padding.Bottom
-		finalAcrossSize += l.Padding.Start + l.Padding.End
-		return image.Pt(finalAcrossSize, finalAlongSize)
+		alongSize := autoAlongSize + l.Padding.Top + l.Padding.Bottom
+		acrossSize := autoAcrossSize + l.Padding.Start + l.Padding.End
+		if fixedWidth, ok := constraints.FixedWidth(); ok {
+			acrossSize = fixedWidth
+		}
+		if fixedHeight, ok := constraints.FixedHeight(); ok {
+			alongSize = fixedHeight
+		}
+		return image.Pt(acrossSize, alongSize)
 	}
 	return image.Point{}
 }

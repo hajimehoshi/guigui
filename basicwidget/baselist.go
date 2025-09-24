@@ -199,12 +199,13 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 			itemP.X += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 		}
 		itemP.Y = b.adjustItemY(context, itemP.Y)
+		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
 		b.itemBoundsForLayout[item.Content] = image.Rectangle{
 			Min: itemP,
-			Max: itemP.Add(item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))),
+			Max: itemP.Add(s),
 		}
 
-		p.Y += item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
+		p.Y += s.Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
