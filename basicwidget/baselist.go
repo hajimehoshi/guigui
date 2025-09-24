@@ -338,10 +338,10 @@ func (b *baseList[T]) ScrollOffset() (float64, float64) {
 	return b.scrollOverlay.Offset()
 }
 
-func (b *baseList[T]) calcDropDstIndex() int {
+func (b *baseList[T]) calcDropDstIndex(context *guigui.Context) int {
 	_, y := ebiten.CursorPosition()
 	for i := range b.abstractList.ItemCount() {
-		if b := b.itemBounds(i); y < (b.Min.Y+b.Max.Y)/2 {
+		if b := b.itemBounds(context, i); y < (b.Min.Y+b.Max.Y)/2 {
 			return i
 		}
 	}
@@ -370,7 +370,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 				dy = float64(lowerY-y) / 4
 			}
 			b.scrollOverlay.SetOffsetByDelta(context, b.contentSize(context), 0, dy)
-			if i := b.calcDropDstIndex(); b.dragDstIndexPlus1-1 != i {
+			if i := b.calcDropDstIndex(context); b.dragDstIndexPlus1-1 != i {
 				b.dragDstIndexPlus1 = i + 1
 				guigui.RequestRedraw(b)
 				return guigui.HandleInputByWidget(b)
@@ -464,11 +464,15 @@ func (b *baseList[T]) adjustItemY(context *guigui.Context, y int) int {
 	return y
 }
 
-func (b *baseList[T]) itemBounds(index int) image.Rectangle {
+func (b *baseList[T]) itemBounds(context *guigui.Context, index int) image.Rectangle {
 	if index < 0 || index >= len(b.itemBoundsForLayoutFromIndex) {
 		return image.Rectangle{}
 	}
-	return b.itemBoundsForLayoutFromIndex[index]
+	r := b.itemBoundsForLayoutFromIndex[index]
+	if b.checkmarkIndexPlus1 > 0 {
+		r.Min.X -= listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
+	}
+	return r
 }
 
 func (b *baseList[T]) selectedItemColor(context *guigui.Context) color.Color {
@@ -510,7 +514,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			if i%2 == 0 {
 				continue
 			}
-			bounds := b.itemBounds(i)
+			bounds := b.itemBounds(context, i)
 			if bounds.Min.Y > vb.Max.Y {
 				break
 			}
@@ -526,9 +530,12 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	// Draw the selected item background.
 	if clr := b.selectedItemColor(context); clr != nil && b.SelectedItemIndex() >= 0 && b.SelectedItemIndex() < b.abstractList.ItemCount() {
-		bounds := b.itemBounds(b.SelectedItemIndex())
+		bounds := b.itemBounds(context, b.SelectedItemIndex())
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
+		if b.style == ListStyleMenu {
+			bounds.Max.X = bounds.Min.X + context.Bounds(b).Dx() - 2*RoundedCornerRadius(context)
+		}
 		if bounds.Overlaps(vb) {
 			draw.DrawRoundedRect(context, dst, bounds, clr, RoundedCornerRadius(context))
 		}
@@ -537,9 +544,12 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	hoveredItem, ok := b.abstractList.ItemByIndex(hoveredItemIndex)
 	if ok && b.isHoveringVisible() && hoveredItemIndex >= 0 && hoveredItemIndex < b.abstractList.ItemCount() && hoveredItem.Selectable {
-		bounds := b.itemBounds(hoveredItemIndex)
+		bounds := b.itemBounds(context, hoveredItemIndex)
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
+		if b.style == ListStyleMenu {
+			bounds.Max.X = bounds.Min.X + context.Bounds(b).Dx() - 2*RoundedCornerRadius(context)
+		}
 		if bounds.Overlaps(vb) {
 			clr := draw.Color(context.ColorMode(), draw.ColorTypeBase, 0.9)
 			if b.style == ListStyleMenu {
@@ -559,7 +569,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			s := float64(2*RoundedCornerRadius(context)) / float64(img.Bounds().Dy())
 			op.GeoM.Scale(s, s)
-			bounds := b.itemBounds(hoveredItemIndex)
+			bounds := b.itemBounds(context, hoveredItemIndex)
 			p := bounds.Min
 			p.X = context.Bounds(b).Min.X + listItemPadding(context)
 			op.GeoM.Translate(float64(p.X-2*RoundedCornerRadius(context)), float64(p.Y)+(float64(bounds.Dy())-float64(img.Bounds().Dy())*s)/2)
@@ -583,6 +593,23 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		y += float32(offsetY)
 		vector.StrokeLine(dst, x0, y, x1, y, 2*float32(context.Scale()), draw.Color(context.ColorMode(), draw.ColorTypeAccent, 0.5), false)
 	}
+}
+
+func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
+	// Measure is mainly for a menu list.
+	if len(b.itemBoundsForLayoutFromIndex) == 0 {
+		return image.Point{}
+	}
+	b0 := b.itemBoundsForLayoutFromIndex[0]
+	b1 := b.itemBoundsForLayoutFromIndex[len(b.itemBoundsForLayoutFromIndex)-1]
+	w := b1.Max.X - b0.Min.X
+	if b.checkmarkIndexPlus1 > 0 {
+		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
+	}
+	w += 2 * listItemPadding(context)
+	h := b1.Max.Y - b0.Min.Y
+	h += 2 * RoundedCornerRadius(context)
+	return image.Pt(w, h)
 }
 
 type listFrame[T comparable] struct {
