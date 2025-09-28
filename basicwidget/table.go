@@ -283,7 +283,10 @@ func (t *tableItemWidget[T]) Measure(context *guigui.Context, constraints guigui
 		}
 		s := content.Measure(context, guigui.FixedWidthConstraints(t.table.columnWidthsInPixels[i]))
 		// s.X is not reliable because the content might return an arbitrary value.
-		w += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
+		if i > 0 {
+			w += tableColumnGap(context)
+		}
+		w += t.table.columnWidthsInPixels[i]
 		h = max(h, s.Y)
 	}
 	h = max(h, int(LineHeight(context)))
