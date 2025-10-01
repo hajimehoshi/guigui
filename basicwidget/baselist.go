@@ -387,13 +387,12 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	}
 
 	index := b.hoveredItemIndex(context)
-	left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-	right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
 	if index >= 0 && index < b.abstractList.ItemCount() {
 		c := image.Pt(ebiten.CursorPosition())
 
 		switch {
-		case left || right:
+		case (inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)) &&
+			context.IsWidgetHitAtCursor(b):
 			item, _ := b.abstractList.ItemByIndex(index)
 			if !item.Selectable {
 				return guigui.AbortHandlingInputByWidget(b)
@@ -428,7 +427,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	}
 
 	if context.IsWidgetHitAtCursor(b) {
-		return guigui.AbortHandlingInputByWidget(b)
+		return guigui.HandleInputResult{}
 	}
 
 	b.dragSrcIndexPlus1 = 0
@@ -629,15 +628,6 @@ func (l *listFrame[T]) footerBounds(context *guigui.Context) image.Rectangle {
 	bounds := context.Bounds(l)
 	bounds.Min.Y = bounds.Max.Y - l.list.footerHeight
 	return bounds
-}
-
-func (l *listFrame[T]) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
-	if context.IsWidgetHitAtCursor(l) {
-		if image.Pt(ebiten.CursorPosition()).In(l.footerBounds(context)) {
-			return guigui.HandleInputByWidget(l)
-		}
-	}
-	return guigui.HandleInputResult{}
 }
 
 func (l *listFrame[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
