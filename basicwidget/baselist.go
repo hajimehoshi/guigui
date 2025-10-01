@@ -61,7 +61,6 @@ type baseList[T comparable] struct {
 	dragDstIndexPlus1       int
 	pressStartPlus1         image.Point
 	startPressingIndexPlus1 int
-	startPressingLeft       bool
 	headerHeight            int
 	footerHeight            int
 	contentWidthPlus1       int
@@ -388,13 +387,11 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	}
 
 	index := b.hoveredItemIndex(context)
-	left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-	right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
 	if index >= 0 && index < b.abstractList.ItemCount() {
 		c := image.Pt(ebiten.CursorPosition())
 
 		switch {
-		case left || right:
+		case inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft):
 			item, _ := b.abstractList.ItemByIndex(index)
 			if !item.Selectable {
 				return guigui.AbortHandlingInputByWidget(b)
@@ -411,7 +408,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 			b.pressStartPlus1 = c.Add(image.Pt(1, 1))
 			b.startPressingIndexPlus1 = index + 1
-			b.startPressingLeft = left
 			return guigui.HandleInputByWidget(b)
 
 		case ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft):
@@ -425,7 +421,6 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 		case inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft):
 			b.pressStartPlus1 = image.Point{}
 			b.startPressingIndexPlus1 = 0
-			b.startPressingLeft = false
 			return guigui.AbortHandlingInputByWidget(b)
 		}
 	}
