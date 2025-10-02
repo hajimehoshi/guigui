@@ -390,9 +390,10 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 	if index >= 0 && index < b.abstractList.ItemCount() {
 		c := image.Pt(ebiten.CursorPosition())
 
+		left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+		right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
 		switch {
-		case (inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)) &&
-			context.IsWidgetHitAtCursor(b):
+		case (left || right) && context.IsWidgetHitAtCursor(b):
 			item, _ := b.abstractList.ItemByIndex(index)
 			if !item.Selectable {
 				return guigui.AbortHandlingInputByWidget(b)
@@ -409,7 +410,12 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 			b.pressStartPlus1 = c.Add(image.Pt(1, 1))
 			b.startPressingIndexPlus1 = index + 1
-			return guigui.HandleInputByWidget(b)
+			if left {
+				return guigui.HandleInputByWidget(b)
+			}
+			// For the right click, give a chance to a parent widget to handle the right click e.g. to open a context menu.
+			// TODO: This behavior seems a little ad-hoc. Consider a better way.
+			return guigui.HandleInputResult{}
 
 		case ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft):
 			item, _ := b.abstractList.ItemByIndex(index)
