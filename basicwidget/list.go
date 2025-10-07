@@ -241,9 +241,11 @@ func (l *listItemWidget[T]) Layout(context *guigui.Context, widget guigui.Widget
 	if l.heightPlus1 > 0 {
 		s.Y = l.heightPlus1 - 1
 	}
+	offY := (b.Dy() - s.Y) / 2
+	pt := b.Min.Add(image.Pt(0, offY))
 	return image.Rectangle{
-		Min: b.Min,
-		Max: b.Min.Add(s),
+		Min: pt,
+		Max: pt.Add(s),
 	}
 }
 
@@ -284,7 +286,7 @@ func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.
 	} else if l.item.Header {
 		s.Y = UnitSize(context) * 3 / 2
 	} else {
-		s.Y = max(s.Y, int(LineHeight(context)))
+		s.Y = max(s.Y, int(LineHeight(context)+2*context.Scale()))
 	}
 	return s
 }
