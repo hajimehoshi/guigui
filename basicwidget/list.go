@@ -286,7 +286,7 @@ func (l *listItemWidget[T]) Measure(context *guigui.Context, constraints guigui.
 	} else if l.item.Header {
 		s.Y = UnitSize(context) * 3 / 2
 	} else {
-		s.Y = max(s.Y, int(LineHeight(context)+2*context.Scale()))
+		s.Y = max(s.Y, int(LineHeight(context)+2*listItemTextPadding(context)))
 	}
 	return s
 }
@@ -302,4 +302,8 @@ func (l *listItemWidget[T]) listItem() baseListItem[T] {
 		Movable:    l.item.Movable,
 		Value:      l.item.Value,
 	}
+}
+
+func listItemTextPadding(context *guigui.Context) float64 {
+	return context.Scale()
 }

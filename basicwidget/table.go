@@ -261,9 +261,12 @@ func (t *tableItemWidget[T]) Update(context *guigui.Context) error {
 	for i, content := range t.item.Contents {
 		if content != nil {
 			w := t.table.columnWidthsInPixels[i]
+			pt := image.Pt(x, b.Min.Y)
+			pt.Y += int(listItemTextPadding(context))
+			s := image.Pt(w, content.Measure(context, guigui.FixedHeightConstraints(w)).Y)
 			t.contentBounds[content] = image.Rectangle{
-				Min: image.Pt(x, b.Min.Y),
-				Max: image.Pt(x+w, b.Min.Y+content.Measure(context, guigui.FixedHeightConstraints(w)).Y),
+				Min: pt,
+				Max: pt.Add(s),
 			}
 		}
 		x += t.table.columnWidthsInPixels[i] + tableColumnGap(context)
@@ -290,6 +293,8 @@ func (t *tableItemWidget[T]) Measure(context *guigui.Context, constraints guigui
 		h = max(h, s.Y)
 	}
 	h = max(h, int(LineHeight(context)))
+	// As TableItem.Text doesn't exist unlike ListItem.Text, always add padding.
+	h += int(2 * listItemTextPadding(context))
 	return image.Pt(w, h)
 }
 
