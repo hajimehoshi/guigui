@@ -119,7 +119,8 @@ func (t *Toggle) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	// Border (upper)
 	b := bounds
-	b.Max.Y = b.Min.Y + b.Dy()/2
+	halfHeight := b.Dy() / 2
+	b.Max.Y = b.Min.Y + halfHeight
 	strokeWidth := float32(1 * context.Scale())
 	borderClr1, borderClr2 := draw.BorderColors(context.ColorMode(), draw.RoundedRectBorderTypeInset, t.value && context.IsEnabled(t))
 	draw.DrawRoundedRectBorder(context, dst.SubImage(b).(*ebiten.Image), bounds, borderClr1, borderClr2, r, strokeWidth, draw.RoundedRectBorderTypeInset)
@@ -141,7 +142,7 @@ func (t *Toggle) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	// Border (lower)
 	b = bounds
-	b.Min.Y = b.Max.Y - b.Dy()/2
+	b.Min.Y += halfHeight
 	draw.DrawRoundedRectBorder(context, dst.SubImage(b).(*ebiten.Image), bounds, borderClr1, borderClr2, r, strokeWidth, draw.RoundedRectBorderTypeInset)
 
 	t.onceRendered = true
