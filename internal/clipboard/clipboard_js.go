@@ -12,7 +12,15 @@ func ReadAll() (string, error) {
 		return nil
 	})
 	defer then.Release()
-	js.Global().Get("navigator").Get("clipboard").Call("readText").Call("then", then)
+
+	catch := js.FuncOf(func(this js.Value, args []js.Value) any {
+		js.Global().Get("console").Call("error", "clipboard read failed", args[0])
+		close(ch)
+		return nil
+	})
+	defer catch.Release()
+
+	js.Global().Get("navigator").Get("clipboard").Call("readText").Call("then", then).Call("catch", catch)
 	return <-ch, nil
 }
 
@@ -23,7 +31,15 @@ func WriteAll(text string) error {
 		return nil
 	})
 	defer then.Release()
-	js.Global().Get("navigator").Get("clipboard").Call("writeText", text).Call("then", then)
+
+	catch := js.FuncOf(func(this js.Value, args []js.Value) any {
+		js.Global().Get("console").Call("error", "clipboard write failed", args[0])
+		close(ch)
+		return nil
+	})
+	defer catch.Release()
+
+	js.Global().Get("navigator").Get("clipboard").Call("writeText", text).Call("then", then).Call("catch", catch)
 	<-ch
 	return nil
 }
