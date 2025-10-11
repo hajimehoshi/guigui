@@ -2,9 +2,11 @@
 
 **An immediate-mode-like GUI framework for Go**
 
-**This project is an alpha version, and everything may change in the future.**
+> [!WARNING]
+> This project is an alpha version, and everything may change in the future.**
 
-**Except for minor changes like typo fixes, we have not yet established a development policy for accepting changes. For new widgets, please make your proposal in [Discussion](https://github.com/hajimehoshi/guigui/discussions/13).**
+> [!NOTE]
+> Except for minor changes like typo fixes, we have not yet established a development policy for accepting changes. For new widgets, please make your proposal in [Discussion](https://github.com/hajimehoshi/guigui/discussions/13).**
 
  * Pure Go implementation without any use of HTML, CSS, or JavaScript
  * Hi-DPI support for clear visuals on modern displays
