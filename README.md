@@ -1,6 +1,6 @@
 # Guigui (ぐいぐい)
 
-A GUI framework for Go built with Ebitengine.
+An immediate-mode-like GUI framework for Go
 
 **This project is an alpha version, and everything may change in the future.**
 
