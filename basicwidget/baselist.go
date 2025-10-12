@@ -66,9 +66,6 @@ type baseList[T comparable] struct {
 	contentWidthPlus1       int
 	contentHeight           int
 
-	cachedDefaultWidth         int
-	cachedDefaultContentHeight int
-
 	itemBoundsForLayoutFromWidget map[guigui.Widget]image.Rectangle
 	itemBoundsForLayoutFromIndex  []image.Rectangle
 }
@@ -282,8 +279,6 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 
 func (b *baseList[T]) SetItems(items []baseListItem[T]) {
 	b.abstractList.SetItems(items)
-	b.cachedDefaultWidth = 0
-	b.cachedDefaultContentHeight = 0
 }
 
 func (b *baseList[T]) SelectItemByIndex(index int) {
