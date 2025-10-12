@@ -290,7 +290,8 @@ func (n *NumberInputsModel) SetNumberInputValue3(value int) {
 }
 
 type ListsModel struct {
-	listItems []basicwidget.ListItem[int]
+	listItems         []basicwidget.ListItem[int]
+	dropdownListItems []basicwidget.DropdownListItem[int]
 
 	stripeVisible bool
 	headerVisible bool
@@ -311,6 +312,18 @@ func (l *ListsModel) AppendListItems(items []basicwidget.ListItem[int]) []basicw
 		l.listItems[i].Movable = !l.unmovable
 	}
 	return append(items, l.listItems...)
+}
+
+func (l *ListsModel) AppendDropdownListItems(items []basicwidget.DropdownListItem[int]) []basicwidget.DropdownListItem[int] {
+	if l.dropdownListItems == nil {
+		for i := range 9 {
+			l.dropdownListItems = append(l.dropdownListItems, basicwidget.DropdownListItem[int]{
+				Text:  fmt.Sprintf("Item %d", i+1),
+				Value: i + 1,
+			})
+		}
+	}
+	return append(items, l.dropdownListItems...)
 }
 
 func (l *ListsModel) MoveListItems(from int, count int, to int) int {
