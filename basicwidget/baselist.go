@@ -594,23 +594,22 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	// Measure is mainly for a menu list.
-	if len(b.itemBoundsForLayoutFromIndex) == 0 {
-		return image.Point{}
+	cw := b.contentWidth(context)
+	var size image.Point
+	for i := range b.abstractList.ItemCount() {
+		item, _ := b.abstractList.ItemByIndex(i)
+		itemW := cw - 2*listItemPadding(context)
+		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
+		size.X = max(size.X, s.X)
+		size.Y += s.Y
 	}
-	var w int
-	for _, r := range b.itemBoundsForLayoutFromIndex {
-		w = max(w, r.Dx())
-	}
-	if b.checkmarkIndexPlus1 > 0 {
-		w += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
-	}
-	w += 2 * listItemPadding(context)
 
-	b0 := b.itemBoundsForLayoutFromIndex[0]
-	b1 := b.itemBoundsForLayoutFromIndex[len(b.itemBoundsForLayoutFromIndex)-1]
-	h := b1.Max.Y - b0.Min.Y
-	h += 2 * RoundedCornerRadius(context)
-	return image.Pt(w, h)
+	if b.checkmarkIndexPlus1 > 0 {
+		size.X += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
+	}
+	size.X += 2 * listItemPadding(context)
+	size.Y += 2 * RoundedCornerRadius(context)
+	return size
 }
 
 type listFrame[T comparable] struct {
