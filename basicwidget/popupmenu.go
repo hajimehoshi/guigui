@@ -52,7 +52,7 @@ func (p *PopupMenu[T]) Update(context *guigui.Context) error {
 	list := p.list.Widget()
 	list.SetStyle(ListStyleMenu)
 	list.list.SetOnItemSelected(func(index int) {
-		p.popup.Close()
+		p.popup.SetOpen(false)
 		guigui.DispatchEventHandler(p, popupMenuEventItemSelected, index)
 	})
 	p.list.SetFixedSize(p.contentBounds(context).Size())
@@ -102,12 +102,8 @@ func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 	return r
 }
 
-func (p *PopupMenu[T]) Open(context *guigui.Context) {
-	p.popup.Open(context)
-}
-
-func (p *PopupMenu[T]) Close() {
-	p.popup.Close()
+func (p *PopupMenu[T]) SetOpen(open bool) {
+	p.popup.SetOpen(open)
 }
 
 func (p *PopupMenu[T]) IsOpen() bool {

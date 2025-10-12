@@ -146,22 +146,21 @@ func (p *Popup) Layout(context *guigui.Context, widget guigui.Widget) image.Rect
 	return image.Rectangle{}
 }
 
-func (p *Popup) Open(context *guigui.Context) {
-	if p.showing {
-		return
+func (p *Popup) SetOpen(open bool) {
+	if open {
+		if p.showing {
+			return
+		}
+		if p.openingCount > 0 {
+			p.close(PopupClosedReasonReopen)
+			p.openAfterClose = true
+			return
+		}
+		p.showing = true
+		p.hiding = false
+	} else {
+		p.close(PopupClosedReasonFuncCall)
 	}
-	if p.openingCount > 0 {
-		p.close(PopupClosedReasonReopen)
-		p.openAfterClose = true
-		return
-	}
-	p.showing = true
-	p.hiding = false
-	context.SetFocused(p, true)
-}
-
-func (p *Popup) Close() {
-	p.close(PopupClosedReasonFuncCall)
 }
 
 func (p *Popup) setClosedReason(reason PopupClosedReason) {
@@ -204,6 +203,7 @@ func (p *Popup) IsWidgetOrBackgroundHitAtCursor(context *guigui.Context, target 
 
 func (p *Popup) Tick(context *guigui.Context) error {
 	if p.showing {
+		context.SetFocused(p, true)
 		if p.openingCount < popupMaxOpeningCount() {
 			p.openingCount += 3
 			p.openingCount = min(p.openingCount, popupMaxOpeningCount())
@@ -235,7 +235,7 @@ func (p *Popup) Tick(context *guigui.Context) error {
 					p.contentPosition = p.nextContentPosition
 					p.hasNextContentPosition = false
 				}
-				p.Open(context)
+				p.SetOpen(true)
 				p.openAfterClose = false
 			}
 		}

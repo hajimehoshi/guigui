@@ -47,7 +47,7 @@ func (p *Popups) Update(context *guigui.Context) error {
 	p.closeByClickingOutsideText.SetValue("Close by clicking outside")
 	p.showButton.SetText("Show")
 	p.showButton.SetOnUp(func() {
-		p.simplePopup.Open(context)
+		p.simplePopup.SetOpen(true)
 	})
 
 	p.forms[0].SetItems([]basicwidget.FormItem{
@@ -153,7 +153,7 @@ func (p *Popups) HandlePointingInput(context *guigui.Context) guigui.HandleInput
 		// Use IsWidgetOrBackgroundHitAtCursor. context.IsWidgetHitAtCursor doesn't work when a popup's transparent background exists.
 		if p.contextMenuPopup.IsWidgetOrBackgroundHitAtCursor(context, &p.contextMenuPopupClickHereText) {
 			p.contextMenuPopupPosition = image.Pt(ebiten.CursorPosition())
-			p.contextMenuPopup.Open(context)
+			p.contextMenuPopup.SetOpen(true)
 			return guigui.HandleInputByWidget(p)
 		}
 	}
@@ -184,7 +184,7 @@ func (s *simplePopupContent) Update(context *guigui.Context) error {
 
 	s.closeButton.SetText("Close")
 	s.closeButton.SetOnUp(func() {
-		s.popup.Close()
+		s.popup.SetOpen(false)
 	})
 
 	return nil
