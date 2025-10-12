@@ -66,6 +66,9 @@ type baseList[T comparable] struct {
 	contentWidthPlus1       int
 	contentHeight           int
 
+	cachedDefaultWidth         int
+	cachedDefaultContentHeight int
+
 	itemBoundsForLayoutFromWidget map[guigui.Widget]image.Rectangle
 	itemBoundsForLayoutFromIndex  []image.Rectangle
 }
@@ -143,7 +146,7 @@ func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAd
 	adder.AddChild(&b.scrollOverlay)
 }
 
-func (b *baseList[T]) updateItemBoundsForLayout(context *guigui.Context) error {
+func (b *baseList[T]) Update(context *guigui.Context) error {
 	cw := b.contentWidth(context)
 
 	// TODO: Do not call HoveredItemIndex in Build (#52).
@@ -152,6 +155,7 @@ func (b *baseList[T]) updateItemBoundsForLayout(context *guigui.Context) error {
 	offsetX, offsetY := b.scrollOverlay.Offset()
 	p.X += listItemPadding(context) + int(offsetX)
 	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
+	origY := p.Y
 	clear(b.itemBoundsForLayoutFromWidget)
 	if b.itemBoundsForLayoutFromWidget == nil {
 		b.itemBoundsForLayoutFromWidget = map[guigui.Widget]image.Rectangle{}
@@ -199,26 +203,12 @@ func (b *baseList[T]) updateItemBoundsForLayout(context *guigui.Context) error {
 		p.Y += s.Y
 	}
 
-	return nil
-}
-
-func (b *baseList[T]) Update(context *guigui.Context) error {
-	if err := b.updateItemBoundsForLayout(context); err != nil {
-		return err
-	}
-
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
 		b.listFrame.list = b
 	}
 
-	p := context.Bounds(b).Min
-	offsetX, offsetY := b.scrollOverlay.Offset()
-	p.X += listItemPadding(context) + int(offsetX)
-	p.Y += RoundedCornerRadius(context) + b.headerHeight + int(offsetY)
-	origY := p.Y
-
 	b.contentHeight = p.Y - origY + 2*RoundedCornerRadius(context)
-	cs := image.Pt(b.contentWidth(context), b.contentHeight)
+	cs := image.Pt(cw, b.contentHeight)
 	b.scrollOverlay.SetContentSize(context, cs)
 
 	if idx := b.indexToJumpPlus1 - 1; idx >= 0 {
@@ -292,6 +282,8 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 
 func (b *baseList[T]) SetItems(items []baseListItem[T]) {
 	b.abstractList.SetItems(items)
+	b.cachedDefaultWidth = 0
+	b.cachedDefaultContentHeight = 0
 }
 
 func (b *baseList[T]) SelectItemByIndex(index int) {
@@ -606,11 +598,6 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 }
 
 func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	// Update might not be called yet when Measure is called. Ensure item bounds are calculated.
-	if len(b.itemBoundsForLayoutFromIndex) == 0 && b.abstractList.ItemCount() > 0 {
-		_ = b.updateItemBoundsForLayout(context)
-	}
-
 	// Measure is mainly for a menu list.
 	if len(b.itemBoundsForLayoutFromIndex) == 0 {
 		return image.Point{}

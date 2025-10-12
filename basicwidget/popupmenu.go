@@ -71,10 +71,6 @@ func (p *PopupMenu[T]) Layout(context *guigui.Context, widget guigui.Widget) ima
 	return image.Rectangle{}
 }
 
-func (p *PopupMenu[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
-	return p.list.Widget().Measure(context, constraints)
-}
-
 func (p *PopupMenu[T]) contentBounds(context *guigui.Context) image.Rectangle {
 	pos := context.Bounds(p).Min
 	// List size can dynamically change based on the items. Use the default size.
