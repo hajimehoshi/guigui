@@ -377,14 +377,6 @@ func (c *Context) SetCustomDraw(widget Widget, customDraw CustomDrawFunc) {
 	widget.widgetState().customDraw = customDraw
 }
 
-func (c *Context) clearVisibleBoundsCacheForWidget(widget Widget) {
-	widget.widgetState().hasVisibleBoundsCache = false
-	widget.widgetState().visibleBoundsCache = image.Rectangle{}
-	for _, child := range widget.widgetState().children {
-		c.clearVisibleBoundsCacheForWidget(child)
-	}
-}
-
 func (c *Context) Model(widget Widget, key any) any {
 	for w := widget; w != nil; w = w.widgetState().parent {
 		if v := w.Model(key); v != nil {
