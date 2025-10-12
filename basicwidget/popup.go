@@ -72,7 +72,7 @@ func (p *Popup) openingRate() float64 {
 	return easeOutQuad(float64(p.openingCount) / float64(popupMaxOpeningCount()))
 }
 
-func (p *Popup) ContentBounds(context *guigui.Context) image.Rectangle {
+func (p *Popup) contentBounds(context *guigui.Context) image.Rectangle {
 	if p.content.content == nil {
 		return image.Rectangle{}
 	}
@@ -139,7 +139,7 @@ func (p *Popup) Layout(context *guigui.Context, widget guigui.Widget) image.Rect
 	case &p.shadow:
 		return context.AppBounds()
 	case &p.content:
-		return p.ContentBounds(context)
+		return p.contentBounds(context)
 	case &p.frame:
 		return context.AppBounds()
 	}
@@ -309,7 +309,7 @@ type popupFrame struct {
 }
 
 func (p *popupFrame) Draw(context *guigui.Context, dst *ebiten.Image) {
-	bounds := p.popup.ContentBounds(context)
+	bounds := p.popup.contentBounds(context)
 	clr1, clr2 := draw.BorderColors(context.ColorMode(), draw.RoundedRectBorderTypeOutset, false)
 	draw.DrawRoundedRectBorder(context, dst, bounds, clr1, clr2, RoundedCornerRadius(context), float32(1*context.Scale()), draw.RoundedRectBorderTypeOutset)
 }
@@ -389,7 +389,7 @@ type popupShadow struct {
 }
 
 func (p *popupShadow) Draw(context *guigui.Context, dst *ebiten.Image) {
-	bounds := p.popup.ContentBounds(context)
+	bounds := p.popup.contentBounds(context)
 	bounds.Min.X -= int(16 * context.Scale())
 	bounds.Max.X += int(16 * context.Scale())
 	bounds.Min.Y -= int(8 * context.Scale())
