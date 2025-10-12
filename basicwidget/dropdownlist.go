@@ -86,7 +86,7 @@ func (d *DropdownList[T]) Layout(context *guigui.Context, widget guigui.Widget) 
 		p.X = max(p.X, 0)
 		p.Y -= RoundedCornerRadius(context)
 		p.Y += int((float64(context.Bounds(d).Dy()) - LineHeight(context)) / 2)
-		p.Y -= d.popupMenu.SelectedItemIndex() * int(LineHeight(context)+2*listItemTextPadding(context))
+		p.Y -= max(0, d.popupMenu.SelectedItemIndex()) * int(LineHeight(context)+2*listItemTextPadding(context))
 		p.Y = max(p.Y, 0)
 		return image.Rectangle{
 			Min: p,
