@@ -3,7 +3,7 @@
 **An immediate-mode-like GUI framework for Go**
 
 > [!WARNING]
-> ** This project is an alpha version, and everything may change in the future. **
+> **This project is an alpha version, and everything may change in the future.**
 
 > [!WARNING]
 > Except for minor changes like typo fixes, we have not yet established a development policy for accepting changes. For new widgets, please make your proposal in [Discussion](https://github.com/hajimehoshi/guigui/discussions/13).
