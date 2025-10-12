@@ -89,6 +89,7 @@ func (l *Lists) Update(context *guigui.Context) error {
 	l.dropdownListItems = slices.Delete(l.dropdownListItems, 0, len(l.dropdownListItems))
 	l.dropdownListItems = model.lists.AppendDropdownListItems(l.dropdownListItems)
 	dropdownList.SetItems(l.dropdownListItems)
+	context.SetEnabled(&l.dropdownList, model.Lists().Enabled())
 
 	// Configurations
 	l.showStripeText.SetValue("Show stripe")
