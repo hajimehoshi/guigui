@@ -47,9 +47,10 @@ func DefaultActiveListItemTextColor(context *guigui.Context) color.Color {
 type baseList[T comparable] struct {
 	guigui.DefaultWidget
 
-	checkmark     Image
-	listFrame     listFrame[T]
-	scrollOverlay ScrollOverlay
+	checkmark      Image
+	expanderImages []Image
+	listFrame      listFrame[T]
+	scrollOverlay  ScrollOverlay
 
 	abstractList               abstractList[T, baseListItem[T]]
 	stripeVisible              bool
@@ -131,10 +132,14 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 }
 
 func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
+	b.expanderImages = adjustSliceSize(b.expanderImages, b.abstractList.ItemCount())
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
 			adder.AddChild(&b.checkmark)
+		}
+		if item.IndentLevel > 0 {
+			adder.AddChild(&b.expanderImages[i])
 		}
 		adder.AddChild(item.Content)
 	}
@@ -159,30 +164,63 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 		b.itemBoundsForLayoutFromWidget = map[guigui.Widget]image.Rectangle{}
 	}
 	b.itemBoundsForLayoutFromIndex = adjustSliceSize(b.itemBoundsForLayoutFromIndex, b.abstractList.ItemCount())
+
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		itemW := cw - 2*listItemPadding(context)
+		itemW -= item.IndentLevel * listItemIndentSize(context)
+		contentSize := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
 
 		if b.checkmarkIndexPlus1 == i+1 {
-			mode := context.ColorMode()
-			if b.checkmarkIndexPlus1 == hoveredItemIndex+1 {
-				mode = guigui.ColorModeDark
+			colorMode := context.ColorMode()
+			if i == hoveredItemIndex {
+				colorMode = guigui.ColorModeDark
 			}
-			img, err := theResourceImages.Get("check", mode)
+
+			checkImg, err := theResourceImages.Get("check", colorMode)
 			if err != nil {
 				return err
 			}
-			b.checkmark.SetImage(img)
+			b.checkmark.SetImage(checkImg)
 
 			imgSize := listItemCheckmarkSize(context)
 			imgP := p
 			imgP.X += item.IndentLevel * listItemIndentSize(context)
-			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
+			itemH := contentSize.Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
 			b.itemBoundsForLayoutFromWidget[&b.checkmark] = image.Rectangle{
 				Min: imgP,
 				Max: imgP.Add(image.Pt(imgSize, imgSize)),
+			}
+		}
+
+		if item.IndentLevel > 0 {
+			var img *ebiten.Image
+			var hasChild bool
+			if nextItem, ok := b.abstractList.ItemByIndex(i + 1); ok {
+				hasChild = nextItem.IndentLevel > item.IndentLevel
+			}
+			if hasChild {
+				var err error
+				img, err = theResourceImages.Get("keyboard_arrow_down", context.ColorMode())
+				if err != nil {
+					return err
+				}
+			}
+			b.expanderImages[i].SetImage(img)
+			expanderP := p
+			expanderP.X += (item.IndentLevel - 1) * listItemIndentSize(context)
+			// Adjust the position a bit for better appearance.
+			expanderP.X -= UnitSize(context) / 4
+			expanderP.Y += UnitSize(context) / 16
+			s := image.Pt(
+				listItemIndentSize(context),
+				contentSize.Y,
+			)
+			b.itemBoundsForLayoutFromWidget[&b.expanderImages[i]] = image.Rectangle{
+				Min: expanderP,
+				Max: expanderP.Add(s),
 			}
 		}
 
@@ -192,16 +230,14 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 		}
 		itemP.X += item.IndentLevel * listItemIndentSize(context)
 		itemP.Y = b.adjustItemY(context, itemP.Y)
-		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
-		s.X -= item.IndentLevel * listItemIndentSize(context)
 		r := image.Rectangle{
 			Min: itemP,
-			Max: itemP.Add(s),
+			Max: itemP.Add(contentSize),
 		}
 		b.itemBoundsForLayoutFromWidget[item.Content] = r
 		b.itemBoundsForLayoutFromIndex[i] = r
 
-		p.Y += s.Y
+		p.Y += contentSize.Y
 	}
 
 	if b.style != ListStyleSidebar && b.style != ListStyleMenu {
@@ -701,5 +737,5 @@ func listItemTextAndImagePadding(context *guigui.Context) int {
 }
 
 func listItemIndentSize(context *guigui.Context) int {
-	return UnitSize(context) * 3 / 4
+	return int(LineHeight(context))
 }
