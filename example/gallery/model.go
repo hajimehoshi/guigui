@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"slices"
 
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 type Model struct {

@@ -7,7 +7,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 const (

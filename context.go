@@ -15,8 +15,8 @@ import (
 
 	"golang.org/x/text/language"
 
-	"github.com/hajimehoshi/guigui/internal/colormode"
-	"github.com/hajimehoshi/guigui/internal/locale"
+	"github.com/guigui-gui/guigui/internal/colormode"
+	"github.com/guigui-gui/guigui/internal/locale"
 )
 
 type ColorMode int

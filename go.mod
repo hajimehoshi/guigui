@@ -1,4 +1,4 @@
-module github.com/hajimehoshi/guigui
+module github.com/guigui-gui/guigui
 
 go 1.24.0
 

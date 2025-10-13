@@ -8,7 +8,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/hajimehoshi/guigui/basicwidget/internal/textutil"
+	"github.com/guigui-gui/guigui/basicwidget/internal/textutil"
 )
 
 func TestNoWrapLines(t *testing.T) {

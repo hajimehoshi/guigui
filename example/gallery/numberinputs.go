@@ -8,8 +8,8 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 type NumberInputs struct {

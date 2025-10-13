@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"image"
 
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget/internal/draw"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
 )
 
 type SegmentedControlDirection int

@@ -11,7 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 type RoundedRectBorderType int

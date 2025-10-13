@@ -10,8 +10,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget/internal/draw"
 )
 
 const (

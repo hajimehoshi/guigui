@@ -7,7 +7,7 @@ import (
 	"image"
 	"testing"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 type dummyWidget struct {

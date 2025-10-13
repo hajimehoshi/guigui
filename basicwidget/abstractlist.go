@@ -6,7 +6,7 @@ package basicwidget
 import (
 	"slices"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 const (

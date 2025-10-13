@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 func TestMoveItemsInSlice(t *testing.T) {

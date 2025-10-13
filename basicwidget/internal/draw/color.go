@@ -9,7 +9,7 @@ import (
 
 	"github.com/hajimehoshi/oklab"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 func EqualColor(c0, c1 color.Color) bool {

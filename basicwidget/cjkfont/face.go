@@ -12,7 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"golang.org/x/text/language"
 
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 //go:generate go run gen.go

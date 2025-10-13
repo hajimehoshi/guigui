@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 type Tables struct {

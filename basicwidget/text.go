@@ -20,10 +20,10 @@ import (
 	"github.com/rivo/uniseg"
 	"golang.org/x/text/language"
 
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
-	"github.com/hajimehoshi/guigui/basicwidget/internal/textutil"
-	"github.com/hajimehoshi/guigui/internal/clipboard"
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget/internal/draw"
+	"github.com/guigui-gui/guigui/basicwidget/internal/textutil"
+	"github.com/guigui-gui/guigui/internal/clipboard"
 )
 
 type HorizontalAlign int

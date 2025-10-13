@@ -4,10 +4,10 @@
 package basicwidget
 
 import (
+	"github.com/guigui-gui/guigui/basicwidget/internal/draw"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/guigui/basicwidget/internal/draw"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 type Background struct {

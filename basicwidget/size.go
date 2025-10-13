@@ -3,7 +3,7 @@
 
 package basicwidget
 
-import "github.com/hajimehoshi/guigui"
+import "github.com/guigui-gui/guigui"
 
 const baseUnitSize = 24
 

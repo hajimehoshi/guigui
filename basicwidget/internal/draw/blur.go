@@ -9,7 +9,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 const blurShaderSourceTmpl = `//kage:unit pixels

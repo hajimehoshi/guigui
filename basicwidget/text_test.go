@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hajimehoshi/guigui/basicwidget"
+	"github.com/guigui-gui/guigui/basicwidget"
 )
 
 func TestReplaceNewLineWithSpace(t *testing.T) {

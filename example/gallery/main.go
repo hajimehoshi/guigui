@@ -12,9 +12,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/text/language"
 
-	"github.com/hajimehoshi/guigui"
-	"github.com/hajimehoshi/guigui/basicwidget"
-	"github.com/hajimehoshi/guigui/basicwidget/cjkfont"
+	"github.com/guigui-gui/guigui"
+	"github.com/guigui-gui/guigui/basicwidget"
+	"github.com/guigui-gui/guigui/basicwidget/cjkfont"
 )
 
 type modelKey int

@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/hajimehoshi/guigui"
+	"github.com/guigui-gui/guigui"
 )
 
 const (
