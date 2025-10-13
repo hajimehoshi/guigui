@@ -37,13 +37,22 @@ func (d *DropdownList[T]) SetOnItemSelected(f func(index int)) {
 	guigui.RegisterEventHandler(d, dropdownListEventItemSelected, f)
 }
 
-func (d *DropdownList[T]) updateButtonContent() {
+func (d *DropdownList[T]) updateButtonContent(context *guigui.Context) {
 	if item, ok := d.popupMenu.SelectedItem(); ok {
-		// item.Content is not available as this is used in the menu.
-		// TODO: Fix this issue (#182).
-		d.buttonContent.text.SetValue(item.Text)
+		if item.Content != nil {
+			if d.popupMenu.IsOpen() {
+				d.buttonContent.SetContentWidth(item.Content.Measure(context, guigui.Constraints{}).X)
+			} else {
+				d.buttonContent.SetContent(item.Content)
+			}
+			d.buttonContent.SetText("")
+		} else {
+			d.buttonContent.SetContent(nil)
+			d.buttonContent.SetText(item.Text)
+		}
 	} else {
-		d.buttonContent.text.SetValue("")
+		d.buttonContent.SetContent(nil)
+		d.buttonContent.SetText("")
 	}
 	d.button.SetContent(&d.buttonContent)
 }
@@ -54,7 +63,7 @@ func (d *DropdownList[T]) AddChildren(context *guigui.Context, adder *guigui.Chi
 }
 
 func (d *DropdownList[T]) Update(context *guigui.Context) error {
-	d.updateButtonContent()
+	d.updateButtonContent(context)
 
 	d.button.SetOnDown(func() {
 		d.popupMenu.SetOpen(true)
@@ -138,7 +147,7 @@ func (d *DropdownList[T]) SelectItemByValue(value T) {
 
 func (d *DropdownList[T]) Measure(context *guigui.Context, constraints guigui.Constraints) image.Point {
 	// Update the button content to reflect the current selected item.
-	d.updateButtonContent()
+	d.updateButtonContent(context)
 	return d.button.Measure(context, constraints)
 }
 
@@ -153,9 +162,24 @@ func (d *DropdownList[T]) IsPopupOpen() bool {
 type dropdownListButtonContent struct {
 	guigui.DefaultWidget
 
-	content guigui.Widget
-	text    Text
-	image   Image
+	content           guigui.Widget
+	contentWidthPlus1 int
+	text              Text
+	image             Image
+}
+
+func (d *dropdownListButtonContent) SetContent(content guigui.Widget) {
+	d.content = content
+	d.contentWidthPlus1 = 0
+}
+
+func (d *dropdownListButtonContent) SetContentWidth(width int) {
+	d.content = nil
+	d.contentWidthPlus1 = width + 1
+}
+
+func (d *dropdownListButtonContent) SetText(text string) {
+	d.text.SetValue(text)
 }
 
 func (d *dropdownListButtonContent) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
@@ -221,6 +245,9 @@ func (d *dropdownListButtonContent) Measure(context *guigui.Context, constraints
 	var contentSize image.Point
 	if d.content != nil {
 		contentSize = d.content.Measure(context, guigui.Constraints{})
+	}
+	if d.contentWidthPlus1 > 0 {
+		contentSize.X = d.contentWidthPlus1 - 1
 	}
 	textSize := d.text.Measure(context, constraints)
 	iconSize := defaultIconSize(context)
