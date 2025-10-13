@@ -291,6 +291,7 @@ func (n *NumberInputsModel) SetNumberInputValue3(value int) {
 
 type ListsModel struct {
 	listItems         []basicwidget.ListItem[int]
+	treeItems         []basicwidget.ListItem[int]
 	dropdownListItems []basicwidget.DropdownListItem[int]
 
 	stripeVisible bool
@@ -312,6 +313,27 @@ func (l *ListsModel) AppendListItems(items []basicwidget.ListItem[int]) []basicw
 		l.listItems[i].Movable = !l.unmovable
 	}
 	return append(items, l.listItems...)
+}
+
+func (l *ListsModel) AppendTreeItems(items []basicwidget.ListItem[int]) []basicwidget.ListItem[int] {
+	if l.treeItems == nil {
+		l.treeItems = []basicwidget.ListItem[int]{
+			{Text: "Item 1", Value: 1, IndentLevel: 1},
+			{Text: "Item 2", Value: 2, IndentLevel: 1},
+			{Text: "Item 3", Value: 3, IndentLevel: 2},
+			{Text: "Item 4", Value: 4, IndentLevel: 2},
+			{Text: "Item 5", Value: 5, IndentLevel: 3},
+			{Text: "Item 6", Value: 6, IndentLevel: 3},
+			{Text: "Item 7", Value: 7, IndentLevel: 1},
+			{Text: "Item 8", Value: 8, IndentLevel: 2},
+			{Text: "Item 9", Value: 9, IndentLevel: 2},
+			{Text: "Item 10", Value: 10, IndentLevel: 3},
+			{Text: "Item 11", Value: 11, IndentLevel: 3},
+			{Text: "Item 12", Value: 12, IndentLevel: 1},
+		}
+	}
+	// TODO: Enable to move items.
+	return append(items, l.treeItems...)
 }
 
 func (l *ListsModel) AppendDropdownListItems(items []basicwidget.DropdownListItem[int]) []basicwidget.DropdownListItem[int] {

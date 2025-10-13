@@ -17,6 +17,8 @@ type Lists struct {
 	listForm         basicwidget.Form
 	listText         basicwidget.Text
 	list             guigui.WidgetWithSize[*basicwidget.List[int]]
+	treeText         basicwidget.Text
+	tree             guigui.WidgetWithSize[*basicwidget.List[int]]
 	dropdownListText basicwidget.Text
 	dropdownList     guigui.WidgetWithSize[*basicwidget.DropdownList[int]]
 
@@ -33,6 +35,7 @@ type Lists struct {
 	enabledToggle    basicwidget.Toggle
 
 	listItems         []basicwidget.ListItem[int]
+	treeItems         []basicwidget.ListItem[int]
 	dropdownListItems []basicwidget.DropdownListItem[int]
 }
 
@@ -46,7 +49,7 @@ func (l *Lists) Update(context *guigui.Context) error {
 
 	u := basicwidget.UnitSize(context)
 
-	// Lists
+	// List
 	l.listText.SetValue("Text list")
 
 	list := l.list.Widget()
@@ -72,16 +75,26 @@ func (l *Lists) Update(context *guigui.Context) error {
 	context.SetEnabled(&l.list, model.Lists().Enabled())
 	l.list.SetFixedHeight(6 * u)
 
-	l.listForm.SetItems([]basicwidget.FormItem{
-		{
-			PrimaryWidget:   &l.listText,
-			SecondaryWidget: &l.list,
-		},
-		{
-			PrimaryWidget:   &l.dropdownListText,
-			SecondaryWidget: &l.dropdownList,
-		},
-	})
+	// Tree
+	l.treeText.SetValue("Tree view")
+	tree := l.tree.Widget()
+	tree.SetStripeVisible(model.Lists().IsStripeVisible())
+	if model.Lists().IsHeaderVisible() {
+		tree.SetHeaderHeight(u)
+	} else {
+		tree.SetHeaderHeight(0)
+	}
+	if model.Lists().IsFooterVisible() {
+		tree.SetFooterHeight(u)
+	} else {
+		tree.SetFooterHeight(0)
+	}
+
+	l.treeItems = slices.Delete(l.treeItems, 0, len(l.treeItems))
+	l.treeItems = model.lists.AppendTreeItems(l.treeItems)
+	tree.SetItems(l.treeItems)
+	context.SetEnabled(&l.tree, model.Lists().Enabled())
+	l.tree.SetFixedHeight(6 * u)
 
 	// Dropdown list
 	l.dropdownListText.SetValue("Dropdown list")
@@ -90,6 +103,21 @@ func (l *Lists) Update(context *guigui.Context) error {
 	l.dropdownListItems = model.lists.AppendDropdownListItems(l.dropdownListItems)
 	dropdownList.SetItems(l.dropdownListItems)
 	context.SetEnabled(&l.dropdownList, model.Lists().Enabled())
+
+	l.listForm.SetItems([]basicwidget.FormItem{
+		{
+			PrimaryWidget:   &l.listText,
+			SecondaryWidget: &l.list,
+		},
+		{
+			PrimaryWidget:   &l.treeText,
+			SecondaryWidget: &l.tree,
+		},
+		{
+			PrimaryWidget:   &l.dropdownListText,
+			SecondaryWidget: &l.dropdownList,
+		},
+	})
 
 	// Configurations
 	l.showStripeText.SetValue("Show stripe")

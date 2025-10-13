@@ -35,6 +35,7 @@ type ListItem[T comparable] struct {
 	Disabled     bool
 	Movable      bool
 	Value        T
+	IndentLevel  int
 }
 
 func (l *ListItem[T]) selectable() bool {
@@ -233,20 +234,24 @@ func (l *listItemWidget[T]) Update(context *guigui.Context) error {
 }
 
 func (l *listItemWidget[T]) Layout(context *guigui.Context, widget guigui.Widget) image.Rectangle {
-	b := context.Bounds(l)
-	s := widget.Measure(context, guigui.FixedWidthConstraints(b.Dx()))
-	if l.style != ListStyleMenu {
-		s.X = b.Dx()
+	switch widget {
+	case &l.text, l.item.Content:
+		b := context.Bounds(l)
+		s := widget.Measure(context, guigui.FixedWidthConstraints(b.Dx()))
+		if l.style != ListStyleMenu {
+			s.X = b.Dx()
+		}
+		if l.heightPlus1 > 0 {
+			s.Y = l.heightPlus1 - 1
+		}
+		offY := (b.Dy() - s.Y) / 2
+		pt := b.Min.Add(image.Pt(0, offY))
+		return image.Rectangle{
+			Min: pt,
+			Max: pt.Add(s),
+		}
 	}
-	if l.heightPlus1 > 0 {
-		s.Y = l.heightPlus1 - 1
-	}
-	offY := (b.Dy() - s.Y) / 2
-	pt := b.Min.Add(image.Pt(0, offY))
-	return image.Rectangle{
-		Min: pt,
-		Max: pt.Add(s),
-	}
+	return image.Rectangle{}
 }
 
 func (l *listItemWidget[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
@@ -297,10 +302,11 @@ func (l *listItemWidget[T]) selectable() bool {
 
 func (l *listItemWidget[T]) listItem() baseListItem[T] {
 	return baseListItem[T]{
-		Content:    l,
-		Selectable: l.selectable(),
-		Movable:    l.item.Movable,
-		Value:      l.item.Value,
+		Content:     l,
+		Selectable:  l.selectable(),
+		Movable:     l.item.Movable,
+		Value:       l.item.Value,
+		IndentLevel: l.item.IndentLevel,
 	}
 }
 

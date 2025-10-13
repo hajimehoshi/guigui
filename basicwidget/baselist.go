@@ -29,10 +29,11 @@ const (
 )
 
 type baseListItem[T comparable] struct {
-	Content    guigui.Widget
-	Selectable bool
-	Movable    bool
-	Value      T
+	Content     guigui.Widget
+	Selectable  bool
+	Movable     bool
+	Value       T
+	IndentLevel int
 }
 
 func (b baseListItem[T]) value() T {
@@ -175,6 +176,7 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 
 			imgSize := listItemCheckmarkSize(context)
 			imgP := p
+			imgP.X += item.IndentLevel * listItemIndentSize(context)
 			itemH := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW)).Y
 			imgP.Y += (itemH - imgSize) * 3 / 4
 			imgP.Y = b.adjustItemY(context, imgP.Y)
@@ -188,8 +190,10 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 		if b.checkmarkIndexPlus1 > 0 {
 			itemP.X += listItemCheckmarkSize(context) + listItemTextAndImagePadding(context)
 		}
+		itemP.X += item.IndentLevel * listItemIndentSize(context)
 		itemP.Y = b.adjustItemY(context, itemP.Y)
 		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
+		s.X -= item.IndentLevel * listItemIndentSize(context)
 		r := image.Rectangle{
 			Min: itemP,
 			Max: itemP.Add(s),
@@ -512,6 +516,11 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 				continue
 			}
 			bounds := b.itemBounds(context, i)
+			// Reset the X position to ignore indentation.
+			x := context.Bounds(b).Min.X
+			offsetX, _ := b.scrollOverlay.Offset()
+			x += listItemPadding(context) + int(offsetX)
+			bounds.Min.X = x
 			if bounds.Min.Y > vb.Max.Y {
 				break
 			}
@@ -598,9 +607,9 @@ func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constr
 	var size image.Point
 	for i := range b.abstractList.ItemCount() {
 		item, _ := b.abstractList.ItemByIndex(i)
-		itemW := cw - 2*listItemPadding(context)
+		itemW := cw - 2*listItemPadding(context) - item.IndentLevel*listItemIndentSize(context)
 		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))
-		size.X = max(size.X, s.X)
+		size.X = max(size.X, s.X+item.IndentLevel*listItemIndentSize(context))
 		size.Y += s.Y
 	}
 
@@ -689,4 +698,8 @@ func listItemCheckmarkSize(context *guigui.Context) int {
 
 func listItemTextAndImagePadding(context *guigui.Context) int {
 	return UnitSize(context) / 8
+}
+
+func listItemIndentSize(context *guigui.Context) int {
+	return UnitSize(context) * 3 / 4
 }
