@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"iter"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -17,7 +18,8 @@ import (
 )
 
 const (
-	baseListEventItemsMoved = "itemsMoved"
+	baseListEventItemsMoved          = "itemsMoved"
+	baseListEventItemExpanderClicked = "itemExpanderClicked"
 )
 
 type ListStyle int
@@ -34,6 +36,7 @@ type baseListItem[T comparable] struct {
 	Movable     bool
 	Value       T
 	IndentLevel int
+	Collapsed   bool
 }
 
 func (b baseListItem[T]) value() T {
@@ -84,6 +87,10 @@ func (b *baseList[T]) SetOnItemsMoved(f func(from, count, to int)) {
 	guigui.RegisterEventHandler(b, baseListEventItemsMoved, f)
 }
 
+func (b *baseList[T]) SetOnItemExpanderClicked(f func(index int)) {
+	guigui.RegisterEventHandler(b, baseListEventItemExpanderClicked, f)
+}
+
 func (b *baseList[T]) SetCheckmarkIndex(index int) {
 	if index < 0 {
 		index = -1
@@ -131,9 +138,29 @@ func (b *baseList[T]) contentSize(context *guigui.Context) image.Point {
 	return image.Pt(w, b.contentHeight)
 }
 
+func (b *baseList[T]) visibleItems() iter.Seq2[int, baseListItem[T]] {
+	return func(yield func(int, baseListItem[T]) bool) {
+		var lastCollapsedIndentLevel int
+		for i := range b.abstractList.ItemCount() {
+			item, _ := b.abstractList.ItemByIndex(i)
+			if lastCollapsedIndentLevel > 0 && item.IndentLevel > lastCollapsedIndentLevel {
+				continue
+			}
+			if item.Collapsed {
+				lastCollapsedIndentLevel = item.IndentLevel
+			} else {
+				lastCollapsedIndentLevel = 0
+			}
+			if !yield(i, item) {
+				return
+			}
+		}
+	}
+}
+
 func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	b.expanderImages = adjustSliceSize(b.expanderImages, b.abstractList.ItemCount())
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		if b.checkmarkIndexPlus1 == i+1 {
 			adder.AddChild(&b.checkmark)
@@ -165,7 +192,7 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 	}
 	b.itemBoundsForLayoutFromIndex = adjustSliceSize(b.itemBoundsForLayoutFromIndex, b.abstractList.ItemCount())
 
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		itemW := cw - 2*listItemPadding(context)
 		itemW -= item.IndentLevel * listItemIndentSize(context)
@@ -203,7 +230,13 @@ func (b *baseList[T]) Update(context *guigui.Context) error {
 			}
 			if hasChild {
 				var err error
-				img, err = theResourceImages.Get("keyboard_arrow_down", context.ColorMode())
+				var imgName string
+				if item.Collapsed {
+					imgName = "keyboard_arrow_right"
+				} else {
+					imgName = "keyboard_arrow_down"
+				}
+				img, err = theResourceImages.Get(imgName, context.ColorMode())
 				if err != nil {
 					return err
 				}
@@ -274,7 +307,7 @@ func (b *baseList[T]) Layout(context *guigui.Context, widget guigui.Widget) imag
 }
 
 func (b *baseList[T]) hasMovableItems() bool {
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		item, ok := b.abstractList.ItemByIndex(i)
 		if !ok {
 			continue
@@ -305,7 +338,7 @@ func (b *baseList[T]) hoveredItemIndex(context *guigui.Context) int {
 	y -= int(offsetY)
 	index := -1
 	var cy int
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		h := context.Bounds(item.Content).Dy()
 		if cy <= y && y < cy+h {
@@ -374,7 +407,7 @@ func (b *baseList[T]) ScrollOffset() (float64, float64) {
 
 func (b *baseList[T]) calcDropDstIndex(context *guigui.Context) int {
 	_, y := ebiten.CursorPosition()
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		if b := b.itemBounds(context, i); y < (b.Min.Y+b.Max.Y)/2 {
 			return i
 		}
@@ -433,6 +466,12 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			if !item.Selectable {
 				return guigui.AbortHandlingInputByWidget(b)
 			}
+			if c.X < b.itemBoundsForLayoutFromIndex[index].Min.X {
+				if left {
+					guigui.DispatchEventHandler(b, baseListEventItemExpanderClicked, index)
+				}
+				return guigui.AbortHandlingInputByWidget(b)
+			}
 
 			wasFocused := context.IsFocusedOrHasFocusedChild(b)
 			if item, ok := b.abstractList.ItemByIndex(index); ok {
@@ -479,7 +518,7 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 
 func (b *baseList[T]) itemYFromIndex(context *guigui.Context, index int) int {
 	y := RoundedCornerRadius(context) + b.headerHeight
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		if i == index {
 			break
 		}
@@ -547,10 +586,12 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	if b.stripeVisible && b.abstractList.ItemCount() > 0 {
 		// Draw item stripes.
 		// TODO: Get indices of items that are visible.
-		for i := range b.abstractList.ItemCount() {
-			if i%2 == 0 {
+		var count int
+		for i := range b.visibleItems() {
+			if count%2 == 0 {
 				continue
 			}
+			count++
 			bounds := b.itemBounds(context, i)
 			// Reset the X position to ignore indentation.
 			x := context.Bounds(b).Min.X
@@ -641,7 +682,7 @@ func (b *baseList[T]) Measure(context *guigui.Context, constraints guigui.Constr
 	// Measure is mainly for a menu list.
 	cw := b.contentWidth(context)
 	var size image.Point
-	for i := range b.abstractList.ItemCount() {
+	for i := range b.visibleItems() {
 		item, _ := b.abstractList.ItemByIndex(i)
 		itemW := cw - 2*listItemPadding(context) - item.IndentLevel*listItemIndentSize(context)
 		s := item.Content.Measure(context, guigui.FixedWidthConstraints(itemW))

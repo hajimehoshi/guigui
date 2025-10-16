@@ -36,6 +36,7 @@ type ListItem[T comparable] struct {
 	Movable      bool
 	Value        T
 	IndentLevel  int
+	Collapsed    bool
 }
 
 func (l *ListItem[T]) selectable() bool {
@@ -60,6 +61,10 @@ func (l *List[T]) SetOnItemSelected(f func(index int)) {
 
 func (l *List[T]) SetOnItemsMoved(f func(from, count, to int)) {
 	l.list.SetOnItemsMoved(f)
+}
+
+func (l *List[T]) SetOnItemExpanderClicked(f func(index int)) {
+	l.list.SetOnItemExpanderClicked(f)
 }
 
 func (l *List[T]) SetCheckmarkIndex(index int) {
@@ -307,6 +312,7 @@ func (l *listItemWidget[T]) listItem() baseListItem[T] {
 		Movable:     l.item.Movable,
 		Value:       l.item.Value,
 		IndentLevel: l.item.IndentLevel,
+		Collapsed:   l.item.Collapsed,
 	}
 }
 
