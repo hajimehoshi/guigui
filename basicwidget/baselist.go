@@ -588,10 +588,10 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 		// TODO: Get indices of items that are visible.
 		var count int
 		for i := range b.visibleItems() {
-			if count%2 == 0 {
+			count++
+			if count%2 == 1 {
 				continue
 			}
-			count++
 			bounds := b.itemBounds(context, i)
 			// Reset the X position to ignore indentation.
 			x := context.Bounds(b).Min.X
