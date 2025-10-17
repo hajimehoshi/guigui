@@ -158,6 +158,34 @@ func (b *baseList[T]) visibleItems() iter.Seq2[int, baseListItem[T]] {
 	}
 }
 
+func (b *baseList[T]) isItemVisible(index int) bool {
+	item, ok := b.abstractList.ItemByIndex(index)
+	if !ok {
+		return false
+	}
+	indent := item.IndentLevel
+	for {
+		if indent == 0 {
+			break
+		}
+		index--
+		if index < 0 {
+			break
+		}
+		item, ok := b.abstractList.ItemByIndex(index)
+		if !ok {
+			continue
+		}
+		if item.IndentLevel < indent {
+			if item.Collapsed {
+				return false
+			}
+			indent = item.IndentLevel
+		}
+	}
+	return true
+}
+
 func (b *baseList[T]) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
 	b.expanderImages = adjustSliceSize(b.expanderImages, b.abstractList.ItemCount())
 	for i := range b.visibleItems() {
@@ -612,7 +640,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 	}
 
 	// Draw the selected item background.
-	if clr := b.selectedItemColor(context); clr != nil && b.SelectedItemIndex() >= 0 && b.SelectedItemIndex() < b.abstractList.ItemCount() {
+	if clr := b.selectedItemColor(context); clr != nil && b.SelectedItemIndex() >= 0 && b.SelectedItemIndex() < b.abstractList.ItemCount() && b.isItemVisible(b.SelectedItemIndex()) {
 		bounds := b.itemBounds(context, b.SelectedItemIndex())
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
@@ -626,7 +654,7 @@ func (b *baseList[T]) Draw(context *guigui.Context, dst *ebiten.Image) {
 
 	hoveredItemIndex := b.hoveredItemIndex(context)
 	hoveredItem, ok := b.abstractList.ItemByIndex(hoveredItemIndex)
-	if ok && b.isHoveringVisible() && hoveredItemIndex >= 0 && hoveredItemIndex < b.abstractList.ItemCount() && hoveredItem.Selectable {
+	if ok && b.isHoveringVisible() && hoveredItemIndex >= 0 && hoveredItemIndex < b.abstractList.ItemCount() && hoveredItem.Selectable && b.isItemVisible(hoveredItemIndex) {
 		bounds := b.itemBounds(context, hoveredItemIndex)
 		bounds.Min.X -= RoundedCornerRadius(context)
 		bounds.Max.X += RoundedCornerRadius(context)
