@@ -40,7 +40,7 @@ type Panel struct {
 	guigui.DefaultWidget
 
 	content            guigui.Widget
-	scollOverlay       ScrollOverlay
+	scollOverlay       scrollOverlay
 	border             panelBorder
 	style              PanelStyle
 	contentConstraints PanelContentConstraints
@@ -162,7 +162,7 @@ func (p *Panel) Draw(context *guigui.Context, dst *ebiten.Image) {
 type panelBorder struct {
 	guigui.DefaultWidget
 
-	scrollOverlay *ScrollOverlay
+	scrollOverlay *scrollOverlay
 	borders       PanelBorder
 	autoBorder    bool
 }

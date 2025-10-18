@@ -32,7 +32,7 @@ type TextInput struct {
 	iconBackground textInputIconBackground
 	icon           Image
 	frame          textInputFrame
-	scrollOverlay  ScrollOverlay
+	scrollOverlay  scrollOverlay
 	focus          textInputFocus
 
 	style        TextInputStyle

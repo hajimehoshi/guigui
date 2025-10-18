@@ -46,7 +46,7 @@ func scrollBarOpacity(count int) float64 {
 	}
 }
 
-type ScrollOverlay struct {
+type scrollOverlay struct {
 	guigui.DefaultWidget
 
 	contentSize        image.Point
@@ -70,16 +70,16 @@ type ScrollOverlay struct {
 	barCount int
 }
 
-func (s *ScrollOverlay) SetOnScroll(f func(offsetX, offsetY float64)) {
+func (s *scrollOverlay) SetOnScroll(f func(offsetX, offsetY float64)) {
 	guigui.RegisterEventHandler(s, scrollOverlayEventScroll, f)
 }
 
-func (s *ScrollOverlay) Reset() {
+func (s *scrollOverlay) Reset() {
 	s.offsetX = 0
 	s.offsetY = 0
 }
 
-func (s *ScrollOverlay) SetContentSize(context *guigui.Context, contentSize image.Point) {
+func (s *scrollOverlay) SetContentSize(context *guigui.Context, contentSize image.Point) {
 	if s.contentSize == contentSize {
 		return
 	}
@@ -90,11 +90,11 @@ func (s *ScrollOverlay) SetContentSize(context *guigui.Context, contentSize imag
 	s.contentSizeChanged = true
 }
 
-func (s *ScrollOverlay) SetOffsetByDelta(context *guigui.Context, contentSize image.Point, dx, dy float64) {
+func (s *scrollOverlay) SetOffsetByDelta(context *guigui.Context, contentSize image.Point, dx, dy float64) {
 	s.SetOffset(context, contentSize, s.offsetX+dx, s.offsetY+dy)
 }
 
-func (s *ScrollOverlay) SetOffset(context *guigui.Context, contentSize image.Point, x, y float64) {
+func (s *scrollOverlay) SetOffset(context *guigui.Context, contentSize image.Point, x, y float64) {
 	s.SetContentSize(context, contentSize)
 
 	x, y = s.doAdjustOffset(context, x, y)
@@ -108,7 +108,7 @@ func (s *ScrollOverlay) SetOffset(context *guigui.Context, contentSize image.Poi
 	}
 }
 
-func (s *ScrollOverlay) setDragging(draggingX, draggingY bool) {
+func (s *scrollOverlay) setDragging(draggingX, draggingY bool) {
 	if s.draggingX == draggingX && s.draggingY == draggingY {
 		return
 	}
@@ -127,7 +127,7 @@ func adjustedWheel() (float64, float64) {
 	return x, y
 }
 
-func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
+func (s *scrollOverlay) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
 	hovered := context.IsWidgetHitAtCursor(s)
 	if hovered {
 		x, y := ebiten.CursorPosition()
@@ -220,7 +220,7 @@ func (s *ScrollOverlay) HandlePointingInput(context *guigui.Context) guigui.Hand
 	return guigui.HandleInputResult{}
 }
 
-func (s *ScrollOverlay) CursorShape(context *guigui.Context) (ebiten.CursorShapeType, bool) {
+func (s *scrollOverlay) CursorShape(context *guigui.Context) (ebiten.CursorShapeType, bool) {
 	x, y := ebiten.CursorPosition()
 	hb, vb := s.barBounds(context)
 	if image.Pt(x, y).In(hb) || image.Pt(x, y).In(vb) {
@@ -229,22 +229,22 @@ func (s *ScrollOverlay) CursorShape(context *guigui.Context) (ebiten.CursorShape
 	return 0, false
 }
 
-func (s *ScrollOverlay) Offset() (float64, float64) {
+func (s *scrollOverlay) Offset() (float64, float64) {
 	return s.offsetX, s.offsetY
 }
 
-func (s *ScrollOverlay) adjustOffset(context *guigui.Context) {
+func (s *scrollOverlay) adjustOffset(context *guigui.Context) {
 	s.offsetX, s.offsetY = s.doAdjustOffset(context, s.offsetX, s.offsetY)
 }
 
-func (s *ScrollOverlay) doAdjustOffset(context *guigui.Context, x, y float64) (float64, float64) {
+func (s *scrollOverlay) doAdjustOffset(context *guigui.Context, x, y float64) (float64, float64) {
 	r := s.scrollRange(context)
 	x = min(max(x, float64(r.Min.X)), float64(r.Max.X))
 	y = min(max(y, float64(r.Min.Y)), float64(r.Max.Y))
 	return x, y
 }
 
-func (s *ScrollOverlay) scrollRange(context *guigui.Context) image.Rectangle {
+func (s *scrollOverlay) scrollRange(context *guigui.Context) image.Rectangle {
 	bounds := context.Bounds(s)
 	return image.Rectangle{
 		Min: image.Pt(min(bounds.Dx()-s.contentSize.X, 0), min(bounds.Dy()-s.contentSize.Y, 0)),
@@ -252,12 +252,12 @@ func (s *ScrollOverlay) scrollRange(context *guigui.Context) image.Rectangle {
 	}
 }
 
-func (s *ScrollOverlay) hasBars(context *guigui.Context) bool {
+func (s *scrollOverlay) hasBars(context *guigui.Context) bool {
 	hb, vb := s.barBounds(context)
 	return !hb.Empty() || !vb.Empty()
 }
 
-func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
+func (s *scrollOverlay) isBarVisible(context *guigui.Context) bool {
 	if !s.hasBars(context) {
 		return false
 	}
@@ -282,7 +282,7 @@ func (s *ScrollOverlay) isBarVisible(context *guigui.Context) bool {
 	return false
 }
 
-func (s *ScrollOverlay) Update(context *guigui.Context) error {
+func (s *scrollOverlay) Update(context *guigui.Context) error {
 	cs := context.Bounds(s).Size()
 	if s.lastSize != cs {
 		s.adjustOffset(context)
@@ -299,7 +299,7 @@ func (s *ScrollOverlay) Update(context *guigui.Context) error {
 	return nil
 }
 
-func (s *ScrollOverlay) showBars(context *guigui.Context) {
+func (s *scrollOverlay) showBars(context *guigui.Context) {
 	if !s.hasBars(context) {
 		return
 	}
@@ -318,7 +318,7 @@ func (s *ScrollOverlay) showBars(context *guigui.Context) {
 	}
 }
 
-func (s *ScrollOverlay) Tick(context *guigui.Context) error {
+func (s *scrollOverlay) Tick(context *guigui.Context) error {
 	shouldShowBar := s.isBarVisible(context)
 
 	if s.lastOffsetX != s.offsetX || s.lastOffsetY != s.offsetY {
@@ -356,7 +356,7 @@ func (s *ScrollOverlay) Tick(context *guigui.Context) error {
 	return nil
 }
 
-func (s *ScrollOverlay) Draw(context *guigui.Context, dst *ebiten.Image) {
+func (s *scrollOverlay) Draw(context *guigui.Context, dst *ebiten.Image) {
 	alpha := scrollBarOpacity(s.barCount) * 3 / 4
 	if alpha == 0 {
 		return
@@ -386,7 +386,7 @@ func scrollOverlayPadding(context *guigui.Context) float64 {
 	return 2 * context.Scale()
 }
 
-func (s *ScrollOverlay) barSize(context *guigui.Context) (float64, float64) {
+func (s *scrollOverlay) barSize(context *guigui.Context) (float64, float64) {
 	bounds := context.Bounds(s)
 	padding := scrollOverlayPadding(context)
 
@@ -402,7 +402,7 @@ func (s *ScrollOverlay) barSize(context *guigui.Context) (float64, float64) {
 	return w, h
 }
 
-func (s *ScrollOverlay) barBounds(context *guigui.Context) (image.Rectangle, image.Rectangle) {
+func (s *scrollOverlay) barBounds(context *guigui.Context) (image.Rectangle, image.Rectangle) {
 	bounds := context.Bounds(s)
 
 	offsetX, offsetY := s.Offset()

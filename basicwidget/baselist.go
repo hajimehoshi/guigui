@@ -53,7 +53,7 @@ type baseList[T comparable] struct {
 	checkmark      Image
 	expanderImages []Image
 	listFrame      listFrame[T]
-	scrollOverlay  ScrollOverlay
+	scrollOverlay  scrollOverlay
 
 	abstractList               abstractList[T, baseListItem[T]]
 	stripeVisible              bool
