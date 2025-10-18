@@ -63,8 +63,8 @@ func (l *List[T]) SetOnItemsMoved(f func(from, count, to int)) {
 	l.list.SetOnItemsMoved(f)
 }
 
-func (l *List[T]) SetOnItemExpanderClicked(f func(index int)) {
-	l.list.SetOnItemExpanderClicked(f)
+func (l *List[T]) SetOnItemExpanderToggled(f func(index int, expanded bool)) {
+	l.list.SetOnItemExpanderToggled(f)
 }
 
 func (l *List[T]) SetCheckmarkIndex(index int) {

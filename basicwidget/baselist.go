@@ -19,7 +19,7 @@ import (
 
 const (
 	baseListEventItemsMoved          = "itemsMoved"
-	baseListEventItemExpanderClicked = "itemExpanderClicked"
+	baseListEventItemExpanderToggled = "itemExpanderToggled"
 )
 
 type ListStyle int
@@ -87,8 +87,8 @@ func (b *baseList[T]) SetOnItemsMoved(f func(from, count, to int)) {
 	guigui.RegisterEventHandler(b, baseListEventItemsMoved, f)
 }
 
-func (b *baseList[T]) SetOnItemExpanderClicked(f func(index int)) {
-	guigui.RegisterEventHandler(b, baseListEventItemExpanderClicked, f)
+func (b *baseList[T]) SetOnItemExpanderToggled(f func(index int, expanded bool)) {
+	guigui.RegisterEventHandler(b, baseListEventItemExpanderToggled, f)
 }
 
 func (b *baseList[T]) SetCheckmarkIndex(index int) {
@@ -496,7 +496,8 @@ func (b *baseList[T]) HandlePointingInput(context *guigui.Context) guigui.Handle
 			}
 			if c.X < b.itemBoundsForLayoutFromIndex[index].Min.X {
 				if left {
-					guigui.DispatchEventHandler(b, baseListEventItemExpanderClicked, index)
+					expanded := !item.Collapsed
+					guigui.DispatchEventHandler(b, baseListEventItemExpanderToggled, index, !expanded)
 				}
 				return guigui.AbortHandlingInputByWidget(b)
 			}

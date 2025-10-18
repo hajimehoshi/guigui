@@ -89,9 +89,8 @@ func (l *Lists) Update(context *guigui.Context) error {
 	} else {
 		tree.SetFooterHeight(0)
 	}
-	tree.SetOnItemExpanderClicked(func(index int) {
-		expanded := !l.treeItems[index].Collapsed
-		model.Lists().SetTreeItemExpanded(index, !expanded)
+	tree.SetOnItemExpanderToggled(func(index int, expanded bool) {
+		model.Lists().SetTreeItemExpanded(index, expanded)
 	})
 
 	l.treeItems = slices.Delete(l.treeItems, 0, len(l.treeItems))
