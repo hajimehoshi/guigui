@@ -14,6 +14,7 @@ import (
 type Lists struct {
 	guigui.DefaultWidget
 
+	listFormPanel    basicwidget.Panel
 	listForm         basicwidget.Form
 	listText         basicwidget.Text
 	list             guigui.WidgetWithSize[*basicwidget.List[int]]
@@ -40,7 +41,7 @@ type Lists struct {
 }
 
 func (l *Lists) AddChildren(context *guigui.Context, adder *guigui.ChildAdder) {
-	adder.AddChild(&l.listForm)
+	adder.AddChild(&l.listFormPanel)
 	adder.AddChild(&l.configForm)
 }
 
@@ -171,6 +172,9 @@ func (l *Lists) Update(context *guigui.Context) error {
 			SecondaryWidget: &l.enabledToggle,
 		},
 	})
+	l.listFormPanel.SetContent(&l.listForm)
+	l.listFormPanel.SetAutoBorder(true)
+	l.listFormPanel.SetContentConstraints(basicwidget.PanelContentConstraintsFixedWidth)
 
 	return nil
 }
@@ -181,10 +185,8 @@ func (l *Lists) Layout(context *guigui.Context, widget guigui.Widget) image.Rect
 		Direction: guigui.LayoutDirectionVertical,
 		Items: []guigui.LinearLayoutItem{
 			{
-				Widget: &l.listForm,
-			},
-			{
-				Size: guigui.FlexibleSize(1),
+				Widget: &l.listFormPanel,
+				Size:   guigui.FlexibleSize(1),
 			},
 			{
 				Widget: &l.configForm,
