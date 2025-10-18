@@ -67,6 +67,9 @@ func (b *baseButton) Update(context *guigui.Context) error {
 
 func (b *baseButton) HandlePointingInput(context *guigui.Context) guigui.HandleInputResult {
 	if b.isHovered(context) {
+		// IsMouseButtonJustPressed and IsMouseButtonJustReleased can be true at the same time as of Ebitengine v2.9.
+		// Check both.
+		var justPressedOrReleased bool
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			if b.keepPressed {
 				return guigui.AbortHandlingInputByWidget(b)
@@ -77,16 +80,22 @@ func (b *baseButton) HandlePointingInput(context *guigui.Context) guigui.HandleI
 			if isMouseButtonRepeating(ebiten.MouseButtonLeft) {
 				guigui.DispatchEventHandler(b, baseButtonEventRepeat)
 			}
+			justPressedOrReleased = true
+		}
+		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && b.pressed {
+			if b.keepPressed {
+				return guigui.AbortHandlingInputByWidget(b)
+			}
+			b.setPressed(false)
+			guigui.DispatchEventHandler(b, baseButtonEventUp)
+			guigui.RequestRedraw(b)
+			justPressedOrReleased = true
+		}
+		if justPressedOrReleased {
 			return guigui.HandleInputByWidget(b)
 		}
 		if (b.pressed || b.pairedButton != nil && b.pairedButton.pressed) && isMouseButtonRepeating(ebiten.MouseButtonLeft) {
 			guigui.DispatchEventHandler(b, baseButtonEventRepeat)
-			return guigui.HandleInputByWidget(b)
-		}
-		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && b.pressed {
-			b.setPressed(false)
-			guigui.DispatchEventHandler(b, baseButtonEventUp)
-			guigui.RequestRedraw(b)
 			return guigui.HandleInputByWidget(b)
 		}
 	}
